@@ -1,0 +1,52 @@
+'use client'
+
+import { useState } from 'react'
+import { useCartStore } from '@/store/cartStore'
+
+interface SignatureAddToCartProps {
+  productId: string
+  variantId: string
+  productName: string
+  priceKobo: number
+  imageUrl?: string
+  className?: string
+}
+
+export default function SignatureAddToCart({
+  productId,
+  variantId,
+  productName,
+  priceKobo,
+  imageUrl,
+  className = '',
+}: SignatureAddToCartProps) {
+  const [added, setAdded] = useState(false)
+  const { add, setOpen } = useCartStore()
+
+  function handleAdd(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    add({
+      variantId,
+      productId,
+      name: productName,
+      variantLabel: '100ml EDP',
+      unitPriceKobo: priceKobo,
+      qty: 1,
+      thumbnail: imageUrl,
+    })
+    setAdded(true)
+    setOpen(true)
+    setTimeout(() => setAdded(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handleAdd}
+      className={`inline-flex items-center justify-center bg-ink text-label uppercase tracking-[0.1em] text-bone transition-opacity hover:opacity-90 ${className}`}
+      style={{ height: 44 }}
+    >
+      {added ? 'Added' : 'Add to Cart'}
+    </button>
+  )
+}

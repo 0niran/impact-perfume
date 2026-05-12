@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bone: 242 230 200;
+    --ink: 10 10 8;
+    --accent: 201 169 110;
+    --gold: 232 213 163;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: rgb(var(--accent));
+    color: rgb(var(--ink));
+  }
+
+  /* Visible focus ring on every focusable */
+  *:focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-px {
+    @apply px-4 md:px-8 lg:px-20;
+  }
+
+  .section-y {
+    @apply py-12 md:py-16 lg:py-24;
+  }
+
+  /* Animated underline link */
+  .link-underline {
+    @apply relative inline-block;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute left-0 -bottom-0.5 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-200 ease-soft;
+  }
+  .link-underline:hover::after {
+    @apply origin-left scale-x-100;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

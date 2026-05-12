@@ -1,0 +1,529 @@
+{
+  "$comment": "Impact Perfumes — Number Series catalogue, parsed from the official PDF. 50 numbered EDPs, 100ml each. Use this to seed Medusa products + Sanity productEnrichment docs.",
+  "brand": {
+    "name": "Impact Perfumes & Oils",
+    "tagline": "Even an enemy will appreciate the gift of a good smelling perfume.",
+    "ceo": "D.A.",
+    "website": "https://impactperfumes.com",
+    "social": {
+      "instagram": "@impact_perfumes",
+      "facebook": "@impact_perfumes",
+      "x": "@impact_perfumes"
+    },
+    "phone": "+1 226 9666 779"
+  },
+  "productLines": [
+    { "key": "number-series", "name": "Number Series", "description": "50 numbered Eau de Parfum signatures, 100ml each, alcohol-based long-wear formula." },
+    { "key": "oils", "name": "Impact Oils", "description": "Alcohol-free perfume oils. Intensely concentrated. A few drops last up to 48 hours. Ideal for dry skin." },
+    { "key": "car-diffusers", "name": "Car Diffusers", "description": "Essential-oil blends crafted to keep your vehicle fresh and odor-free." },
+    { "key": "reed-diffusers", "name": "Reed Diffusers", "description": "For the home. A gentle, even spread of fragrance that enhances rather than overpowers your space." }
+  ],
+  "scentFamilies": [
+    "Fruity", "Warm Spicy", "Amber", "Sweet Oud", "Fresh Spicy", "Woody",
+    "Sweet", "Citrus", "Rose", "Vanilla", "Oud", "Leather", "Aromatic",
+    "Floral", "Coconut", "Tropical", "Powdery"
+  ],
+  "products": [
+    {
+      "number": 1, "handle": "no-1", "title": "Impact No. 1",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#1FA84F", "signatureColorName": "Verdant",
+      "tagline": "An orchard breeze in bloom.",
+      "topNotes": ["Peach", "Apple Blossom"],
+      "heartNotes": ["Pineapple Blossom"],
+      "baseNotes": ["Musk", "Wild Rose", "Patchouli"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 2, "handle": "no-2", "title": "Impact No. 2",
+      "descriptor": "Warm Spicy", "scentFamily": "Warm Spicy",
+      "signatureColor": "#A8137C", "signatureColorName": "Magenta",
+      "tagline": "Spice market at golden hour.",
+      "topNotes": ["Apple", "Citrus"],
+      "heartNotes": ["Cinnamon", "Saffron", "Clove", "Labdanum"],
+      "baseNotes": ["Agarwood (Oud)", "Sandalwood", "Cypriol"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 3, "handle": "no-3", "title": "Impact No. 3",
+      "descriptor": "Amber", "scentFamily": "Amber",
+      "signatureColor": "#C18A1F", "signatureColorName": "Saffron",
+      "tagline": "Citrus laid over warm resin.",
+      "topNotes": ["Yuzu", "Bergamot", "Sweet Orange", "Mandarin Orange"],
+      "heartNotes": ["Nutmeg", "Lotus", "Cinnamon", "Saffron"],
+      "baseNotes": ["Incense", "Papyrus", "Ambergris", "Benzoin", "Amber"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 4, "handle": "no-4", "title": "Impact No. 4",
+      "descriptor": "Amber", "scentFamily": "Amber",
+      "signatureColor": "#C9281D", "signatureColorName": "Cinnabar",
+      "tagline": "Leather and resin, smouldering.",
+      "topNotes": ["Oregano", "Pepper", "Bergamot"],
+      "heartNotes": ["Incense", "Opopanax", "Amber", "Labdanum"],
+      "baseNotes": ["Leather Wood (Oud)", "Sandalwood", "Patchouli"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 5, "handle": "no-5", "title": "Impact No. 5",
+      "descriptor": "Sweet Oud", "scentFamily": "Sweet Oud",
+      "signatureColor": "#1E64A4", "signatureColorName": "Cobalt",
+      "tagline": "An infinite garden after dusk.",
+      "topNotes": ["Orange Blossom", "Peach", "Plum", "Neroli", "Brazilian Rosewood", "Mandarin Orange", "Violet"],
+      "heartNotes": ["Tuberose", "Mimosa", "Gardenia", "Jasmine", "Black Locust", "Carnation", "Red Berries", "Blackcurrant", "Cassia", "Rose", "Orchid"],
+      "baseNotes": ["Sandalwood", "Woody Notes", "Vanilla", "Amber", "Tonka Bean", "Musk"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 6, "handle": "no-6", "title": "Impact No. 6",
+      "descriptor": "Fresh Spicy", "scentFamily": "Fresh Spicy",
+      "signatureColor": "#A8B125", "signatureColorName": "Olive",
+      "tagline": "Pepper, lavender, sunlit air.",
+      "topNotes": ["Calabrian Bergamot", "Pepper"],
+      "heartNotes": ["Sichuan Pepper", "Lavender", "Pink Pepper", "Vetiver", "Patchouli", "Geranium", "Elemi"],
+      "baseNotes": ["Ambroxan", "Cedar", "Labdanum"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 7, "handle": "no-7", "title": "Impact No. 7",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#C81273", "signatureColorName": "Fuchsia",
+      "tagline": "Praline kissed by sandalwood.",
+      "topNotes": ["Praline", "Neroli", "Jasmine"],
+      "heartNotes": ["Patchouli", "Cashmeran", "Tonka Bean"],
+      "baseNotes": ["Patchouli", "Sandalwood", "White Musk"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 8, "handle": "no-8", "title": "Impact No. 8",
+      "descriptor": "Sweet", "scentFamily": "Sweet",
+      "signatureColor": "#0E5F58", "signatureColorName": "Pine",
+      "tagline": "Spun sugar in soft light.",
+      "topNotes": ["Sugar"],
+      "heartNotes": ["Sweet Notes"],
+      "baseNotes": [],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 9, "handle": "no-9", "title": "Impact No. 9",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#1240A6", "signatureColorName": "Lapis",
+      "tagline": "Orchard fruit on a deep blue afternoon.",
+      "topNotes": ["Pineapple", "Bergamot", "Blackcurrant", "Apple"],
+      "heartNotes": ["Birch", "Patchouli", "Moroccan Jasmine", "Rose"],
+      "baseNotes": ["Musk", "Oak Moss", "Ambergris", "Vanilla"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 10, "handle": "no-10", "title": "Impact No. 10",
+      "descriptor": "Sweet", "scentFamily": "Sweet",
+      "signatureColor": "#C71285", "signatureColorName": "Rosewood",
+      "tagline": "Honeyed oud, candied rose.",
+      "topNotes": ["Agarwood (Oud)", "Praline"],
+      "heartNotes": ["Vanilla Rose", "Saffron"],
+      "baseNotes": [],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 11, "handle": "no-11", "title": "Impact No. 11",
+      "descriptor": "Citrus", "scentFamily": "Citrus",
+      "signatureColor": "#1D2B9C", "signatureColorName": "Indigo",
+      "tagline": "Sicilian sunlight on cool wood.",
+      "topNotes": ["Calabrian Bergamot", "Grapefruit", "Sicilian Lemon"],
+      "heartNotes": ["Sandalwood"],
+      "baseNotes": ["Musk", "Ambergris", "Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 12, "handle": "no-12", "title": "Impact No. 12",
+      "descriptor": "Rose", "scentFamily": "Rose",
+      "signatureColor": "#A0157E", "signatureColorName": "Plum Bloom",
+      "tagline": "A rose draped in saffron.",
+      "topNotes": ["Amber Woody"],
+      "heartNotes": ["Saffron", "Jasmine"],
+      "baseNotes": [],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 13, "handle": "no-13", "title": "Impact No. 13",
+      "descriptor": "Vanilla", "scentFamily": "Vanilla",
+      "signatureColor": "#A98917", "signatureColorName": "Honey",
+      "tagline": "Earth, root, and warm cream.",
+      "topNotes": ["Green Mandarin Orange", "Carrot Seed"],
+      "heartNotes": ["Heliotrope", "Olive Blossom", "Cedar", "Cypress"],
+      "baseNotes": ["Vanilla", "Tonka Bean", "Guaiac Wood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 14, "handle": "no-14", "title": "Impact No. 14",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#1E78B8", "signatureColorName": "Sea Blue",
+      "tagline": "Saffron and cedar by candlelight.",
+      "topNotes": ["Saffron", "Jasmine"],
+      "heartNotes": ["Amber Oud", "Ambergris"],
+      "baseNotes": ["Fir Resin", "Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 15, "handle": "no-15", "title": "Impact No. 15",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#A1147F", "signatureColorName": "Hibiscus",
+      "tagline": "Damascus rose over honeyed fruit.",
+      "topNotes": ["Egyptian Balsam", "Grapefruit", "Damask Rose"],
+      "heartNotes": ["Honeysuckle", "Vanilla", "Fruity Notes", "Musk"],
+      "baseNotes": ["Floral Notes", "Musk", "Resins", "Amber"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 16, "handle": "no-16", "title": "Impact No. 16",
+      "descriptor": "Amber", "scentFamily": "Amber",
+      "signatureColor": "#0E78B8", "signatureColorName": "Aegean",
+      "tagline": "Smoke, spice, and quiet velvet.",
+      "topNotes": ["Incense", "Cumin", "Nutmeg"],
+      "heartNotes": ["Agarwood (Oud)", "Labdanum"],
+      "baseNotes": ["Civet", "Castoreum", "Sandalwood", "Amber", "Vanilla", "Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 17, "handle": "no-17", "title": "Impact No. 17",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#85801C", "signatureColorName": "Moss",
+      "tagline": "Ancient wood, modern silhouette.",
+      "topNotes": ["Agarwood (Oud)", "Brazilian Rose Oud"],
+      "heartNotes": ["Sandalwood", "Cardamom", "Vanilla", "Sichuan Pepper"],
+      "baseNotes": ["Vetiver", "Tonka Bean"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 18, "handle": "no-18", "title": "Impact No. 18",
+      "descriptor": "Oud", "scentFamily": "Oud",
+      "signatureColor": "#5C29A0", "signatureColorName": "Amethyst",
+      "tagline": "The purest oud, made plush.",
+      "topNotes": ["Agarwood (Oud)"],
+      "heartNotes": ["Rose", "Patchouli"],
+      "baseNotes": ["Musk", "Amber"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 19, "handle": "no-19", "title": "Impact No. 19",
+      "descriptor": "Leather", "scentFamily": "Leather",
+      "signatureColor": "#1A4DC4", "signatureColorName": "Atlas",
+      "tagline": "Saffron-stained leather, dark cocoa.",
+      "topNotes": ["Leather"],
+      "heartNotes": ["Agarwood (Oud)", "Dark Chocolate", "Saffron"],
+      "baseNotes": ["Patchouli"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 20, "handle": "no-20", "title": "Impact No. 20",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#A11AB1", "signatureColorName": "Iris",
+      "tagline": "Black musk, dense forest.",
+      "topNotes": ["Agarwood (Oud)"],
+      "heartNotes": ["Sandalwood", "Cedar"],
+      "baseNotes": ["Agarwood (Oud)", "Black Musk", "Vetiver"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 21, "handle": "no-21", "title": "Impact No. 21",
+      "descriptor": "Aromatic", "scentFamily": "Aromatic",
+      "signatureColor": "#B41349", "signatureColorName": "Garnet",
+      "tagline": "An aromatic cocktail, with edge.",
+      "topNotes": ["Passion Fruit", "Lime", "Pepper", "Ginger"],
+      "heartNotes": ["Vodka", "Gin", "Mint", "Spices"],
+      "baseNotes": ["Amber Leather", "Woody Notes"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 22, "handle": "no-22", "title": "Impact No. 22",
+      "descriptor": "Vanilla", "scentFamily": "Vanilla",
+      "signatureColor": "#0E3DA8", "signatureColorName": "Midnight",
+      "tagline": "Late-night espresso, almond and licorice.",
+      "topNotes": ["Pear", "Pink Pepper", "Orange Blossom"],
+      "heartNotes": ["Coffee", "Jasmine", "Bitter Almond", "Licorice"],
+      "baseNotes": ["Vanilla", "Patchouli", "Cedar", "Cashmere Wood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 23, "handle": "no-23", "title": "Impact No. 23",
+      "descriptor": "Citrus", "scentFamily": "Citrus",
+      "signatureColor": "#7414B0", "signatureColorName": "Orchid",
+      "tagline": "Grapefruit and incense, sharpened.",
+      "topNotes": ["Grapefruit", "Mint", "Pink Pepper"],
+      "heartNotes": ["Ginger", "Nutmeg", "Jasmine", "Iso E Super"],
+      "baseNotes": ["Incense", "Vetiver", "Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 24, "handle": "no-24", "title": "Impact No. 24",
+      "descriptor": "Amber", "scentFamily": "Amber",
+      "signatureColor": "#9C9412", "signatureColorName": "Antique Gold",
+      "tagline": "Olibanum, leather, ancient amber.",
+      "topNotes": ["Agarwood"],
+      "heartNotes": ["Incense", "Olibanum"],
+      "baseNotes": ["Woody Notes", "Leather", "Amber"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 25, "handle": "no-25", "title": "Impact No. 25",
+      "descriptor": "Floral", "scentFamily": "Floral",
+      "signatureColor": "#0F7E7E", "signatureColorName": "Teal",
+      "tagline": "Almond, coffee, and Bulgarian rose.",
+      "topNotes": ["Almond", "Coffee", "Bergamot", "Lemon"],
+      "heartNotes": ["Bulgarian Rose"],
+      "baseNotes": ["Tonka Bean", "Cocoa", "Vanilla", "Praline", "Sandalwood", "Musk", "Cashmere Wood", "Amber", "Cinnamon", "Patchouli", "Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 26, "handle": "no-26", "title": "Impact No. 26",
+      "descriptor": "Vanilla", "scentFamily": "Vanilla",
+      "signatureColor": "#B91268", "signatureColorName": "Ruby",
+      "tagline": "Rum, vanilla, and orange blossom rituals.",
+      "topNotes": ["Passion Fruit", "Rum", "Mandarin Orange", "Cassis"],
+      "heartNotes": ["Honeysuckle", "Fir Resin", "Jasmine", "Orange Blossom"],
+      "baseNotes": ["Vanilla", "Musk Benzoin", "Sandalwood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 27, "handle": "no-27", "title": "Impact No. 27",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#C25719", "signatureColorName": "Persimmon",
+      "tagline": "Wild berries on warm patchouli.",
+      "topNotes": ["Strawberry", "Raspberry", "Blackberry", "Sour Cherry", "Blackcurrant", "Mandarin Orange", "Lemon"],
+      "heartNotes": ["Violet", "Jasmine"],
+      "baseNotes": ["Musk", "Vanilla", "Cashmere", "Oakmoss", "Woody Notes", "Amber", "Patchouli"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 28, "handle": "no-28", "title": "Impact No. 28",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#0F8F3E", "signatureColorName": "Palm",
+      "tagline": "Mango, water lily, coconut shore.",
+      "topNotes": ["Mango", "Nectarine", "Blood Orange"],
+      "heartNotes": ["Raspberry", "Star Apple", "Water Lily"],
+      "baseNotes": ["Coconut", "Musk", "Sandalwood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 29, "handle": "no-29", "title": "Impact No. 29",
+      "descriptor": "Citrus", "scentFamily": "Citrus",
+      "signatureColor": "#7E2EB4", "signatureColorName": "Violet",
+      "tagline": "Salt spray and bay leaf.",
+      "topNotes": ["Sea Note", "Grapefruit", "Mandarin Orange"],
+      "heartNotes": ["Bay Leaf", "Jasmine"],
+      "baseNotes": ["Ambergris", "Guaiac Wood", "Oakmoss", "Patchouli"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 30, "handle": "no-30", "title": "Impact No. 30",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#19A0BE", "signatureColorName": "Lagoon",
+      "tagline": "Plum and freesia in still water.",
+      "topNotes": ["Plum"],
+      "heartNotes": ["Freesia", "Chamomile"],
+      "baseNotes": [],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 31, "handle": "no-31", "title": "Impact No. 31",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#1928B8", "signatureColorName": "Sapphire",
+      "tagline": "Hazelnut, cedar, ozonic plum.",
+      "topNotes": ["Plum", "Ozonic Note", "Grapefruit", "Bergamot"],
+      "heartNotes": ["Hazelnut", "Honey", "Cedar", "Cashmere Wood", "Jasmine", "Orange"],
+      "baseNotes": ["Amber Wood", "Patchouli", "Oakmoss", "Vetiver"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 32, "handle": "no-32", "title": "Impact No. 32",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#B414A8", "signatureColorName": "Bougainvillea",
+      "tagline": "Tropical hibiscus on warm wood.",
+      "topNotes": ["Passionfruit", "Blood Orange", "Cherry"],
+      "heartNotes": ["Mango Blossom", "Orchid", "Hibiscus"],
+      "baseNotes": ["Amber", "Musk", "Teak Wood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 33, "handle": "no-33", "title": "Impact No. 33",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#669C13", "signatureColorName": "Vetiver",
+      "tagline": "Leather and cypress, taut.",
+      "topNotes": ["Leather"],
+      "heartNotes": ["Cypress", "Patchouli"],
+      "baseNotes": ["Woody Notes", "Vetiver"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 34, "handle": "no-34", "title": "Impact No. 34",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#B41454", "signatureColorName": "Cerise",
+      "tagline": "Saffron and rose held by precious wood.",
+      "topNotes": ["Leather", "Lemon", "Water"],
+      "heartNotes": ["Rose", "Guaiac Wood", "Teak Wood", "Saffron"],
+      "baseNotes": ["Precious Wood", "White Musk", "Ambergris"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 35, "handle": "no-35", "title": "Impact No. 35",
+      "descriptor": "Vanilla", "scentFamily": "Vanilla",
+      "signatureColor": "#C0671A", "signatureColorName": "Tobacco",
+      "tagline": "Mint and ambroxan over Madagascar wood.",
+      "topNotes": ["Mint", "Green Apple", "Lemon"],
+      "heartNotes": ["Tonka Bean", "Ambroxan", "Geranium"],
+      "baseNotes": ["Madagascar Vanilla", "Virginian Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 36, "handle": "no-36", "title": "Impact No. 36",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#5022C4", "signatureColorName": "Royal",
+      "tagline": "Iris, jasmine sambac, papyrus.",
+      "topNotes": ["Plum", "Saffron", "Iris"],
+      "heartNotes": ["Orris", "Jasmine Sambac", "Bulgarian Rose"],
+      "baseNotes": ["Vetiver", "Papyrus", "Liquid Amber"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 37, "handle": "no-37", "title": "Impact No. 37",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#0DA227", "signatureColorName": "Meadow",
+      "tagline": "Strawberry, vanilla orchid, oakmoss.",
+      "topNotes": ["Passionfruit", "Grapefruit", "Pineapple", "Tangerine", "Strawberry"],
+      "heartNotes": ["Pear", "Vanilla Orchid", "Red Berries", "Jasmine"],
+      "baseNotes": ["Musk", "Woody Notes", "Oakmoss"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 38, "handle": "no-38", "title": "Impact No. 38",
+      "descriptor": "Warm Spicy", "scentFamily": "Warm Spicy",
+      "signatureColor": "#C72020", "signatureColorName": "Ember",
+      "tagline": "Saffron, oud, slow burn.",
+      "topNotes": ["Agarwood", "Wood Saffron"],
+      "heartNotes": ["Spices", "Floral Notes"],
+      "baseNotes": ["Musk", "Amber", "Woody Notes"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 39, "handle": "no-39", "title": "Impact No. 39",
+      "descriptor": "Fruity", "scentFamily": "Fruity",
+      "signatureColor": "#B91261", "signatureColorName": "Lotus",
+      "tagline": "Wild berries through tiara flowers.",
+      "topNotes": ["Wild Berries", "Pear", "Peach", "Mandarin Orange"],
+      "heartNotes": ["Apple Blossom", "Tiara Flower", "Jasmine", "Water Lily"],
+      "baseNotes": ["Vanilla", "Coconut", "Orchid", "Musk", "Sandalwood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 40, "handle": "no-40", "title": "Impact No. 40",
+      "descriptor": "Sweet", "scentFamily": "Sweet",
+      "signatureColor": "#2123A8", "signatureColorName": "Cobalt Night",
+      "tagline": "Black tea, licorice, soft powder.",
+      "topNotes": ["Licorice", "Violet"],
+      "heartNotes": ["Sour Cherry", "Black Tea"],
+      "baseNotes": ["Powdery Notes", "Floral Notes", "Woody Notes"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 41, "handle": "no-41", "title": "Impact No. 41",
+      "descriptor": "Amber", "scentFamily": "Amber",
+      "signatureColor": "#A91239", "signatureColorName": "Crimson",
+      "tagline": "Saffron rose under midnight bloom.",
+      "topNotes": ["Saffron", "Pink Pepper", "Bergamot"],
+      "heartNotes": ["Rose", "Night Blooming Jasmine"],
+      "baseNotes": ["Agarwood"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 42, "handle": "no-42", "title": "Impact No. 42",
+      "descriptor": "Rose", "scentFamily": "Rose",
+      "signatureColor": "#B58818", "signatureColorName": "Topaz",
+      "tagline": "Rose, jasmine, mandarin in golden hour.",
+      "topNotes": ["Rose"],
+      "heartNotes": ["Jasmine", "Mandarin Orange"],
+      "baseNotes": ["Sandalwood"],
+      "volume": "100ml", "concentration": "Eau de Parfum",
+      "note": "Catalogue page mislabels this as #43; corrected to #42."
+    },
+    {
+      "number": 43, "handle": "no-43", "title": "Impact No. 43",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#1F9F7F", "signatureColorName": "Cypress",
+      "tagline": "Apple and plum on a cinnamon trail.",
+      "topNotes": ["Apple", "Plum", "Bergamot", "Lemon"],
+      "heartNotes": ["Cinnamon", "Mahogany", "Carnation"],
+      "baseNotes": ["Vanilla", "Sandalwood", "Cedar", "Vetiver", "Olive Tree"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 44, "handle": "no-44", "title": "Impact No. 44",
+      "descriptor": "Coconut", "scentFamily": "Coconut",
+      "signatureColor": "#B6178D", "signatureColorName": "Solar",
+      "tagline": "Sea salt, sun, white coconut.",
+      "topNotes": ["Coconut"],
+      "heartNotes": ["Sea Salt"],
+      "baseNotes": ["Solar Notes"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 45, "handle": "no-45", "title": "Impact No. 45",
+      "descriptor": "Woody", "scentFamily": "Woody",
+      "signatureColor": "#C72124", "signatureColorName": "Vermillion",
+      "tagline": "Aldehydes, iris, lily, deep oakmoss.",
+      "topNotes": ["Aldehydes", "Ylang-Ylang", "Neroli", "Peach"],
+      "heartNotes": ["Iris", "Jasmine", "Rose", "Lily of the Valley"],
+      "baseNotes": ["Sandalwood", "Vanilla", "Oakmoss", "Vetiver", "Patchouli"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 46, "handle": "no-46", "title": "Impact No. 46",
+      "descriptor": "Tropical", "scentFamily": "Tropical",
+      "signatureColor": "#19BB22", "signatureColorName": "Aloe",
+      "tagline": "Mango, hibiscus, aloe air.",
+      "topNotes": ["Mango"],
+      "heartNotes": ["Hibiscus", "Chamomile"],
+      "baseNotes": ["Aloe Vera"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 47, "handle": "no-47", "title": "Impact No. 47",
+      "descriptor": "Sweet", "scentFamily": "Sweet",
+      "signatureColor": "#B919AE", "signatureColorName": "Candy",
+      "tagline": "Cotton candy, melon, white jasmine.",
+      "topNotes": ["Cotton Candy", "Coconut"],
+      "heartNotes": ["Cassis", "Melon"],
+      "baseNotes": ["Jasmine"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 48, "handle": "no-48", "title": "Impact No. 48",
+      "descriptor": "Powdery", "scentFamily": "Powdery",
+      "signatureColor": "#1F2BA8", "signatureColorName": "Iris Night",
+      "tagline": "Iris and white peach in soft focus.",
+      "topNotes": ["Brazilian Rose Wood", "Sicilian Orange"],
+      "heartNotes": ["Chamomile", "Sunflower", "Rose"],
+      "baseNotes": ["Powdery Notes", "Vanilla Iris", "White Peach"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 49, "handle": "no-49", "title": "Impact No. 49",
+      "descriptor": "Aromatic", "scentFamily": "Aromatic",
+      "signatureColor": "#C8541E", "signatureColorName": "Rust",
+      "tagline": "Cypress, mint, tonka warmth.",
+      "topNotes": ["Mandarin Orange", "Mint", "Cypress"],
+      "heartNotes": ["Pepper"],
+      "baseNotes": ["Tonka Bean", "Musk", "Sandalwood", "Cedar"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    },
+    {
+      "number": 50, "handle": "no-50", "title": "Impact No. 50",
+      "descriptor": "Floral", "scentFamily": "Floral",
+      "signatureColor": "#1A87C6", "signatureColorName": "Cyan",
+      "tagline": "Pepper, leather, neroli, broom.",
+      "topNotes": ["Cinnamon", "Ginger", "Bergamot", "Pepper"],
+      "heartNotes": ["Amber", "Woody Notes", "Vanilla", "French Leather", "Labdanum"],
+      "baseNotes": ["Neroli", "Broom", "Clary Sage"],
+      "volume": "100ml", "concentration": "Eau de Parfum"
+    }
+  ]
+}
