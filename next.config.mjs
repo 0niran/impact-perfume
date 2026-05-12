@@ -1,3 +1,4 @@
+// v2 — adds NEXT_PUBLIC_MEDUSA_BACKEND_URL env var support
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
