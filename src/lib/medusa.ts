@@ -5,9 +5,7 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://localhost:9000'
 
 const PUBLISHABLE_KEY =
-  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ??
-  process.env.MEDUSA_ADMIN_API_KEY ??
-  ''
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? ''
 
 // NGN region — required by Medusa v2 store API to return calculated_price
 const REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
