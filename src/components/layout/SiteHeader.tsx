@@ -93,11 +93,11 @@ export default function SiteHeader() {
             </Link>
           </nav>
 
-          {/* Logo — centered absolutely */}
-          <div className="absolute left-1/2 -translate-x-1/2">
+          {/* Logo — left-aligned on mobile, absolutely centered on desktop */}
+          <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
             <Link
               href="/"
-              className="block font-brand text-[22px] sm:text-[28px] leading-none text-gold hover:text-accent transition-colors duration-150"
+              className="block font-brand text-[16px] sm:text-[20px] lg:text-[28px] leading-none text-gold hover:text-accent transition-colors duration-150 whitespace-nowrap"
               aria-label="Impact Perfumes — home"
             >
               Impact Perfumes

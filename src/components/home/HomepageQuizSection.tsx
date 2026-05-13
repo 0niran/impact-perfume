@@ -9,7 +9,7 @@ export default function HomepageQuizSection() {
           <p className="text-label uppercase tracking-[0.12em] text-stone">
             Fragrance Finder
           </p>
-          <h2 className="mt-3 font-display text-h1 md:text-display-s leading-none text-bone">
+          <h2 className="mt-3 font-display text-[28px] md:text-display-s leading-[1.1] text-bone">
             Not sure where to start?
           </h2>
           <p className="mt-4 text-body text-stone max-w-md">

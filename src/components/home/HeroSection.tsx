@@ -4,7 +4,7 @@ import HeroSlideshow from './HeroSlideshow'
 
 export default function HeroSection() {
   return (
-    <section className="relative flex min-h-screen items-end overflow-hidden bg-ink text-bone">
+    <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink text-bone">
       {/* Slideshow — images + gradients + indicators */}
       <HeroSlideshow />
 

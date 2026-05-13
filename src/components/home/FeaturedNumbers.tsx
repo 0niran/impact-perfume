@@ -41,7 +41,7 @@ export default async function FeaturedNumbers() {
             <p className="text-label uppercase tracking-[0.12em] text-stone mb-2">
               The Number Series
             </p>
-            <h2 className="font-display text-h1 md:text-display-s leading-none text-bone">
+            <h2 className="font-display text-[28px] md:text-display-s leading-[1.1] text-bone">
               Find your number.
             </h2>
           </div>
