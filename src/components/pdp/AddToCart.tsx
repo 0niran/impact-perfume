@@ -64,7 +64,7 @@ export default function AddToCart({
 
         <button
           onClick={handleAdd}
-          className="inline-flex w-fit items-center justify-center bg-ink px-10 text-label uppercase tracking-[0.1em] text-bone transition-opacity duration-200 hover:opacity-90"
+          className="inline-flex w-full sm:w-fit items-center justify-center bg-ink px-10 text-label uppercase tracking-[0.1em] text-bone transition-opacity duration-200 hover:opacity-90"
           style={{ height: 52 }}
         >
           {added ? 'Added to cart' : 'Add to Cart'}

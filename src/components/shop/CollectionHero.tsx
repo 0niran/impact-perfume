@@ -7,7 +7,7 @@ export default function CollectionHero() {
         <p className="text-label uppercase tracking-[0.12em] text-accent">
           The Number Series
         </p>
-        <h1 className="mt-3 font-display text-display-l leading-none">
+        <h1 className="mt-3 font-display text-[36px] leading-[1.1] md:text-display-l">
           50 Numbers. One House.
         </h1>
         <p className="mt-4 max-w-lg text-body text-slate">

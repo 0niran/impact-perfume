@@ -97,7 +97,7 @@ export default function SiteHeader() {
           <div className="absolute left-1/2 -translate-x-1/2">
             <Link
               href="/"
-              className="block font-brand text-[28px] leading-none text-gold hover:text-accent transition-colors duration-150"
+              className="block font-brand text-[22px] sm:text-[28px] leading-none text-gold hover:text-accent transition-colors duration-150"
               aria-label="Impact Perfumes — home"
             >
               Impact Perfumes

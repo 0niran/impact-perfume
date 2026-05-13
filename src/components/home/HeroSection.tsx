@@ -14,18 +14,18 @@ export default function HeroSection() {
         aria-hidden="true"
       />
 
-      <Container className="relative pb-20 pt-40 md:pb-28">
+      <Container className="relative pb-16 pt-28 sm:pb-20 sm:pt-40 md:pb-28">
         <p className="text-label uppercase tracking-[0.12em] text-stone">
           Impact Perfumes &amp; Oils · Est. Lagos
         </p>
 
-        <h1 className="mt-5 max-w-3xl font-display text-display-l md:text-display-xl text-balance leading-none">
+        <h1 className="mt-5 max-w-3xl font-display text-[36px] leading-[1.1] sm:text-display-l md:text-display-xl text-balance">
           Crafted in Lagos.
           <br />
           Composed for character.
         </h1>
 
-        <p className="mt-6 max-w-md text-body-l text-stone">
+        <p className="mt-6 max-w-md text-body sm:text-body-l text-stone">
           Fragrances that leave a mark. Oils that linger.
           <br />
           A house built for those who make an impression.

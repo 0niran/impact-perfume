@@ -66,7 +66,7 @@ export default function InfoRail({
           <p className="text-label uppercase tracking-[0.1em] text-stone">
             No. {number} · {descriptor}
           </p>
-          <h1 className="mt-2 font-display text-display-l leading-none">
+          <h1 className="mt-2 font-display text-[32px] leading-[1.1] md:text-display-l">
             Impact No. {number}
           </h1>
           {tagline && (

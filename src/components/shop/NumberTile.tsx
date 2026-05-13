@@ -41,8 +41,11 @@ export default function NumberTile({ tile }: NumberTileProps) {
       </div>
 
       {/* Always-visible label at bottom */}
-      <div className="absolute bottom-0 inset-x-0 p-3 transition-opacity duration-300 group-hover:opacity-0">
+      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/50 to-transparent p-3 transition-opacity duration-300 group-hover:opacity-0">
         <p className="text-label text-white/80">No. {number}</p>
+        {descriptor && (
+          <p className="text-[11px] leading-tight text-white/60 truncate">{descriptor}</p>
+        )}
       </div>
 
       {/* Hover overlay */}

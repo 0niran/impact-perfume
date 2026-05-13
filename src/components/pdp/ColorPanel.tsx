@@ -24,7 +24,7 @@ export default function ColorPanel({
 
   return (
     <div
-      className="relative flex min-h-[60vh] flex-col items-center justify-center overflow-hidden lg:sticky lg:top-0 lg:min-h-screen"
+      className="relative flex min-h-[50vh] md:min-h-[60vh] flex-col items-center justify-center overflow-hidden lg:sticky lg:top-0 lg:min-h-screen"
       style={{ backgroundColor: signatureColor }}
     >
       {/* Number watermark — faded behind the bottle */}

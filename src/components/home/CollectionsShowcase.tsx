@@ -136,11 +136,9 @@ function CollectionTile({
         >
           {collection.label}
         </h3>
-        {collection.large && (
-          <p className="mt-3 max-w-xs text-body text-stone">
-            {collection.description}
-          </p>
-        )}
+        <p className={`mt-3 max-w-xs text-body text-stone ${!collection.large ? 'md:hidden' : ''}`}>
+          {collection.description}
+        </p>
         <span className="mt-5 inline-flex items-center text-small uppercase tracking-[0.1em] text-stone transition-transform duration-200 group-hover:translate-x-1">
           {collection.cta}
         </span>

@@ -107,7 +107,7 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
       </div>
 
       {/* Active category label — top right corner */}
-      <div className="absolute top-8 right-8 text-right">
+      <div className="absolute top-5 right-4 sm:top-8 sm:right-8 text-right">
         <p
           className="text-label uppercase tracking-[0.14em] text-accent transition-opacity duration-500"
           style={{ opacity: transitioning ? 0 : 1 }}
