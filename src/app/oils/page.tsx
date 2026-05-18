@@ -30,7 +30,7 @@ export default async function OilsPage() {
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-stone/20 bg-bone py-16 md:py-24">
+      <section className="border-b border-stone/20 bg-ink py-16 md:py-24">
         <Container>
           <p className="text-label uppercase tracking-[0.12em] text-accent">Impact Oils</p>
           <h1 className="mt-3 max-w-2xl font-display text-display-l leading-none">
@@ -38,7 +38,7 @@ export default async function OilsPage() {
             <br />
             No Compromise.
           </h1>
-          <p className="mt-5 max-w-lg text-body text-slate">
+          <p className="mt-5 max-w-lg text-body text-stone">
             Alcohol-free and highly concentrated. Our fragrance oils last longer on skin,
             layer beautifully with your Number, and travel without restriction.
             One drop is all it takes.
@@ -46,7 +46,7 @@ export default async function OilsPage() {
           <div className="mt-8">
             <a
               href="#collection"
-              className="inline-flex items-center bg-ink px-8 text-label uppercase tracking-[0.1em] text-bone hover:opacity-90 transition-opacity"
+              className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
               style={{ height: 48 }}
             >
               Shop Oils
@@ -56,7 +56,7 @@ export default async function OilsPage() {
       </section>
 
       {/* Editorial strip */}
-      <section className="bg-mist py-12 border-b border-stone/20">
+      <section className="bg-ink py-12 border-b border-stone/20">
         <Container>
           <div className="grid gap-8 sm:grid-cols-3">
             {[
@@ -65,8 +65,8 @@ export default async function OilsPage() {
               { heading: 'Lasts All Day', body: 'Concentrated formula means a single application carries through morning, noon, and night.' },
             ].map((item) => (
               <div key={item.heading}>
-                <p className="font-display text-h3">{item.heading}</p>
-                <p className="mt-1 text-small text-slate">{item.body}</p>
+                <p className="font-display text-h3 text-bone">{item.heading}</p>
+                <p className="mt-1 text-small text-stone">{item.body}</p>
               </div>
             ))}
           </div>
@@ -74,25 +74,28 @@ export default async function OilsPage() {
       </section>
 
       {/* Product grid */}
-      <Section id="collection">
+      <Section id="collection" className="bg-ink">
         <Container>
           <div className="flex items-end justify-between mb-10">
             <div>
               <p className="text-label uppercase tracking-[0.1em] text-accent">The Collection</p>
-              <h2 className="mt-2 font-display text-h1">
+              <h2 className="mt-2 font-display text-h1 text-bone">
                 {useMedusa ? liveProducts.length : OILS.length} Oils
               </h2>
             </div>
-            <p className="text-small text-slate hidden sm:block">12ml · Concentrated · Roll-on</p>
+            <p className="text-small text-stone hidden sm:block">12ml · Concentrated · Roll-on</p>
           </div>
 
           {useMedusa ? (
             <div className="grid grid-cols-2 gap-px bg-stone/20 sm:grid-cols-3">
-              {liveProducts.map((oil) => (
+              {liveProducts.map((oil) => {
+                const numMatch = oil.handle.match(/^oil-no-(\d+)$/)
+                const href = numMatch ? `/oil/${numMatch[1]}` : '/oils'
+                return (
                 <Link
                   key={oil.handle}
-                  href={`/products/${oil.handle}`}
-                  className="group relative flex flex-col overflow-hidden bg-bone"
+                  href={href}
+                  className="group relative flex flex-col overflow-hidden bg-ink"
                 >
                   <div
                     className="relative overflow-hidden"
@@ -113,9 +116,9 @@ export default async function OilsPage() {
                     )}
                   </div>
                   <div className="flex flex-1 flex-col p-5 border-t border-stone/20">
-                    <p className="text-label uppercase tracking-[0.1em] text-slate">{oil.descriptor}</p>
-                    <h3 className="mt-1 font-display text-h3">{oil.title}</h3>
-                    <p className="mt-1 text-small text-slate italic">{oil.tagline}</p>
+                    <p className="text-label uppercase tracking-[0.1em] text-stone">{oil.descriptor}</p>
+                    <h3 className="mt-1 font-display text-h3 text-bone">{oil.title}</h3>
+                    <p className="mt-1 text-small text-stone italic">{oil.tagline}</p>
                     <div className="mt-4">
                       <span className="text-body font-medium">
                         {oil.priceKobo > 0 ? formatNaira(oil.priceKobo) : 'Coming soon'}
@@ -123,14 +126,15 @@ export default async function OilsPage() {
                     </div>
                   </div>
                 </Link>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-px bg-stone/20 sm:grid-cols-3">
               {OILS.map((oil) => (
                 <div
                   key={oil.handle}
-                  className="group relative flex flex-col overflow-hidden bg-bone"
+                  className="group relative flex flex-col overflow-hidden bg-ink"
                 >
                   <div
                     className="relative flex items-end justify-start p-5 transition-transform duration-500 group-hover:scale-[1.02]"
@@ -142,9 +146,9 @@ export default async function OilsPage() {
                     <span className="relative text-label uppercase tracking-[0.1em] text-white/70">{oil.badge}</span>
                   </div>
                   <div className="flex flex-1 flex-col p-5 border-t border-stone/20">
-                    <p className="text-label uppercase tracking-[0.1em] text-slate">{oil.descriptor}</p>
-                    <h3 className="mt-1 font-display text-h3">{oil.title}</h3>
-                    <p className="mt-1 text-small text-slate italic">{oil.tagline}</p>
+                    <p className="text-label uppercase tracking-[0.1em] text-stone">{oil.descriptor}</p>
+                    <h3 className="mt-1 font-display text-h3 text-bone">{oil.title}</h3>
+                    <p className="mt-1 text-small text-stone italic">{oil.tagline}</p>
                     <div className="mt-4">
                       <span className="text-small text-stone">Coming soon</span>
                     </div>
@@ -161,13 +165,13 @@ export default async function OilsPage() {
         <Container className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-label uppercase tracking-[0.1em] text-stone">Pro tip</p>
-            <h2 className="mt-2 font-display text-h1 max-w-md">
+            <h2 className="mt-2 font-display text-h1 text-bone max-w-md">
               Layer your Oil with your Number for a signature that&apos;s entirely yours.
             </h2>
           </div>
           <Link
             href="/shop"
-            className="shrink-0 inline-flex items-center justify-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone hover:bg-bone hover:text-ink transition-colors"
+            className="shrink-0 inline-flex items-center justify-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
             style={{ height: 48 }}
           >
             Shop the Number Collection

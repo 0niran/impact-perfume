@@ -19,6 +19,14 @@ interface InfoRailProps {
   variantId: string
   priceKobo: number
   imageUrl?: string
+  /** Configurable per product line (Numbers vs Oils etc.) */
+  collectionLabel?: string
+  collectionHref?: string
+  titlePrefix?: string
+  variantLabel?: string
+  prevHref?: (n: number) => string
+  nextHref?: (n: number) => string
+  maxNumber?: number
 }
 
 export default function InfoRail({
@@ -36,6 +44,13 @@ export default function InfoRail({
   variantId,
   priceKobo,
   imageUrl,
+  collectionLabel = 'The Number Series',
+  collectionHref = '/shop',
+  titlePrefix = 'Impact No.',
+  variantLabel,
+  prevHref = (n) => `/no/${n}`,
+  nextHref = (n) => `/no/${n}`,
+  maxNumber = 50,
 }: InfoRailProps) {
   return (
     <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto bg-ink text-bone">
@@ -45,8 +60,8 @@ export default function InfoRail({
         <nav aria-label="Breadcrumb">
           <ol className="flex items-center gap-2 text-small text-stone">
             <li>
-              <Link href="/shop" className="hover:text-bone transition-colors">
-                The Number Series
+              <Link href={collectionHref} className="hover:text-bone transition-colors">
+                {collectionLabel}
               </Link>
             </li>
             <li aria-hidden="true">·</li>
@@ -69,7 +84,7 @@ export default function InfoRail({
             No. {number} · {descriptor}
           </p>
           <h1 className="mt-2 font-display text-[32px] leading-[1.1] md:text-display-l text-bone">
-            Impact No. {number}
+            {titlePrefix} {number}
           </h1>
           {tagline && (
             <p className="mt-3 font-display text-h3 italic text-stone">
@@ -85,10 +100,11 @@ export default function InfoRail({
         <AddToCart
           productId={productId}
           variantId={variantId}
-          productName={`Impact No. ${number}`}
+          productName={`${titlePrefix} ${number}`}
           priceKobo={priceKobo}
           signatureColor={signatureColor}
           imageUrl={imageUrl}
+          variantLabel={variantLabel}
         />
 
         {/* Divider before notes */}
@@ -113,7 +129,7 @@ export default function InfoRail({
         <div className="flex items-center justify-between border-t border-stone/20 pt-6">
           {number > 1 ? (
             <Link
-              href={`/no/${number - 1}`}
+              href={prevHref(number - 1)}
               className="group flex flex-col gap-0.5 hover:opacity-70 transition-opacity duration-200"
             >
               <span className="text-label text-stone">← Previous</span>
@@ -122,9 +138,9 @@ export default function InfoRail({
           ) : (
             <div />
           )}
-          {number < 50 ? (
+          {number < maxNumber ? (
             <Link
-              href={`/no/${number + 1}`}
+              href={nextHref(number + 1)}
               className="group flex flex-col gap-0.5 text-right hover:opacity-70 transition-opacity duration-200"
             >
               <span className="text-label text-stone">Next →</span>

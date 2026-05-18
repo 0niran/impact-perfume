@@ -11,6 +11,7 @@ interface AddToCartProps {
   priceKobo: number
   signatureColor?: string
   imageUrl?: string
+  variantLabel?: string
 }
 
 export default function AddToCart({
@@ -20,6 +21,7 @@ export default function AddToCart({
   priceKobo,
   signatureColor,
   imageUrl,
+  variantLabel = '100ml EDP',
 }: AddToCartProps) {
   const [added, setAdded] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
@@ -42,7 +44,7 @@ export default function AddToCart({
       variantId,
       productId,
       name: productName,
-      variantLabel: '100ml EDP',
+      variantLabel,
       unitPriceKobo: priceKobo,
       qty: 1,
       color: signatureColor,
@@ -61,7 +63,7 @@ export default function AddToCart({
           <p className="font-display text-h1 leading-none text-bone">
             {priceKobo > 0 ? formatNaira(priceKobo) : 'Price on request'}
           </p>
-          <p className="mt-1.5 text-small text-bone/50">100 ml · Eau de Parfum</p>
+          <p className="mt-1.5 text-small text-bone/50">{variantLabel}</p>
         </div>
 
         <button

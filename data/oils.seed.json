@@ -1,0 +1,1348 @@
+{
+  "$comment": "Impact Oils — 50 concentrated perfume oils. Derived from the Number Series; same fragrance composition, oil concentration, 12ml roll-on bottle. Alcohol-free, intensely concentrated for long-lasting wear.",
+  "productLine": {
+    "key": "oils",
+    "name": "Impact Oils",
+    "description": "Alcohol-free perfume oils. Intensely concentrated. A few drops last up to 48 hours. Ideal for dry skin."
+  },
+  "products": [
+    {
+      "number": 1,
+      "handle": "oil-no-1",
+      "title": "Impact Oil No. 1",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#1FA84F",
+      "signatureColorName": "Verdant",
+      "tagline": "An orchard breeze in bloom.",
+      "topNotes": [
+        "Peach",
+        "Apple Blossom"
+      ],
+      "heartNotes": [
+        "Pineapple Blossom"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Wild Rose",
+        "Patchouli"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 2,
+      "handle": "oil-no-2",
+      "title": "Impact Oil No. 2",
+      "descriptor": "Warm Spicy",
+      "scentFamily": "Warm Spicy",
+      "signatureColor": "#A8137C",
+      "signatureColorName": "Magenta",
+      "tagline": "Spice market at golden hour.",
+      "topNotes": [
+        "Apple",
+        "Citrus"
+      ],
+      "heartNotes": [
+        "Cinnamon",
+        "Saffron",
+        "Clove",
+        "Labdanum"
+      ],
+      "baseNotes": [
+        "Agarwood (Oud)",
+        "Sandalwood",
+        "Cypriol"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 3,
+      "handle": "oil-no-3",
+      "title": "Impact Oil No. 3",
+      "descriptor": "Amber",
+      "scentFamily": "Amber",
+      "signatureColor": "#C18A1F",
+      "signatureColorName": "Saffron",
+      "tagline": "Citrus laid over warm resin.",
+      "topNotes": [
+        "Yuzu",
+        "Bergamot",
+        "Sweet Orange",
+        "Mandarin Orange"
+      ],
+      "heartNotes": [
+        "Nutmeg",
+        "Lotus",
+        "Cinnamon",
+        "Saffron"
+      ],
+      "baseNotes": [
+        "Incense",
+        "Papyrus",
+        "Ambergris",
+        "Benzoin",
+        "Amber"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 4,
+      "handle": "oil-no-4",
+      "title": "Impact Oil No. 4",
+      "descriptor": "Amber",
+      "scentFamily": "Amber",
+      "signatureColor": "#C9281D",
+      "signatureColorName": "Cinnabar",
+      "tagline": "Leather and resin, smouldering.",
+      "topNotes": [
+        "Oregano",
+        "Pepper",
+        "Bergamot"
+      ],
+      "heartNotes": [
+        "Incense",
+        "Opopanax",
+        "Amber",
+        "Labdanum"
+      ],
+      "baseNotes": [
+        "Leather Wood (Oud)",
+        "Sandalwood",
+        "Patchouli"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 5,
+      "handle": "oil-no-5",
+      "title": "Impact Oil No. 5",
+      "descriptor": "Sweet Oud",
+      "scentFamily": "Sweet Oud",
+      "signatureColor": "#1E64A4",
+      "signatureColorName": "Cobalt",
+      "tagline": "An infinite garden after dusk.",
+      "topNotes": [
+        "Orange Blossom",
+        "Peach",
+        "Plum",
+        "Neroli",
+        "Brazilian Rosewood",
+        "Mandarin Orange",
+        "Violet"
+      ],
+      "heartNotes": [
+        "Tuberose",
+        "Mimosa",
+        "Gardenia",
+        "Jasmine",
+        "Black Locust",
+        "Carnation",
+        "Red Berries",
+        "Blackcurrant",
+        "Cassia",
+        "Rose",
+        "Orchid"
+      ],
+      "baseNotes": [
+        "Sandalwood",
+        "Woody Notes",
+        "Vanilla",
+        "Amber",
+        "Tonka Bean",
+        "Musk"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 6,
+      "handle": "oil-no-6",
+      "title": "Impact Oil No. 6",
+      "descriptor": "Fresh Spicy",
+      "scentFamily": "Fresh Spicy",
+      "signatureColor": "#A8B125",
+      "signatureColorName": "Olive",
+      "tagline": "Pepper, lavender, sunlit air.",
+      "topNotes": [
+        "Calabrian Bergamot",
+        "Pepper"
+      ],
+      "heartNotes": [
+        "Sichuan Pepper",
+        "Lavender",
+        "Pink Pepper",
+        "Vetiver",
+        "Patchouli",
+        "Geranium",
+        "Elemi"
+      ],
+      "baseNotes": [
+        "Ambroxan",
+        "Cedar",
+        "Labdanum"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 7,
+      "handle": "oil-no-7",
+      "title": "Impact Oil No. 7",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#C81273",
+      "signatureColorName": "Fuchsia",
+      "tagline": "Praline kissed by sandalwood.",
+      "topNotes": [
+        "Praline",
+        "Neroli",
+        "Jasmine"
+      ],
+      "heartNotes": [
+        "Patchouli",
+        "Cashmeran",
+        "Tonka Bean"
+      ],
+      "baseNotes": [
+        "Patchouli",
+        "Sandalwood",
+        "White Musk"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 8,
+      "handle": "oil-no-8",
+      "title": "Impact Oil No. 8",
+      "descriptor": "Sweet",
+      "scentFamily": "Sweet",
+      "signatureColor": "#0E5F58",
+      "signatureColorName": "Pine",
+      "tagline": "Spun sugar in soft light.",
+      "topNotes": [
+        "Sugar"
+      ],
+      "heartNotes": [
+        "Sweet Notes"
+      ],
+      "baseNotes": [],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 9,
+      "handle": "oil-no-9",
+      "title": "Impact Oil No. 9",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#1240A6",
+      "signatureColorName": "Lapis",
+      "tagline": "Orchard fruit on a deep blue afternoon.",
+      "topNotes": [
+        "Pineapple",
+        "Bergamot",
+        "Blackcurrant",
+        "Apple"
+      ],
+      "heartNotes": [
+        "Birch",
+        "Patchouli",
+        "Moroccan Jasmine",
+        "Rose"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Oak Moss",
+        "Ambergris",
+        "Vanilla"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 10,
+      "handle": "oil-no-10",
+      "title": "Impact Oil No. 10",
+      "descriptor": "Sweet",
+      "scentFamily": "Sweet",
+      "signatureColor": "#C71285",
+      "signatureColorName": "Rosewood",
+      "tagline": "Honeyed oud, candied rose.",
+      "topNotes": [
+        "Agarwood (Oud)",
+        "Praline"
+      ],
+      "heartNotes": [
+        "Vanilla Rose",
+        "Saffron"
+      ],
+      "baseNotes": [],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 11,
+      "handle": "oil-no-11",
+      "title": "Impact Oil No. 11",
+      "descriptor": "Citrus",
+      "scentFamily": "Citrus",
+      "signatureColor": "#1D2B9C",
+      "signatureColorName": "Indigo",
+      "tagline": "Sicilian sunlight on cool wood.",
+      "topNotes": [
+        "Calabrian Bergamot",
+        "Grapefruit",
+        "Sicilian Lemon"
+      ],
+      "heartNotes": [
+        "Sandalwood"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Ambergris",
+        "Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 12,
+      "handle": "oil-no-12",
+      "title": "Impact Oil No. 12",
+      "descriptor": "Rose",
+      "scentFamily": "Rose",
+      "signatureColor": "#A0157E",
+      "signatureColorName": "Plum Bloom",
+      "tagline": "A rose draped in saffron.",
+      "topNotes": [
+        "Amber Woody"
+      ],
+      "heartNotes": [
+        "Saffron",
+        "Jasmine"
+      ],
+      "baseNotes": [],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 13,
+      "handle": "oil-no-13",
+      "title": "Impact Oil No. 13",
+      "descriptor": "Vanilla",
+      "scentFamily": "Vanilla",
+      "signatureColor": "#A98917",
+      "signatureColorName": "Honey",
+      "tagline": "Earth, root, and warm cream.",
+      "topNotes": [
+        "Green Mandarin Orange",
+        "Carrot Seed"
+      ],
+      "heartNotes": [
+        "Heliotrope",
+        "Olive Blossom",
+        "Cedar",
+        "Cypress"
+      ],
+      "baseNotes": [
+        "Vanilla",
+        "Tonka Bean",
+        "Guaiac Wood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 14,
+      "handle": "oil-no-14",
+      "title": "Impact Oil No. 14",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#1E78B8",
+      "signatureColorName": "Sea Blue",
+      "tagline": "Saffron and cedar by candlelight.",
+      "topNotes": [
+        "Saffron",
+        "Jasmine"
+      ],
+      "heartNotes": [
+        "Amber Oud",
+        "Ambergris"
+      ],
+      "baseNotes": [
+        "Fir Resin",
+        "Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 15,
+      "handle": "oil-no-15",
+      "title": "Impact Oil No. 15",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#A1147F",
+      "signatureColorName": "Hibiscus",
+      "tagline": "Damascus rose over honeyed fruit.",
+      "topNotes": [
+        "Egyptian Balsam",
+        "Grapefruit",
+        "Damask Rose"
+      ],
+      "heartNotes": [
+        "Honeysuckle",
+        "Vanilla",
+        "Fruity Notes",
+        "Musk"
+      ],
+      "baseNotes": [
+        "Floral Notes",
+        "Musk",
+        "Resins",
+        "Amber"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 16,
+      "handle": "oil-no-16",
+      "title": "Impact Oil No. 16",
+      "descriptor": "Amber",
+      "scentFamily": "Amber",
+      "signatureColor": "#0E78B8",
+      "signatureColorName": "Aegean",
+      "tagline": "Smoke, spice, and quiet velvet.",
+      "topNotes": [
+        "Incense",
+        "Cumin",
+        "Nutmeg"
+      ],
+      "heartNotes": [
+        "Agarwood (Oud)",
+        "Labdanum"
+      ],
+      "baseNotes": [
+        "Civet",
+        "Castoreum",
+        "Sandalwood",
+        "Amber",
+        "Vanilla",
+        "Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 17,
+      "handle": "oil-no-17",
+      "title": "Impact Oil No. 17",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#85801C",
+      "signatureColorName": "Moss",
+      "tagline": "Ancient wood, modern silhouette.",
+      "topNotes": [
+        "Agarwood (Oud)",
+        "Brazilian Rose Oud"
+      ],
+      "heartNotes": [
+        "Sandalwood",
+        "Cardamom",
+        "Vanilla",
+        "Sichuan Pepper"
+      ],
+      "baseNotes": [
+        "Vetiver",
+        "Tonka Bean"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 18,
+      "handle": "oil-no-18",
+      "title": "Impact Oil No. 18",
+      "descriptor": "Oud",
+      "scentFamily": "Oud",
+      "signatureColor": "#5C29A0",
+      "signatureColorName": "Amethyst",
+      "tagline": "The purest oud, made plush.",
+      "topNotes": [
+        "Agarwood (Oud)"
+      ],
+      "heartNotes": [
+        "Rose",
+        "Patchouli"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Amber"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 19,
+      "handle": "oil-no-19",
+      "title": "Impact Oil No. 19",
+      "descriptor": "Leather",
+      "scentFamily": "Leather",
+      "signatureColor": "#1A4DC4",
+      "signatureColorName": "Atlas",
+      "tagline": "Saffron-stained leather, dark cocoa.",
+      "topNotes": [
+        "Leather"
+      ],
+      "heartNotes": [
+        "Agarwood (Oud)",
+        "Dark Chocolate",
+        "Saffron"
+      ],
+      "baseNotes": [
+        "Patchouli"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 20,
+      "handle": "oil-no-20",
+      "title": "Impact Oil No. 20",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#A11AB1",
+      "signatureColorName": "Iris",
+      "tagline": "Black musk, dense forest.",
+      "topNotes": [
+        "Agarwood (Oud)"
+      ],
+      "heartNotes": [
+        "Sandalwood",
+        "Cedar"
+      ],
+      "baseNotes": [
+        "Agarwood (Oud)",
+        "Black Musk",
+        "Vetiver"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 21,
+      "handle": "oil-no-21",
+      "title": "Impact Oil No. 21",
+      "descriptor": "Aromatic",
+      "scentFamily": "Aromatic",
+      "signatureColor": "#B41349",
+      "signatureColorName": "Garnet",
+      "tagline": "An aromatic cocktail, with edge.",
+      "topNotes": [
+        "Passion Fruit",
+        "Lime",
+        "Pepper",
+        "Ginger"
+      ],
+      "heartNotes": [
+        "Vodka",
+        "Gin",
+        "Mint",
+        "Spices"
+      ],
+      "baseNotes": [
+        "Amber Leather",
+        "Woody Notes"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 22,
+      "handle": "oil-no-22",
+      "title": "Impact Oil No. 22",
+      "descriptor": "Vanilla",
+      "scentFamily": "Vanilla",
+      "signatureColor": "#0E3DA8",
+      "signatureColorName": "Midnight",
+      "tagline": "Late-night espresso, almond and licorice.",
+      "topNotes": [
+        "Pear",
+        "Pink Pepper",
+        "Orange Blossom"
+      ],
+      "heartNotes": [
+        "Coffee",
+        "Jasmine",
+        "Bitter Almond",
+        "Licorice"
+      ],
+      "baseNotes": [
+        "Vanilla",
+        "Patchouli",
+        "Cedar",
+        "Cashmere Wood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 23,
+      "handle": "oil-no-23",
+      "title": "Impact Oil No. 23",
+      "descriptor": "Citrus",
+      "scentFamily": "Citrus",
+      "signatureColor": "#7414B0",
+      "signatureColorName": "Orchid",
+      "tagline": "Grapefruit and incense, sharpened.",
+      "topNotes": [
+        "Grapefruit",
+        "Mint",
+        "Pink Pepper"
+      ],
+      "heartNotes": [
+        "Ginger",
+        "Nutmeg",
+        "Jasmine",
+        "Iso E Super"
+      ],
+      "baseNotes": [
+        "Incense",
+        "Vetiver",
+        "Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 24,
+      "handle": "oil-no-24",
+      "title": "Impact Oil No. 24",
+      "descriptor": "Amber",
+      "scentFamily": "Amber",
+      "signatureColor": "#9C9412",
+      "signatureColorName": "Antique Gold",
+      "tagline": "Olibanum, leather, ancient amber.",
+      "topNotes": [
+        "Agarwood"
+      ],
+      "heartNotes": [
+        "Incense",
+        "Olibanum"
+      ],
+      "baseNotes": [
+        "Woody Notes",
+        "Leather",
+        "Amber"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 25,
+      "handle": "oil-no-25",
+      "title": "Impact Oil No. 25",
+      "descriptor": "Floral",
+      "scentFamily": "Floral",
+      "signatureColor": "#0F7E7E",
+      "signatureColorName": "Teal",
+      "tagline": "Almond, coffee, and Bulgarian rose.",
+      "topNotes": [
+        "Almond",
+        "Coffee",
+        "Bergamot",
+        "Lemon"
+      ],
+      "heartNotes": [
+        "Bulgarian Rose"
+      ],
+      "baseNotes": [
+        "Tonka Bean",
+        "Cocoa",
+        "Vanilla",
+        "Praline",
+        "Sandalwood",
+        "Musk",
+        "Cashmere Wood",
+        "Amber",
+        "Cinnamon",
+        "Patchouli",
+        "Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 26,
+      "handle": "oil-no-26",
+      "title": "Impact Oil No. 26",
+      "descriptor": "Vanilla",
+      "scentFamily": "Vanilla",
+      "signatureColor": "#B91268",
+      "signatureColorName": "Ruby",
+      "tagline": "Rum, vanilla, and orange blossom rituals.",
+      "topNotes": [
+        "Passion Fruit",
+        "Rum",
+        "Mandarin Orange",
+        "Cassis"
+      ],
+      "heartNotes": [
+        "Honeysuckle",
+        "Fir Resin",
+        "Jasmine",
+        "Orange Blossom"
+      ],
+      "baseNotes": [
+        "Vanilla",
+        "Musk Benzoin",
+        "Sandalwood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 27,
+      "handle": "oil-no-27",
+      "title": "Impact Oil No. 27",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#C25719",
+      "signatureColorName": "Persimmon",
+      "tagline": "Wild berries on warm patchouli.",
+      "topNotes": [
+        "Strawberry",
+        "Raspberry",
+        "Blackberry",
+        "Sour Cherry",
+        "Blackcurrant",
+        "Mandarin Orange",
+        "Lemon"
+      ],
+      "heartNotes": [
+        "Violet",
+        "Jasmine"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Vanilla",
+        "Cashmere",
+        "Oakmoss",
+        "Woody Notes",
+        "Amber",
+        "Patchouli"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 28,
+      "handle": "oil-no-28",
+      "title": "Impact Oil No. 28",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#0F8F3E",
+      "signatureColorName": "Palm",
+      "tagline": "Mango, water lily, coconut shore.",
+      "topNotes": [
+        "Mango",
+        "Nectarine",
+        "Blood Orange"
+      ],
+      "heartNotes": [
+        "Raspberry",
+        "Star Apple",
+        "Water Lily"
+      ],
+      "baseNotes": [
+        "Coconut",
+        "Musk",
+        "Sandalwood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 29,
+      "handle": "oil-no-29",
+      "title": "Impact Oil No. 29",
+      "descriptor": "Citrus",
+      "scentFamily": "Citrus",
+      "signatureColor": "#7E2EB4",
+      "signatureColorName": "Violet",
+      "tagline": "Salt spray and bay leaf.",
+      "topNotes": [
+        "Sea Note",
+        "Grapefruit",
+        "Mandarin Orange"
+      ],
+      "heartNotes": [
+        "Bay Leaf",
+        "Jasmine"
+      ],
+      "baseNotes": [
+        "Ambergris",
+        "Guaiac Wood",
+        "Oakmoss",
+        "Patchouli"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 30,
+      "handle": "oil-no-30",
+      "title": "Impact Oil No. 30",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#19A0BE",
+      "signatureColorName": "Lagoon",
+      "tagline": "Plum and freesia in still water.",
+      "topNotes": [
+        "Plum"
+      ],
+      "heartNotes": [
+        "Freesia",
+        "Chamomile"
+      ],
+      "baseNotes": [],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 31,
+      "handle": "oil-no-31",
+      "title": "Impact Oil No. 31",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#1928B8",
+      "signatureColorName": "Sapphire",
+      "tagline": "Hazelnut, cedar, ozonic plum.",
+      "topNotes": [
+        "Plum",
+        "Ozonic Note",
+        "Grapefruit",
+        "Bergamot"
+      ],
+      "heartNotes": [
+        "Hazelnut",
+        "Honey",
+        "Cedar",
+        "Cashmere Wood",
+        "Jasmine",
+        "Orange"
+      ],
+      "baseNotes": [
+        "Amber Wood",
+        "Patchouli",
+        "Oakmoss",
+        "Vetiver"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 32,
+      "handle": "oil-no-32",
+      "title": "Impact Oil No. 32",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#B414A8",
+      "signatureColorName": "Bougainvillea",
+      "tagline": "Tropical hibiscus on warm wood.",
+      "topNotes": [
+        "Passionfruit",
+        "Blood Orange",
+        "Cherry"
+      ],
+      "heartNotes": [
+        "Mango Blossom",
+        "Orchid",
+        "Hibiscus"
+      ],
+      "baseNotes": [
+        "Amber",
+        "Musk",
+        "Teak Wood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 33,
+      "handle": "oil-no-33",
+      "title": "Impact Oil No. 33",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#669C13",
+      "signatureColorName": "Vetiver",
+      "tagline": "Leather and cypress, taut.",
+      "topNotes": [
+        "Leather"
+      ],
+      "heartNotes": [
+        "Cypress",
+        "Patchouli"
+      ],
+      "baseNotes": [
+        "Woody Notes",
+        "Vetiver"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 34,
+      "handle": "oil-no-34",
+      "title": "Impact Oil No. 34",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#B41454",
+      "signatureColorName": "Cerise",
+      "tagline": "Saffron and rose held by precious wood.",
+      "topNotes": [
+        "Leather",
+        "Lemon",
+        "Water"
+      ],
+      "heartNotes": [
+        "Rose",
+        "Guaiac Wood",
+        "Teak Wood",
+        "Saffron"
+      ],
+      "baseNotes": [
+        "Precious Wood",
+        "White Musk",
+        "Ambergris"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 35,
+      "handle": "oil-no-35",
+      "title": "Impact Oil No. 35",
+      "descriptor": "Vanilla",
+      "scentFamily": "Vanilla",
+      "signatureColor": "#C0671A",
+      "signatureColorName": "Tobacco",
+      "tagline": "Mint and ambroxan over Madagascar wood.",
+      "topNotes": [
+        "Mint",
+        "Green Apple",
+        "Lemon"
+      ],
+      "heartNotes": [
+        "Tonka Bean",
+        "Ambroxan",
+        "Geranium"
+      ],
+      "baseNotes": [
+        "Madagascar Vanilla",
+        "Virginian Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 36,
+      "handle": "oil-no-36",
+      "title": "Impact Oil No. 36",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#5022C4",
+      "signatureColorName": "Royal",
+      "tagline": "Iris, jasmine sambac, papyrus.",
+      "topNotes": [
+        "Plum",
+        "Saffron",
+        "Iris"
+      ],
+      "heartNotes": [
+        "Orris",
+        "Jasmine Sambac",
+        "Bulgarian Rose"
+      ],
+      "baseNotes": [
+        "Vetiver",
+        "Papyrus",
+        "Liquid Amber"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 37,
+      "handle": "oil-no-37",
+      "title": "Impact Oil No. 37",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#0DA227",
+      "signatureColorName": "Meadow",
+      "tagline": "Strawberry, vanilla orchid, oakmoss.",
+      "topNotes": [
+        "Passionfruit",
+        "Grapefruit",
+        "Pineapple",
+        "Tangerine",
+        "Strawberry"
+      ],
+      "heartNotes": [
+        "Pear",
+        "Vanilla Orchid",
+        "Red Berries",
+        "Jasmine"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Woody Notes",
+        "Oakmoss"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 38,
+      "handle": "oil-no-38",
+      "title": "Impact Oil No. 38",
+      "descriptor": "Warm Spicy",
+      "scentFamily": "Warm Spicy",
+      "signatureColor": "#C72020",
+      "signatureColorName": "Ember",
+      "tagline": "Saffron, oud, slow burn.",
+      "topNotes": [
+        "Agarwood",
+        "Wood Saffron"
+      ],
+      "heartNotes": [
+        "Spices",
+        "Floral Notes"
+      ],
+      "baseNotes": [
+        "Musk",
+        "Amber",
+        "Woody Notes"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 39,
+      "handle": "oil-no-39",
+      "title": "Impact Oil No. 39",
+      "descriptor": "Fruity",
+      "scentFamily": "Fruity",
+      "signatureColor": "#B91261",
+      "signatureColorName": "Lotus",
+      "tagline": "Wild berries through tiara flowers.",
+      "topNotes": [
+        "Wild Berries",
+        "Pear",
+        "Peach",
+        "Mandarin Orange"
+      ],
+      "heartNotes": [
+        "Apple Blossom",
+        "Tiara Flower",
+        "Jasmine",
+        "Water Lily"
+      ],
+      "baseNotes": [
+        "Vanilla",
+        "Coconut",
+        "Orchid",
+        "Musk",
+        "Sandalwood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 40,
+      "handle": "oil-no-40",
+      "title": "Impact Oil No. 40",
+      "descriptor": "Sweet",
+      "scentFamily": "Sweet",
+      "signatureColor": "#2123A8",
+      "signatureColorName": "Cobalt Night",
+      "tagline": "Black tea, licorice, soft powder.",
+      "topNotes": [
+        "Licorice",
+        "Violet"
+      ],
+      "heartNotes": [
+        "Sour Cherry",
+        "Black Tea"
+      ],
+      "baseNotes": [
+        "Powdery Notes",
+        "Floral Notes",
+        "Woody Notes"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 41,
+      "handle": "oil-no-41",
+      "title": "Impact Oil No. 41",
+      "descriptor": "Amber",
+      "scentFamily": "Amber",
+      "signatureColor": "#A91239",
+      "signatureColorName": "Crimson",
+      "tagline": "Saffron rose under midnight bloom.",
+      "topNotes": [
+        "Saffron",
+        "Pink Pepper",
+        "Bergamot"
+      ],
+      "heartNotes": [
+        "Rose",
+        "Night Blooming Jasmine"
+      ],
+      "baseNotes": [
+        "Agarwood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 42,
+      "handle": "oil-no-42",
+      "title": "Impact Oil No. 42",
+      "descriptor": "Rose",
+      "scentFamily": "Rose",
+      "signatureColor": "#B58818",
+      "signatureColorName": "Topaz",
+      "tagline": "Rose, jasmine, mandarin in golden hour.",
+      "topNotes": [
+        "Rose"
+      ],
+      "heartNotes": [
+        "Jasmine",
+        "Mandarin Orange"
+      ],
+      "baseNotes": [
+        "Sandalwood"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 43,
+      "handle": "oil-no-43",
+      "title": "Impact Oil No. 43",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#1F9F7F",
+      "signatureColorName": "Cypress",
+      "tagline": "Apple and plum on a cinnamon trail.",
+      "topNotes": [
+        "Apple",
+        "Plum",
+        "Bergamot",
+        "Lemon"
+      ],
+      "heartNotes": [
+        "Cinnamon",
+        "Mahogany",
+        "Carnation"
+      ],
+      "baseNotes": [
+        "Vanilla",
+        "Sandalwood",
+        "Cedar",
+        "Vetiver",
+        "Olive Tree"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 44,
+      "handle": "oil-no-44",
+      "title": "Impact Oil No. 44",
+      "descriptor": "Coconut",
+      "scentFamily": "Coconut",
+      "signatureColor": "#B6178D",
+      "signatureColorName": "Solar",
+      "tagline": "Sea salt, sun, white coconut.",
+      "topNotes": [
+        "Coconut"
+      ],
+      "heartNotes": [
+        "Sea Salt"
+      ],
+      "baseNotes": [
+        "Solar Notes"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 45,
+      "handle": "oil-no-45",
+      "title": "Impact Oil No. 45",
+      "descriptor": "Woody",
+      "scentFamily": "Woody",
+      "signatureColor": "#C72124",
+      "signatureColorName": "Vermillion",
+      "tagline": "Aldehydes, iris, lily, deep oakmoss.",
+      "topNotes": [
+        "Aldehydes",
+        "Ylang-Ylang",
+        "Neroli",
+        "Peach"
+      ],
+      "heartNotes": [
+        "Iris",
+        "Jasmine",
+        "Rose",
+        "Lily of the Valley"
+      ],
+      "baseNotes": [
+        "Sandalwood",
+        "Vanilla",
+        "Oakmoss",
+        "Vetiver",
+        "Patchouli"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 46,
+      "handle": "oil-no-46",
+      "title": "Impact Oil No. 46",
+      "descriptor": "Tropical",
+      "scentFamily": "Tropical",
+      "signatureColor": "#19BB22",
+      "signatureColorName": "Aloe",
+      "tagline": "Mango, hibiscus, aloe air.",
+      "topNotes": [
+        "Mango"
+      ],
+      "heartNotes": [
+        "Hibiscus",
+        "Chamomile"
+      ],
+      "baseNotes": [
+        "Aloe Vera"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 47,
+      "handle": "oil-no-47",
+      "title": "Impact Oil No. 47",
+      "descriptor": "Sweet",
+      "scentFamily": "Sweet",
+      "signatureColor": "#B919AE",
+      "signatureColorName": "Candy",
+      "tagline": "Cotton candy, melon, white jasmine.",
+      "topNotes": [
+        "Cotton Candy",
+        "Coconut"
+      ],
+      "heartNotes": [
+        "Cassis",
+        "Melon"
+      ],
+      "baseNotes": [
+        "Jasmine"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 48,
+      "handle": "oil-no-48",
+      "title": "Impact Oil No. 48",
+      "descriptor": "Powdery",
+      "scentFamily": "Powdery",
+      "signatureColor": "#1F2BA8",
+      "signatureColorName": "Iris Night",
+      "tagline": "Iris and white peach in soft focus.",
+      "topNotes": [
+        "Brazilian Rose Wood",
+        "Sicilian Orange"
+      ],
+      "heartNotes": [
+        "Chamomile",
+        "Sunflower",
+        "Rose"
+      ],
+      "baseNotes": [
+        "Powdery Notes",
+        "Vanilla Iris",
+        "White Peach"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 49,
+      "handle": "oil-no-49",
+      "title": "Impact Oil No. 49",
+      "descriptor": "Aromatic",
+      "scentFamily": "Aromatic",
+      "signatureColor": "#C8541E",
+      "signatureColorName": "Rust",
+      "tagline": "Cypress, mint, tonka warmth.",
+      "topNotes": [
+        "Mandarin Orange",
+        "Mint",
+        "Cypress"
+      ],
+      "heartNotes": [
+        "Pepper"
+      ],
+      "baseNotes": [
+        "Tonka Bean",
+        "Musk",
+        "Sandalwood",
+        "Cedar"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    },
+    {
+      "number": 50,
+      "handle": "oil-no-50",
+      "title": "Impact Oil No. 50",
+      "descriptor": "Floral",
+      "scentFamily": "Floral",
+      "signatureColor": "#1A87C6",
+      "signatureColorName": "Cyan",
+      "tagline": "Pepper, leather, neroli, broom.",
+      "topNotes": [
+        "Cinnamon",
+        "Ginger",
+        "Bergamot",
+        "Pepper"
+      ],
+      "heartNotes": [
+        "Amber",
+        "Woody Notes",
+        "Vanilla",
+        "French Leather",
+        "Labdanum"
+      ],
+      "baseNotes": [
+        "Neroli",
+        "Broom",
+        "Clary Sage"
+      ],
+      "volume": "12ml",
+      "concentration": "Concentrated Oil"
+    }
+  ]
+}
