@@ -69,4 +69,8 @@ export interface TileEnrichment {
   topNotes?: string[]
   heartNotes?: string[]
   baseNotes?: string[]
+  imageUrl?: string
+  productId?: string
+  variantId?: string
+  priceKobo?: number
 }

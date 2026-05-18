@@ -19,6 +19,9 @@ function storeHeaders(): Record<string, string> {
 
 function withRegion(params: URLSearchParams): string {
   if (REGION_ID) params.set('region_id', REGION_ID)
+  // Medusa v2 store API omits `metadata` from the default response.
+  // `+metadata` expands the default fields to include it.
+  if (!params.has('fields')) params.set('fields', '+metadata')
   return params.toString()
 }
 
@@ -182,6 +185,7 @@ export function toTileEnrichment(p: MedusaProduct): TileEnrichment | null {
   const m: MedusaProductMetadata = p.metadata ?? {}
   const num = resolveNumber(p, m)
   if (isNaN(num)) return null
+  const variant = p.variants?.[0]
   return {
     productHandle: p.handle,
     number: num,
@@ -193,6 +197,10 @@ export function toTileEnrichment(p: MedusaProduct): TileEnrichment | null {
     topNotes: splitNotes(m.top_notes),
     heartNotes: splitNotes(m.heart_notes),
     baseNotes: splitNotes(m.base_notes),
+    imageUrl: getProductImage(p) ?? undefined,
+    productId: p.id,
+    variantId: variant?.id ?? p.handle,
+    priceKobo: getNGNPriceRaw(p),
   }
 }
 
@@ -225,11 +233,14 @@ export interface CategoryProduct {
   tagline: string
   priceKobo: number
   imageUrl: string | null
+  productId: string
+  variantId: string
 }
 
 /** Map a generic (non-Number-Series) Medusa product to a display card */
 export function toCategoryProduct(p: MedusaProduct): CategoryProduct {
   const m: MedusaProductMetadata = p.metadata ?? {}
+  const variant = p.variants?.[0]
   return {
     handle: p.handle,
     title: p.title,
@@ -238,6 +249,8 @@ export function toCategoryProduct(p: MedusaProduct): CategoryProduct {
     tagline: m.tagline ?? '',
     priceKobo: getNGNPriceRaw(p),
     imageUrl: getProductImage(p),
+    productId: p.id,
+    variantId: variant?.id ?? p.handle ?? p.id,
   }
 }
 

@@ -1,181 +1,70 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
-import { getProductsByCategory, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
-import { OILS } from '@/data/products'
-import { FALLBACK_COLOR } from '@/lib/constants'
-import { formatNaira } from '@/lib/format'
+import { Container } from '@/components/layout'
+import { getProductsByCategory, toTileEnrichment } from '@/lib/medusa'
+import NumberTile from '@/components/shop/NumberTile'
+import type { TileEnrichment } from '@/types'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Impact Oils',
   description:
-    'Long-lasting, concentrated fragrance oils. No alcohol, just pure scent.',
+    '50 alcohol-free perfume oils. Concentrated. 12ml roll-on.',
   openGraph: {
     title: 'Impact Oils · Impact Perfumes',
-    description: 'Concentrated fragrance oils crafted in Lagos.',
+    description: '50 concentrated perfume oils crafted in Lagos.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 
 export default async function OilsPage() {
-  const medusaProducts = await getProductsByCategory('oils')
-  const useMedusa = medusaProducts.length > 0
-  const liveProducts: CategoryProduct[] = useMedusa
-    ? medusaProducts.map(toCategoryProduct)
-    : []
+  const products = await getProductsByCategory('oils')
+  const tiles = products
+    .map(toTileEnrichment)
+    .filter((t): t is TileEnrichment => t !== null)
+    .sort((a, b) => a.number - b.number)
 
   return (
     <>
-      {/* Hero */}
-      <section className="border-b border-stone/20 bg-ink py-16 md:py-24">
+      {/* Hero — minimal */}
+      <section className="border-b border-stone/20 bg-ink py-14 md:py-20">
         <Container>
           <p className="text-label uppercase tracking-[0.12em] text-accent">Impact Oils</p>
-          <h1 className="mt-3 max-w-2xl font-display text-display-l leading-none">
+          <h1 className="mt-3 font-display text-display-l leading-none text-bone">
             Pure Scent.
-            <br />
-            No Compromise.
           </h1>
-          <p className="mt-5 max-w-lg text-body text-stone">
-            Alcohol-free and highly concentrated. Our fragrance oils last longer on skin,
-            layer beautifully with your Number, and travel without restriction.
-            One drop is all it takes.
+          <p className="mt-4 max-w-md text-body text-stone">
+            Alcohol-free. 12ml roll-on. A few drops last up to 48 hours.
           </p>
-          <div className="mt-8">
-            <a
-              href="#collection"
-              className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
-              style={{ height: 48 }}
-            >
-              Shop Oils
-            </a>
-          </div>
         </Container>
       </section>
 
-      {/* Editorial strip */}
-      <section className="bg-ink py-12 border-b border-stone/20">
+      {/* Grid */}
+      <section className="bg-ink py-10 md:py-14">
         <Container>
-          <div className="grid gap-8 sm:grid-cols-3">
-            {[
-              { heading: 'Alcohol-Free', body: 'Pure concentration means the scent opens directly on your skin. No sharp top notes, just the heart.' },
-              { heading: 'Layer Freely', body: 'Apply beneath your EDP to anchor the scent, or wear alone for a close, skin-intimate effect.' },
-              { heading: 'Lasts All Day', body: 'Concentrated formula means a single application carries through morning, noon, and night.' },
-            ].map((item) => (
-              <div key={item.heading}>
-                <p className="font-display text-h3 text-bone">{item.heading}</p>
-                <p className="mt-1 text-small text-stone">{item.body}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Product grid */}
-      <Section id="collection" className="bg-ink">
-        <Container>
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">The Collection</p>
-              <h2 className="mt-2 font-display text-h1 text-bone">
-                {useMedusa ? liveProducts.length : OILS.length} Oils
-              </h2>
-            </div>
-            <p className="text-small text-stone hidden sm:block">12ml · Concentrated · Roll-on</p>
-          </div>
-
-          {useMedusa ? (
-            <div className="grid grid-cols-2 gap-px bg-stone/20 sm:grid-cols-3">
-              {liveProducts.map((oil) => {
-                const numMatch = oil.handle.match(/^oil-no-(\d+)$/)
-                const href = numMatch ? `/oil/${numMatch[1]}` : '/oils'
-                return (
-                <Link
-                  key={oil.handle}
-                  href={href}
-                  className="group relative flex flex-col overflow-hidden bg-ink"
-                >
-                  <div
-                    className="relative overflow-hidden"
-                    style={{ backgroundColor: oil.signatureColor, aspectRatio: '1/1' }}
-                  >
-                    {oil.imageUrl ? (
-                      <Image
-                        src={oil.imageUrl}
-                        alt={oil.title}
-                        fill
-                        sizes="(min-width: 640px) 33vw, 50vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <span className="absolute inset-0 flex items-center justify-center font-display text-[4rem] text-white/15 select-none">
-                        {oil.title.charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 border-t border-stone/20">
-                    <p className="text-label uppercase tracking-[0.1em] text-stone">{oil.descriptor}</p>
-                    <h3 className="mt-1 font-display text-h3 text-bone">{oil.title}</h3>
-                    <p className="mt-1 text-small text-stone italic">{oil.tagline}</p>
-                    <div className="mt-4">
-                      <span className="text-body font-medium">
-                        {oil.priceKobo > 0 ? formatNaira(oil.priceKobo) : 'Coming soon'}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-                )
-              })}
-            </div>
+          {tiles.length === 0 ? (
+            <p className="py-16 text-center text-stone">
+              Oils are loading from the catalogue…
+            </p>
           ) : (
-            <div className="grid grid-cols-2 gap-px bg-stone/20 sm:grid-cols-3">
-              {OILS.map((oil) => (
-                <div
-                  key={oil.handle}
-                  className="group relative flex flex-col overflow-hidden bg-ink"
-                >
-                  <div
-                    className="relative flex items-end justify-start p-5 transition-transform duration-500 group-hover:scale-[1.02]"
-                    style={{ backgroundColor: oil.signatureColor, aspectRatio: '1/1' }}
-                  >
-                    <span className="font-display text-[4rem] leading-none text-white/15 select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                      {oil.handle.replace('oil-no-', '')}
-                    </span>
-                    <span className="relative text-label uppercase tracking-[0.1em] text-white/70">{oil.badge}</span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 border-t border-stone/20">
-                    <p className="text-label uppercase tracking-[0.1em] text-stone">{oil.descriptor}</p>
-                    <h3 className="mt-1 font-display text-h3 text-bone">{oil.title}</h3>
-                    <p className="mt-1 text-small text-stone italic">{oil.tagline}</p>
-                    <div className="mt-4">
-                      <span className="text-small text-stone">Coming soon</span>
-                    </div>
-                  </div>
+            <div
+              className="grid grid-cols-2 gap-px bg-stone/15 lg:grid-cols-3"
+              role="list"
+              aria-label="Impact Oils collection"
+            >
+              {tiles.map((tile) => (
+                <div key={tile.productHandle} role="listitem" className="bg-ink">
+                  <NumberTile
+                    tile={tile}
+                    hrefBase="/oil"
+                    titlePrefix="Oil No."
+                    variantLabel="12ml · Concentrated Oil"
+                    fallbackImage="/images/Oil_perfume.png"
+                  />
                 </div>
               ))}
             </div>
           )}
-        </Container>
-      </Section>
-
-      {/* CTA */}
-      <section className="border-t border-stone/20 bg-ink py-16 text-bone">
-        <Container className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-label uppercase tracking-[0.1em] text-stone">Pro tip</p>
-            <h2 className="mt-2 font-display text-h1 text-bone max-w-md">
-              Layer your Oil with your Number for a signature that&apos;s entirely yours.
-            </h2>
-          </div>
-          <Link
-            href="/shop"
-            className="shrink-0 inline-flex items-center justify-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
-            style={{ height: 48 }}
-          >
-            Shop the Number Collection
-          </Link>
         </Container>
       </section>
     </>

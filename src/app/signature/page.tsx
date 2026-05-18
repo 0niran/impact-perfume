@@ -34,7 +34,7 @@ export default async function SignaturePage() {
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-stone/20 bg-bone py-16 md:py-24">
+      <section className="border-b border-stone/20 bg-ink py-16 md:py-24">
         <Container>
           <p className="text-label uppercase tracking-[0.12em] text-accent">
             Signature Collection
@@ -44,42 +44,20 @@ export default async function SignaturePage() {
             <br />
             Numbered.
           </h1>
-          <p className="mt-5 max-w-lg text-body text-slate">
-            Beyond the series, these are our named compositions. Each one a distinct
-            character with its own story. Bolder. More personal. Made for those who
-            already know who they are.
+          <p className="mt-5 max-w-lg text-body text-stone">
+            Named compositions. Bolder. More personal. For those who already
+            know who they are.
           </p>
-          <div className="mt-8">
-            <a
-              href="#collection"
-              className="inline-flex items-center bg-ink px-8 text-label uppercase tracking-[0.1em] text-bone hover:opacity-90 transition-opacity"
-              style={{ height: 48 }}
-            >
-              View Collection
-            </a>
-          </div>
         </Container>
       </section>
 
       {/* Product grid */}
-      <Section id="collection">
+      <Section id="collection" className="bg-ink">
         <Container>
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">
-                The Collection
-              </p>
-              <h2 className="mt-2 font-display text-h1">
-                {products.length} {products.length === 1 ? 'Fragrance' : 'Fragrances'}
-              </h2>
-            </div>
-            <p className="text-small text-slate hidden sm:block">Eau de Parfum · 100ml</p>
-          </div>
-
           {products.length === 0 ? (
             <div className="py-24 text-center">
-              <p className="font-display text-h2 text-slate">Coming soon.</p>
-              <p className="mt-3 text-body text-slate/70">
+              <p className="font-display text-h2 text-stone">Coming soon.</p>
+              <p className="mt-3 text-body text-stone/70">
                 Our Signature range is being composed. Check back shortly.
               </p>
             </div>
@@ -94,12 +72,12 @@ export default async function SignaturePage() {
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col overflow-hidden bg-bone"
+                    className="group relative flex flex-col overflow-hidden bg-ink"
                   >
                     {/* Clickable image panel */}
                     <Link
                       href={`/signature/${product.handle}`}
-                      className="relative overflow-hidden bg-mist block"
+                      className="relative overflow-hidden bg-ink block"
                       style={{ aspectRatio: '3/4' }}
                     >
                       {imageUrl ? (
@@ -122,18 +100,18 @@ export default async function SignaturePage() {
                     {/* Info */}
                     <div className="flex flex-1 flex-col p-6 border-t border-stone/20">
                       {product.subtitle && (
-                        <p className="text-label uppercase tracking-[0.1em] text-slate">
+                        <p className="text-label uppercase tracking-[0.1em] text-stone">
                           {product.subtitle}
                         </p>
                       )}
                       <Link href={`/signature/${product.handle}`}>
-                        <h3 className="mt-1 font-brand text-[22px] leading-snug text-ink hover:text-accent transition-colors">
+                        <h3 className="mt-1 font-brand text-[22px] leading-snug text-bone hover:text-accent transition-colors">
                           {product.title}
                         </h3>
                       </Link>
 
                       <div className="mt-auto pt-5 flex items-center justify-between gap-4">
-                        <span className="text-body font-medium text-ink">
+                        <span className="text-body font-medium text-bone">
                           {price > 0 ? formatPrice(price) : 'Coming soon'}
                         </span>
                         {price > 0 && (
@@ -169,7 +147,7 @@ export default async function SignaturePage() {
           </div>
           <Link
             href="/b2b"
-            className="shrink-0 inline-flex items-center justify-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone hover:bg-bone hover:text-ink transition-colors"
+            className="shrink-0 inline-flex items-center justify-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
             style={{ height: 48 }}
           >
             Enquire

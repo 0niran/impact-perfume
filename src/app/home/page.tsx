@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { getProductsByCategory, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
 import { HOME_DIFFUSERS } from '@/data/products'
-import { formatNaira } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
+import CategoryProductTile from '@/components/shop/CategoryProductTile'
 
 export const revalidate = 60
 
@@ -73,45 +72,11 @@ async function loadSubcategory(sub: SubCategory): Promise<CategoryProduct[]> {
       tagline: s.tagline,
       priceKobo: 0,
       imageUrl: null,
+      productId: s.handle,
+      variantId: s.handle,
     }))
   }
   return []
-}
-
-function ProductTile({ product }: { product: CategoryProduct }) {
-  return (
-    <Link
-      href={`/products/${product.handle}`}
-      className="group relative flex flex-col overflow-hidden bg-ink"
-    >
-      <div
-        className="relative overflow-hidden"
-        style={{ backgroundColor: product.signatureColor, aspectRatio: '4/3' }}
-      >
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.title}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center font-display text-[4rem] text-white/15 select-none">
-            {product.title.charAt(0)}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col p-5 border-t border-stone/20">
-        <p className="text-label uppercase tracking-[0.1em] text-stone">{product.descriptor}</p>
-        <h3 className="mt-1 font-display text-h3 text-bone">{product.title}</h3>
-        <p className="mt-1 text-small text-stone italic">{product.tagline}</p>
-        <p className="mt-4 text-body font-medium text-bone">
-          {product.priceKobo > 0 ? formatNaira(product.priceKobo) : 'Coming soon'}
-        </p>
-      </div>
-    </Link>
-  )
 }
 
 function EmptyState({ label }: { label: string }) {
@@ -199,9 +164,13 @@ export default async function HomeAndCarPage() {
             </div>
 
             {products.length > 0 ? (
-              <div className="grid grid-cols-1 gap-px bg-stone/20 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-px bg-stone/15 lg:grid-cols-3">
                 {products.map((p) => (
-                  <ProductTile key={p.handle} product={p} />
+                  <CategoryProductTile
+                    key={p.handle}
+                    product={p}
+                    href={`/products/${p.handle}`}
+                  />
                 ))}
               </div>
             ) : (
@@ -211,34 +180,12 @@ export default async function HomeAndCarPage() {
         </Section>
       ))}
 
-      {/* Editorial divider */}
-      <section className="bg-stone/10 py-14 border-y border-stone/20">
-        <Container className="grid gap-8 md:grid-cols-3">
-          {[
-            { heading: 'Slow release', body: 'Reeds and candles fill a room gradually — no sudden spikes, no fades.' },
-            { heading: 'Lagos-made', body: 'Every diffuser, candle, and machine is composed with the same care as the Number Series.' },
-            { heading: 'Built to last', body: 'Diffusers up to 90 days. Candles up to 50 hours. Machines that run for years.' },
-          ].map((f) => (
-            <div key={f.heading}>
-              <p className="font-display text-h3 text-bone">{f.heading}</p>
-              <p className="mt-1 text-small text-stone">{f.body}</p>
-            </div>
-          ))}
-        </Container>
-      </section>
-
       {/* Closing CTA */}
-      <section className="border-t border-stone/20 bg-ink py-16 text-bone">
+      <section className="border-t border-stone/20 bg-ink py-14">
         <Container className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-label uppercase tracking-[0.1em] text-stone">Scent your world</p>
-            <h2 className="mt-2 font-display text-h1 text-bone max-w-md">
-              Hotel, office, or event space?
-            </h2>
-            <p className="mt-3 text-body text-stone max-w-sm">
-              Talk to us about scenting at scale. Custom blends and white-glove installation across Nigeria.
-            </p>
-          </div>
+          <h2 className="font-display text-h1 text-bone max-w-md">
+            Hotel, office, or event space?
+          </h2>
           <Link
             href="/b2b"
             className="shrink-0 inline-flex items-center justify-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"

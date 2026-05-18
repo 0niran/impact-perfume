@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
-import { getProductsByCategory, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
+import { getProductsByCategory, toCategoryProduct } from '@/lib/medusa'
 import { GIFTS, OCCASIONS, type GiftProduct } from '@/data/products'
-import { formatNaira } from '@/lib/format'
+import CategoryProductTile from '@/components/shop/CategoryProductTile'
 
 export const revalidate = 60
 
@@ -17,42 +16,6 @@ export const metadata: Metadata = {
     description: 'Curated fragrance gifts and discovery sets from Impact Perfumes, Lagos.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
-}
-
-function MedusaProductTile({ product }: { product: CategoryProduct }) {
-  return (
-    <Link
-      href={`/products/${product.handle}`}
-      className="group relative flex flex-col overflow-hidden bg-ink"
-    >
-      <div
-        className="relative overflow-hidden"
-        style={{ backgroundColor: product.signatureColor, aspectRatio: '4/3' }}
-      >
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.title}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center font-display text-[4rem] text-white/15 select-none">
-            {product.title.charAt(0)}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col p-5 border-t border-stone/20">
-        <p className="text-label uppercase tracking-[0.1em] text-stone">{product.descriptor}</p>
-        <h3 className="mt-1 font-display text-h3 text-bone">{product.title}</h3>
-        <p className="mt-1 text-small text-stone italic">{product.tagline}</p>
-        <p className="mt-4 text-body font-medium text-bone">
-          {product.priceKobo > 0 ? formatNaira(product.priceKobo) : 'Coming soon'}
-        </p>
-      </div>
-    </Link>
-  )
 }
 
 function StaticGiftTile({ gift }: { gift: GiftProduct }) {
@@ -116,25 +79,7 @@ export default async function GiftsPage() {
           </h1>
           <p className="mt-5 max-w-lg text-body text-stone">
             Every Impact fragrance arrives in signature packaging, ready to give.
-            Start with a Discovery Set to find their Number — or skip ahead to a
-            curated gift box.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="#discovery-sets"
-              className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
-              style={{ height: 48 }}
-            >
-              Start with Discovery
-            </Link>
-            <Link
-              href="#gift-sets"
-              className="inline-flex items-center border border-stone/40 px-8 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
-              style={{ height: 48 }}
-            >
-              Shop Gift Sets
-            </Link>
-          </div>
         </Container>
       </section>
 
@@ -172,7 +117,11 @@ export default async function GiftsPage() {
           {showDiscoveryLive ? (
             <div className="grid grid-cols-1 gap-px bg-stone/20 sm:grid-cols-2 lg:grid-cols-3">
               {discoveryLive.map((p) => (
-                <MedusaProductTile key={p.handle} product={p} />
+                <CategoryProductTile
+                  key={p.handle}
+                  product={p}
+                  href={`/products/${p.handle}`}
+                />
               ))}
             </div>
           ) : (
@@ -237,7 +186,11 @@ export default async function GiftsPage() {
           {showGiftsLive ? (
             <div className="grid grid-cols-1 gap-px bg-stone/20 sm:grid-cols-2 lg:grid-cols-3">
               {giftsLive.map((p) => (
-                <MedusaProductTile key={p.handle} product={p} />
+                <CategoryProductTile
+                  key={p.handle}
+                  product={p}
+                  href={`/products/${p.handle}`}
+                />
               ))}
             </div>
           ) : (
