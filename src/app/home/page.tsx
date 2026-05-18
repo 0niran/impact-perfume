@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { getProductsByCategory, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
 import { HOME_DIFFUSERS, CAR_DIFFUSERS } from '@/data/products'
 import { SITE_CONFIG } from '@/lib/config'
 import CategoryProductTile from '@/components/shop/CategoryProductTile'
@@ -70,9 +71,13 @@ const SUBCATEGORIES: SubCategory[] = [
   },
 ]
 
-async function loadSubcategory(sub: SubCategory): Promise<CategoryProduct[]> {
-  const medusaProducts = await getProductsByCategory(sub.medusaHandle)
-  if (medusaProducts.length > 0) return medusaProducts.map(toCategoryProduct)
+async function loadSubcategory(
+  sub: SubCategory,
+  regionId: string | undefined,
+  currency: string
+): Promise<CategoryProduct[]> {
+  const medusaProducts = await getProductsByCategory(sub.medusaHandle, 100, regionId)
+  if (medusaProducts.length > 0) return medusaProducts.map((p) => toCategoryProduct(p, currency))
   if (sub.staticFallback) {
     return sub.staticFallback.map((s) => ({
       handle: s.handle,
@@ -80,6 +85,8 @@ async function loadSubcategory(sub: SubCategory): Promise<CategoryProduct[]> {
       descriptor: s.descriptor,
       signatureColor: s.signatureColor,
       tagline: s.tagline,
+      priceMinor: 0,
+      currency,
       priceKobo: 0,
       imageUrl: null,
       productId: s.handle,
@@ -119,8 +126,12 @@ function EmptyState({ label }: { label: string }) {
 }
 
 export default async function HomeAndCarPage() {
+  const region = getServerRegion()
   const subData = await Promise.all(
-    SUBCATEGORIES.map(async (sub) => ({ sub, products: await loadSubcategory(sub) }))
+    SUBCATEGORIES.map(async (sub) => ({
+      sub,
+      products: await loadSubcategory(sub, region.medusaRegionId, region.currency),
+    }))
   )
 
   return (

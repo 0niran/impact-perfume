@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { getProductsByCategory, toTileEnrichment } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
 import NumberTile from '@/components/shop/NumberTile'
 import type { TileEnrichment } from '@/types'
 
@@ -18,9 +19,10 @@ export const metadata: Metadata = {
 }
 
 export default async function OilsPage() {
-  const products = await getProductsByCategory('oils')
+  const region = getServerRegion()
+  const products = await getProductsByCategory('oils', 100, region.medusaRegionId)
   const tiles = products
-    .map(toTileEnrichment)
+    .map((p) => toTileEnrichment(p, region.currency))
     .filter((t): t is TileEnrichment => t !== null)
     .sort((a, b) => a.number - b.number)
 

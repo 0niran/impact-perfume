@@ -8,6 +8,7 @@ interface FeaturedNumberAddToCartProps {
   variantId: string
   productName: string
   priceKobo: number
+  currency?: string
   signatureColor?: string
 }
 
@@ -16,6 +17,7 @@ export default function FeaturedNumberAddToCart({
   variantId,
   productName,
   priceKobo,
+  currency = 'NGN',
   signatureColor,
 }: FeaturedNumberAddToCartProps) {
   const [added, setAdded] = useState(false)
@@ -29,6 +31,7 @@ export default function FeaturedNumberAddToCart({
       name: productName,
       variantLabel: '100ml EDP',
       unitPriceKobo: priceKobo,
+      currency,
       qty: 1,
       color: signatureColor,
     })

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCartStore, cartSelectors, type CartLine } from '@/store/cartStore'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import { NIGERIAN_STATES } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
 import { SITE_CONFIG } from '@/lib/config'
@@ -34,7 +34,8 @@ function generateRef(): string {
 export default function CheckoutForm() {
   const router = useRouter()
   const lines = useCartStore((s) => s.lines)
-  const subtotalKobo = useCartStore(cartSelectors.subtotalKobo)
+  const subtotalKobo = useCartStore(cartSelectors.subtotalMinor)
+  const currency = useCartStore(cartSelectors.currency)
   const clearCart = useCartStore((s) => s.clear)
 
   const [name, setName] = useState('')
@@ -252,7 +253,7 @@ export default function CheckoutForm() {
       <div className="flex flex-col gap-6">
         <div className="border border-stone/20 bg-white/5 p-6">
           <p className="text-label uppercase tracking-[0.1em] text-bone/50">Total</p>
-          <p className="mt-2 font-display text-h1 text-bone">{formatNaira(subtotalKobo)}</p>
+          <p className="mt-2 font-display text-h1 text-bone">{formatPrice(subtotalKobo, currency)}</p>
           <p className="mt-1 text-small text-bone/40">Delivery fee calculated after order</p>
 
           {error && (

@@ -3,8 +3,9 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
-import { getMedusaProduct, getNGNPrice, getProductImage } from '@/lib/medusa'
-import { formatNaira } from '@/lib/format'
+import { getMedusaProduct, getPrice, getProductImage } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
+import { formatPrice } from '@/lib/format'
 import NotesPyramid from '@/components/pdp/NotesPyramid'
 import StrengthBars from '@/components/pdp/StrengthBars'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
@@ -36,13 +37,14 @@ export default async function SignaturePDPPage({
 }: {
   params: { handle: string }
 }) {
-  const product = await getMedusaProduct(params.handle)
+  const region = getServerRegion()
+  const product = await getMedusaProduct(params.handle, region.medusaRegionId)
   if (!product) notFound()
 
   const m = (product.metadata ?? {}) as Record<string, string>
   const variant = product.variants?.[0]
   const variantId = variant?.id ?? product.handle ?? product.id
-  const price = getNGNPrice(product)
+  const priceInfo = getPrice(product, region.currency)
   const imageUrl = getProductImage(product)
 
   const topNotes = splitNotes(m.top_notes)
@@ -140,16 +142,17 @@ export default async function SignaturePDPPage({
             <div className="flex flex-col gap-4">
               <div>
                 <p className="font-display text-h1 leading-none text-accent">
-                  {price > 0 ? formatNaira(price) : 'Price on request'}
+                  {priceInfo.amount > 0 ? formatPrice(priceInfo.amount, priceInfo.currency) : 'Price on request'}
                 </p>
                 <p className="mt-1.5 text-small text-stone">100 ml · Eau de Parfum</p>
               </div>
-              {price > 0 && (
+              {priceInfo.amount > 0 && (
                 <SignatureAddToCart
                   productId={product.id}
                   variantId={variantId}
                   productName={product.title}
-                  priceKobo={price}
+                  priceKobo={priceInfo.amount}
+                  currency={priceInfo.currency}
                   imageUrl={imageUrl ?? undefined}
                   className="w-fit px-10"
                 />

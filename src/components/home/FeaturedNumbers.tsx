@@ -2,20 +2,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Container from '@/components/layout/Container'
 import FeaturedNumberAddToCart from './FeaturedNumberAddToCart'
-import { getAllNumberSeriesProducts, toEnrichment, getNGNPrice, getProductImage } from '@/lib/medusa'
-import { formatNaira } from '@/lib/format'
+import { getAllNumberSeriesProducts, toEnrichment, getPrice, getProductImage } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
+import { formatPrice } from '@/lib/format'
 import { FALLBACK_COLOR } from '@/lib/constants'
 
 const BOTTLE_FALLBACK = '/images/no_series.png'
 
 export default async function FeaturedNumbers() {
-  const raw = await getAllNumberSeriesProducts(4)
+  const region = getServerRegion()
+  const raw = await getAllNumberSeriesProducts(4, region.medusaRegionId)
 
   const products = raw
     .map((p) => {
-      const enrichment = toEnrichment(p)
+      const enrichment = toEnrichment(p, region.currency)
       if (!enrichment) return null
       const variant = p.variants?.[0]
+      const price = getPrice(p, region.currency)
       return {
         productId: p.id,
         variantId: variant?.id ?? p.handle ?? '',
@@ -23,7 +26,8 @@ export default async function FeaturedNumbers() {
         descriptor: enrichment.descriptor,
         signatureColor: enrichment.signatureColor ?? FALLBACK_COLOR,
         tagline: enrichment.tagline,
-        priceKobo: getNGNPrice(p),
+        priceKobo: price.amount,
+        currency: price.currency,
         imageUrl: getProductImage(p),
       }
     })
@@ -104,7 +108,7 @@ export default async function FeaturedNumbers() {
                   )}
                   <p className="text-small text-accent mt-2">
                     {product.priceKobo > 0
-                      ? formatNaira(product.priceKobo)
+                      ? formatPrice(product.priceKobo, product.currency)
                       : 'Price on request'}
                   </p>
 
@@ -113,6 +117,7 @@ export default async function FeaturedNumbers() {
                     variantId={product.variantId}
                     productName={`Impact No. ${product.number}`}
                     priceKobo={product.priceKobo}
+                    currency={product.currency}
                     signatureColor={product.signatureColor}
                   />
                 </div>

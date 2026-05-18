@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getMedusaProduct, toEnrichment, getNGNPrice, getProductImage } from '@/lib/medusa'
-import { formatNaira } from '@/lib/format'
+import { getMedusaProduct, toEnrichment, getPrice, getProductImage } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
+import { formatPrice } from '@/lib/format'
 import { FALLBACK_COLOR } from '@/lib/constants'
 
 const BOTTLE_FALLBACK = '/images/no_series.png'
@@ -16,25 +17,32 @@ interface RelatedItem {
   signatureColor: string
   tagline?: string
   priceKobo: number
+  currency: string
   imageUrl: string | null
 }
 
-async function fetchRelated(numbers: number[]): Promise<RelatedItem[]> {
+async function fetchRelated(
+  numbers: number[],
+  regionId: string | undefined,
+  currency: string
+): Promise<RelatedItem[]> {
   const results = await Promise.allSettled(
-    numbers.map((n) => getMedusaProduct(`no-${n}`))
+    numbers.map((n) => getMedusaProduct(`no-${n}`, regionId))
   )
   const items: RelatedItem[] = []
   for (const r of results) {
     if (r.status !== 'fulfilled' || !r.value) continue
     const product = r.value
-    const enrichment = toEnrichment(product)
+    const enrichment = toEnrichment(product, currency)
     if (!enrichment) continue
+    const price = getPrice(product, currency)
     items.push({
       number: enrichment.number,
       descriptor: enrichment.descriptor,
       signatureColor: enrichment.signatureColor ?? FALLBACK_COLOR,
       tagline: enrichment.tagline,
-      priceKobo: getNGNPrice(product),
+      priceKobo: price.amount,
+      currency: price.currency,
       imageUrl: getProductImage(product),
     })
   }
@@ -42,6 +50,7 @@ async function fetchRelated(numbers: number[]): Promise<RelatedItem[]> {
 }
 
 export default async function RelatedProducts({ currentNumber }: RelatedProductsProps) {
+  const region = getServerRegion()
   const candidates = [
     currentNumber - 2,
     currentNumber - 1,
@@ -50,7 +59,7 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
   ].filter((n) => n >= 1 && n <= 100 && n !== currentNumber)
 
   const neighbours = candidates.slice(0, 3)
-  const items = await fetchRelated(neighbours)
+  const items = await fetchRelated(neighbours, region.medusaRegionId, region.currency)
 
   if (items.length === 0) return null
 
@@ -100,7 +109,7 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
                 <p className="text-small text-stone line-clamp-1">{item.tagline}</p>
               )}
               <p className="mt-1 text-small text-accent">
-                {item.priceKobo > 0 ? formatNaira(item.priceKobo) : 'Price on request'}
+                {item.priceKobo > 0 ? formatPrice(item.priceKobo, item.currency) : 'Price on request'}
               </p>
             </div>
           </Link>

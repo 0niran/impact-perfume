@@ -72,5 +72,10 @@ export interface TileEnrichment {
   imageUrl?: string
   productId?: string
   variantId?: string
+  /** Amount in smallest currency unit (kobo for NGN, cents for CAD) */
+  priceMinor?: number
+  /** ISO currency code in uppercase, e.g. NGN, CAD */
+  currency?: string
+  /** @deprecated retained while call sites migrate */
   priceKobo?: number
 }

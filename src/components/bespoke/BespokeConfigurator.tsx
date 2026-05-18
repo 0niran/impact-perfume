@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
 import { submitBespoke, type BespokeSubmitResult } from '@/app/bespoke/actions'
 import BottlePreview, { type BottleShape } from './BottlePreview'
@@ -243,7 +243,7 @@ export default function BespokeConfigurator() {
   // -------- Success state --------
   if (submitStatus === 'success' && submitResult) {
     const depositNaira = submitResult.depositKobo
-      ? formatNaira(submitResult.depositKobo)
+      ? formatPrice(submitResult.depositKobo)
       : null
 
     return (
@@ -402,7 +402,7 @@ export default function BespokeConfigurator() {
                     <span className="text-body text-bone">{s.label}</span>
                     <span className="text-small text-stone">{s.description}</span>
                     {s.surcharge > 0 && (
-                      <span className="text-label text-accent">+{formatNaira(s.surcharge)}</span>
+                      <span className="text-label text-accent">+{formatPrice(s.surcharge)}</span>
                     )}
                   </button>
                 ))}
@@ -464,7 +464,7 @@ export default function BespokeConfigurator() {
                 a date, monogram, or message. Leave blank to skip.
               </p>
               <p className="mt-2 text-small text-stone">
-                Engraving adds {formatNaira(ENGRAVING_SURCHARGE_KOBO)} per bottle.
+                Engraving adds {formatPrice(ENGRAVING_SURCHARGE_KOBO)} per bottle.
               </p>
             </div>
 
@@ -713,9 +713,9 @@ export default function BespokeConfigurator() {
               </>
             ) : (
               <>
-                <p className="mt-1 font-display text-h1 text-bone">{formatNaira(price.total)}</p>
+                <p className="mt-1 font-display text-h1 text-bone">{formatPrice(price.total)}</p>
                 <p className="mt-1 text-small text-stone">
-                  {formatNaira(price.unit)} × {quantity}
+                  {formatPrice(price.unit)} × {quantity}
                   {price.discount > 0 && ` · ${Math.round(price.discount * 100)}% off`}
                 </p>
                 <p className="mt-3 text-label text-stone">

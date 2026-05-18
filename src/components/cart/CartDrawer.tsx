@@ -4,12 +4,13 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import CartLineItem from './CartLineItem'
 
 export default function CartDrawer() {
   const { lines, isOpen, setOpen, clear } = useCartStore()
-  const subtotal = useCartStore(cartSelectors.subtotalKobo)
+  const subtotal = useCartStore(cartSelectors.subtotalMinor)
+  const currency = useCartStore(cartSelectors.currency)
   const itemCount = useCartStore(cartSelectors.itemCount)
 
   useEffect(() => {
@@ -117,7 +118,7 @@ export default function CartDrawer() {
           <div className="border-t border-stone/20 bg-ink px-6 py-6">
             <div className="flex items-baseline justify-between mb-1">
               <p className="text-small uppercase tracking-[0.08em] text-stone">Subtotal</p>
-              <p className="font-display text-h3 text-bone">{formatNaira(subtotal)}</p>
+              <p className="font-display text-h3 text-bone">{formatPrice(subtotal, currency)}</p>
             </div>
             <p className="text-small text-stone/60 mb-5">
               Shipping &amp; taxes calculated at checkout

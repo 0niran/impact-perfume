@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { getProductsByCategory, toCategoryProduct } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
 import { GIFTS, OCCASIONS, type GiftProduct } from '@/data/products'
 import CategoryProductTile from '@/components/shop/CategoryProductTile'
 
@@ -46,13 +47,14 @@ function DiscoverySetCard({ gift }: { gift: GiftProduct }) {
 }
 
 export default async function GiftsPage() {
+  const region = getServerRegion()
   const [discoveryMedusa, giftsMedusa] = await Promise.all([
-    getProductsByCategory('discovery'),
-    getProductsByCategory('gifts'),
+    getProductsByCategory('discovery', 100, region.medusaRegionId),
+    getProductsByCategory('gifts', 100, region.medusaRegionId),
   ])
 
-  const discoveryLive = discoveryMedusa.map(toCategoryProduct)
-  const giftsLive = giftsMedusa.map(toCategoryProduct)
+  const discoveryLive = discoveryMedusa.map((p) => toCategoryProduct(p, region.currency))
+  const giftsLive = giftsMedusa.map((p) => toCategoryProduct(p, region.currency))
   const showGiftSets = giftsLive.length > 0
 
   const subnav = [

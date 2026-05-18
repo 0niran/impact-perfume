@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { TileEnrichment } from '@/types'
 import { useCartStore } from '@/store/cartStore'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 
 const DEFAULT_FALLBACK = '/images/no_series.png'
 
@@ -24,11 +24,13 @@ export default function NumberTile({
   variantLabel = '100ml EDP',
   fallbackImage = DEFAULT_FALLBACK,
 }: NumberTileProps) {
-  const { number, descriptor, signatureColor, imageUrl, productId, variantId, priceKobo } = tile
+  const { number, descriptor, signatureColor, imageUrl, productId, variantId, priceMinor, currency } = tile
+  const priceAmount = priceMinor ?? tile.priceKobo
+  const lineCurrency = currency ?? 'NGN'
   const { add, setOpen } = useCartStore()
   const [added, setAdded] = useState(false)
 
-  const canAdd = Boolean(productId && variantId && priceKobo && priceKobo > 0)
+  const canAdd = Boolean(productId && variantId && priceAmount && priceAmount > 0)
   const productImage = imageUrl ?? fallbackImage
 
   function handleAdd(e: React.MouseEvent) {
@@ -40,7 +42,8 @@ export default function NumberTile({
       productId: productId!,
       name: `Impact ${titlePrefix} ${number}`,
       variantLabel,
-      unitPriceKobo: priceKobo!,
+      unitPriceKobo: priceAmount!,
+      currency: lineCurrency,
       qty: 1,
       thumbnail: productImage,
     })
@@ -102,7 +105,7 @@ export default function NumberTile({
             {titlePrefix} {number}
           </p>
           {canAdd && (
-            <p className="text-small text-stone tabular-nums">{formatNaira(priceKobo!)}</p>
+            <p className="text-small text-stone tabular-nums">{formatPrice(priceAmount!, lineCurrency)}</p>
           )}
         </div>
         {descriptor && (

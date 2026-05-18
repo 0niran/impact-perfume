@@ -9,11 +9,14 @@ const FALLBACK: TileEnrichment[] = Array.from({ length: 50 }, (_, i) => ({
   signatureColor: FALLBACK_COLOR,
 }))
 
-export async function getAllEnrichments(): Promise<TileEnrichment[]> {
+export async function getAllEnrichments(
+  regionId?: string,
+  currency: string = 'NGN'
+): Promise<TileEnrichment[]> {
   try {
-    const products = await getAllNumberSeriesProducts(100)
+    const products = await getAllNumberSeriesProducts(100, regionId)
     const tiles = products
-      .map(toTileEnrichment)
+      .map((p) => toTileEnrichment(p, currency))
       .filter((t): t is TileEnrichment => t !== null)
       .sort((a, b) => a.number - b.number)
 

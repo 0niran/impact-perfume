@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getAllEnrichments } from '@/sanity/queries/shop'
+import { getServerRegion } from '@/lib/serverRegion'
 import CollectionHero from '@/components/shop/CollectionHero'
 import ShopClient from '@/components/shop/ShopClient'
 import DiscoveryNudge from '@/components/shop/DiscoveryNudge'
@@ -31,7 +32,8 @@ function WallSkeleton() {
 }
 
 export default async function ShopPage() {
-  const enrichments = await getAllEnrichments()
+  const region = getServerRegion()
+  const enrichments = await getAllEnrichments(region.medusaRegionId, region.currency)
 
   return (
     <>

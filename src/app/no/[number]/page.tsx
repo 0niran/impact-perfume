@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { getMedusaProduct, getNGNPrice, toEnrichment, getProductImage } from '@/lib/medusa'
+import { getMedusaProduct, getPrice, toEnrichment, getProductImage } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
 import { SITE_URL } from '@/lib/constants'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
@@ -46,16 +47,17 @@ export default async function PDPPage({
 
   if (isNaN(num) || num < 1 || num > 100) notFound()
 
-  const product = await getMedusaProduct(`no-${num}`)
+  const region = getServerRegion()
+  const product = await getMedusaProduct(`no-${num}`, region.medusaRegionId)
 
   if (!product) notFound()
 
-  const enrichment = toEnrichment(product)
+  const enrichment = toEnrichment(product, region.currency)
 
   if (!enrichment) notFound()
 
   const variant = product.variants?.[0]
-  const priceKobo = getNGNPrice(product)
+  const price = getPrice(product, region.currency)
   const imageUrl = getProductImage(product)
 
   const jsonLd = {
@@ -68,11 +70,11 @@ export default async function PDPPage({
     url: `${SITE_URL}/no/${enrichment.number}`,
     brand: { '@type': 'Brand', name: 'Impact Perfumes & Oils' },
     category: 'Fragrance',
-    ...(priceKobo > 0 && {
+    ...(price.amount > 0 && {
       offers: {
         '@type': 'Offer',
-        price: (priceKobo / 100).toFixed(2),
-        priceCurrency: 'NGN',
+        price: (price.amount / 100).toFixed(2),
+        priceCurrency: price.currency,
         availability: 'https://schema.org/InStock',
         url: `${SITE_URL}/no/${enrichment.number}`,
       },
@@ -108,7 +110,8 @@ export default async function PDPPage({
           sillage={enrichment.sillage}
           productId={product.id}
           variantId={variant?.id ?? product.handle}
-          priceKobo={priceKobo}
+          priceKobo={price.amount}
+          currency={price.currency}
           imageUrl={imageUrl ?? undefined}
         />
       </div>

@@ -7,8 +7,7 @@ const BACKEND_URL =
 const PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? ''
 
-// NGN region, required by Medusa v2 store API to return calculated_price
-const REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
+const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
 
 function storeHeaders(): Record<string, string> {
   return {
@@ -17,16 +16,16 @@ function storeHeaders(): Record<string, string> {
   }
 }
 
-function withRegion(params: URLSearchParams): string {
-  if (REGION_ID) params.set('region_id', REGION_ID)
-  // Medusa v2 store API omits `metadata` from the default response.
-  // `+metadata` expands the default fields to include it.
+function withRegion(params: URLSearchParams, regionId?: string): string {
+  const id = regionId ?? DEFAULT_REGION_ID
+  if (id) params.set('region_id', id)
+  // Medusa v2 store API omits product.metadata from the default field set.
   if (!params.has('fields')) params.set('fields', '+metadata')
   return params.toString()
 }
 
 /**
- * Medusa stores images with its own origin (e.g. localhost:9000 in dev, or
+ * Medusa stores images with its own origin (eg. localhost:9000 in dev, or
  * the container's internal address in Railway). Rewrite those URLs to use
  * the configured public backend URL so images resolve in the browser.
  */
@@ -53,13 +52,14 @@ export function getProductImage(product: MedusaProduct): string | null {
 }
 
 export async function getMedusaProduct(
-  handle: string
+  handle: string,
+  regionId?: string
 ): Promise<MedusaProduct | null> {
   if (!PUBLISHABLE_KEY) return null
   try {
     const params = new URLSearchParams({ handle, limit: '1' })
     const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params)}`,
+      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
       { headers: storeHeaders(), next: { revalidate: 60 } }
     )
     if (!res.ok) return null
@@ -71,13 +71,14 @@ export async function getMedusaProduct(
 }
 
 export async function getMedusaProducts(
-  limit = 6
+  limit = 6,
+  regionId?: string
 ): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
   try {
     const params = new URLSearchParams({ limit: String(limit) })
     const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params)}`,
+      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
       { headers: storeHeaders(), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
@@ -89,7 +90,7 @@ export async function getMedusaProducts(
 }
 
 /**
- * Resolve a Medusa category ID from its handle (e.g. "signature", "oils").
+ * Resolve a Medusa category ID from its handle (eg. "signature", "oils").
  * Returns null when the category doesn't exist yet in Medusa Admin.
  */
 async function getCategoryId(handle: string): Promise<string | null> {
@@ -107,15 +108,10 @@ async function getCategoryId(handle: string): Promise<string | null> {
   }
 }
 
-/**
- * Fetch products assigned to a named Medusa category.
- * Falls back to an empty array if the category doesn't exist yet.
- * Category handles to create in Medusa Admin:
- *   number-collection | signature | oils | home-fragrance | gifts | discovery
- */
 export async function getProductsByCategory(
   categoryHandle: string,
-  limit = 100
+  limit = 100,
+  regionId?: string
 ): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
   try {
@@ -124,7 +120,7 @@ export async function getProductsByCategory(
     const params = new URLSearchParams({ limit: String(limit) })
     params.set('category_id[]', categoryId)
     const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params)}`,
+      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
       { headers: storeHeaders(), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
@@ -135,23 +131,22 @@ export async function getProductsByCategory(
   }
 }
 
-/** Fetch Signature products, strictly from the "signature" Medusa category */
-export async function getSignatureProducts(): Promise<MedusaProduct[]> {
+export async function getSignatureProducts(regionId?: string): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
-  return getProductsByCategory('signature')
+  return getProductsByCategory('signature', 100, regionId)
 }
 
-/** Fetch all Number Series products, first from Medusa category, falls back to handle prefix */
 export async function getAllNumberSeriesProducts(
-  limit = 100
+  limit = 100,
+  regionId?: string
 ): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
-  const fromCategory = await getProductsByCategory('number-collection', limit)
+  const fromCategory = await getProductsByCategory('number-collection', limit, regionId)
   if (fromCategory.length > 0) return fromCategory
   try {
     const params = new URLSearchParams({ limit: String(limit) })
     const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params)}`,
+      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
       { headers: storeHeaders(), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
@@ -169,7 +164,6 @@ function splitNotes(raw?: string): string[] | undefined {
   return parts.length ? parts : undefined
 }
 
-/** Derive the number from metadata or fall back to parsing the handle (no-{N}) */
 function resolveNumber(p: MedusaProduct, m: MedusaProductMetadata): number {
   if (m.number) {
     const n = parseInt(m.number, 10)
@@ -180,12 +174,59 @@ function resolveNumber(p: MedusaProduct, m: MedusaProductMetadata): number {
   return NaN
 }
 
+/**
+ * Extract the price for a product variant in the active region's currency.
+ * When `region_id` was passed on the fetch, Medusa returns `calculated_price`
+ * already in the right currency. Without it, fall back to scanning the prices
+ * array for the matching currency code.
+ */
+export function getPrice(
+  product: MedusaProduct,
+  currency: string = 'NGN'
+): { amount: number; currency: string } {
+  const cur = currency.toLowerCase()
+  const variant = product.variants?.[0]
+  if (!variant) return { amount: 0, currency: cur.toUpperCase() }
+
+  // Medusa v2 with region_id: calculated_price is in the region's currency
+  const calc = variant.calculated_price
+  if (calc?.calculated_amount && (!calc.currency_code || calc.currency_code === cur)) {
+    return {
+      amount: calc.calculated_amount,
+      currency: (calc.currency_code ?? cur).toUpperCase(),
+    }
+  }
+
+  // Fallback: scan the prices array for the right currency
+  const direct = variant.prices?.find((p) => p.currency_code === cur)
+  if (direct) {
+    return { amount: direct.amount, currency: direct.currency_code.toUpperCase() }
+  }
+
+  // Last resort: first available price
+  const first = variant.prices?.[0]
+  if (first) {
+    return { amount: first.amount, currency: first.currency_code.toUpperCase() }
+  }
+
+  return { amount: 0, currency: cur.toUpperCase() }
+}
+
+/** @deprecated Use getPrice(product, currency) instead */
+export function getNGNPrice(product: MedusaProduct): number {
+  return getPrice(product, 'NGN').amount
+}
+
 /** Map a product's metadata to a TileEnrichment for the shop wall */
-export function toTileEnrichment(p: MedusaProduct): TileEnrichment | null {
+export function toTileEnrichment(
+  p: MedusaProduct,
+  currency: string = 'NGN'
+): TileEnrichment | null {
   const m: MedusaProductMetadata = p.metadata ?? {}
   const num = resolveNumber(p, m)
   if (isNaN(num)) return null
   const variant = p.variants?.[0]
+  const price = getPrice(p, currency)
   return {
     productHandle: p.handle,
     number: num,
@@ -200,12 +241,56 @@ export function toTileEnrichment(p: MedusaProduct): TileEnrichment | null {
     imageUrl: getProductImage(p) ?? undefined,
     productId: p.id,
     variantId: variant?.id ?? p.handle,
-    priceKobo: getNGNPriceRaw(p),
+    priceMinor: price.amount,
+    currency: price.currency,
+    // legacy alias for any not-yet-migrated callers
+    priceKobo: price.amount,
+  }
+}
+
+export interface CategoryProduct {
+  handle: string
+  title: string
+  descriptor: string
+  signatureColor: string
+  tagline: string
+  priceMinor: number
+  currency: string
+  imageUrl: string | null
+  productId: string
+  variantId: string
+  /** @deprecated retained while call sites migrate */
+  priceKobo: number
+}
+
+/** Map a generic Medusa product to a display card */
+export function toCategoryProduct(
+  p: MedusaProduct,
+  currency: string = 'NGN'
+): CategoryProduct {
+  const m: MedusaProductMetadata = p.metadata ?? {}
+  const variant = p.variants?.[0]
+  const price = getPrice(p, currency)
+  return {
+    handle: p.handle,
+    title: p.title,
+    descriptor: m.descriptor ?? p.subtitle ?? '',
+    signatureColor: m.signature_color ?? FALLBACK_COLOR,
+    tagline: m.tagline ?? '',
+    priceMinor: price.amount,
+    currency: price.currency,
+    imageUrl: getProductImage(p),
+    productId: p.id,
+    variantId: variant?.id ?? p.handle ?? p.id,
+    priceKobo: price.amount,
   }
 }
 
 /** Map a product's metadata to a full Enrichment for the PDP */
-export function toEnrichment(p: MedusaProduct): Enrichment | null {
+export function toEnrichment(
+  p: MedusaProduct,
+  currency: string = 'NGN'
+): Enrichment | null {
   const m: MedusaProductMetadata = p.metadata ?? {}
   const num = resolveNumber(p, m)
   if (isNaN(num)) return null
@@ -223,59 +308,4 @@ export function toEnrichment(p: MedusaProduct): Enrichment | null {
     heartNotes: splitNotes(m.heart_notes),
     baseNotes: splitNotes(m.base_notes),
   }
-}
-
-export interface CategoryProduct {
-  handle: string
-  title: string
-  descriptor: string
-  signatureColor: string
-  tagline: string
-  priceKobo: number
-  imageUrl: string | null
-  productId: string
-  variantId: string
-}
-
-/** Map a generic (non-Number-Series) Medusa product to a display card */
-export function toCategoryProduct(p: MedusaProduct): CategoryProduct {
-  const m: MedusaProductMetadata = p.metadata ?? {}
-  const variant = p.variants?.[0]
-  return {
-    handle: p.handle,
-    title: p.title,
-    descriptor: m.descriptor ?? p.subtitle ?? '',
-    signatureColor: m.signature_color ?? FALLBACK_COLOR,
-    tagline: m.tagline ?? '',
-    priceKobo: getNGNPriceRaw(p),
-    imageUrl: getProductImage(p),
-    productId: p.id,
-    variantId: variant?.id ?? p.handle ?? p.id,
-  }
-}
-
-/** Internal price helper used before getNGNPrice is declared */
-function getNGNPriceRaw(product: MedusaProduct): number {
-  const variant = product.variants?.[0]
-  if (!variant) return 0
-  if (variant.calculated_price?.calculated_amount) {
-    return variant.calculated_price.calculated_amount
-  }
-  return variant.prices?.find((p) => p.currency_code === 'ngn')?.amount ?? 0
-}
-
-/** Returns the NGN price in kobo from calculated_price (preferred) or prices fallback */
-export function getNGNPrice(product: MedusaProduct): number {
-  const variant = product.variants?.[0]
-  if (!variant) return 0
-
-  // Medusa v2 with region_id: use calculated_price
-  if (variant.calculated_price?.calculated_amount) {
-    return variant.calculated_price.calculated_amount
-  }
-
-  // Fallback: scan prices array (no region passed)
-  return (
-    variant.prices?.find((p) => p.currency_code === 'ngn')?.amount ?? 0
-  )
 }

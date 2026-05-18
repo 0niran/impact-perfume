@@ -1,4 +1,5 @@
 import { SITE_CONFIG } from '@/lib/config'
+import { formatPrice } from '@/lib/format'
 
 interface OrderItem {
   name: string
@@ -21,17 +22,10 @@ interface OrderEmailData {
   }
   items: OrderItem[]
   totalKobo: number
+  currency?: string
 }
 
-function formatNaira(kobo: number): string {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    minimumFractionDigits: 0,
-  }).format(kobo / 100)
-}
-
-function itemRows(items: OrderItem[]): string {
+function itemRows(items: OrderItem[], currency: string): string {
   return items
     .map(
       (item) => `
@@ -43,7 +37,7 @@ function itemRows(items: OrderItem[]): string {
         ${item.qty}
       </td>
       <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:right;color:#1A1612;font-size:14px;">
-        ${formatNaira(item.unitPriceKobo * item.qty)}
+        ${formatPrice(item.unitPriceKobo * item.qty, currency)}
       </td>
     </tr>`
     )
@@ -111,10 +105,10 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
         <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Qty</th>
         <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Total</th>
       </tr>
-      ${itemRows(data.items)}
+      ${itemRows(data.items, data.currency ?? 'NGN')}
       <tr>
         <td colspan="2" style="padding:14px 0;text-align:right;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;padding-right:12px;">Total Paid</td>
-        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatNaira(data.totalKobo)}</td>
+        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatPrice(data.totalKobo, data.currency ?? 'NGN')}</td>
       </tr>
     </table>
 
@@ -147,7 +141,7 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
 }
 
 export function buildBusinessEmail(data: OrderEmailData): { subject: string; html: string } {
-  const subject = `New Order · ${data.reference} · ${formatNaira(data.totalKobo)}`
+  const subject = `New Order · ${data.reference} · ${formatPrice(data.totalKobo, data.currency ?? 'NGN')}`
   const html = baseTemplate(
     subject,
     `
@@ -164,10 +158,10 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
         <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Qty</th>
         <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Total</th>
       </tr>
-      ${itemRows(data.items)}
+      ${itemRows(data.items, data.currency ?? 'NGN')}
       <tr>
         <td colspan="2" style="padding:14px 0;text-align:right;font-size:13px;font-weight:700;color:#1A1612;padding-right:12px;">TOTAL</td>
-        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatNaira(data.totalKobo)}</td>
+        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatPrice(data.totalKobo, data.currency ?? 'NGN')}</td>
       </tr>
     </table>
 

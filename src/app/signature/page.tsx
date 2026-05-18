@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
-import { getSignatureProducts, getNGNPrice, getProductImage } from '@/lib/medusa'
+import { getSignatureProducts, getPrice, getProductImage } from '@/lib/medusa'
+import { getServerRegion } from '@/lib/serverRegion'
+import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
 
@@ -19,17 +21,9 @@ export const metadata: Metadata = {
   },
 }
 
-function formatPrice(kobo: number): string {
-  if (!kobo) return 'Coming soon'
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    minimumFractionDigits: 0,
-  }).format(kobo / 100)
-}
-
 export default async function SignaturePage() {
-  const products = await getSignatureProducts()
+  const region = getServerRegion()
+  const products = await getSignatureProducts(region.medusaRegionId)
 
   return (
     <>
@@ -65,7 +59,7 @@ export default async function SignaturePage() {
             <div className="grid grid-cols-1 gap-px bg-stone/20 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => {
                 const imageUrl = getProductImage(product)
-                const price = getNGNPrice(product)
+                const priceInfo = getPrice(product, region.currency)
                 const variant = product.variants?.[0]
                 const variantId = variant?.id ?? product.handle ?? product.id
 
@@ -112,14 +106,17 @@ export default async function SignaturePage() {
 
                       <div className="mt-auto pt-5 flex items-center justify-between gap-4">
                         <span className="text-body font-medium text-bone">
-                          {price > 0 ? formatPrice(price) : 'Coming soon'}
+                          {priceInfo.amount > 0
+                            ? formatPrice(priceInfo.amount, priceInfo.currency)
+                            : 'Coming soon'}
                         </span>
-                        {price > 0 && (
+                        {priceInfo.amount > 0 && (
                           <SignatureAddToCart
                             productId={product.id}
                             variantId={variantId}
                             productName={product.title}
-                            priceKobo={price}
+                            priceKobo={priceInfo.amount}
+                            currency={priceInfo.currency}
                             imageUrl={imageUrl ?? undefined}
                             className="px-5 shrink-0"
                           />

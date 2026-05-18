@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { FALLBACK_COLOR } from '@/lib/constants'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 
 const BOTTLE_FALLBACK = '/images/no_series.png'
 
@@ -10,6 +10,7 @@ interface ProductCardProps {
   title: string
   subtitle?: string
   price?: number
+  currency?: string
   number?: number
   descriptor?: string
   signatureColor?: string
@@ -23,6 +24,7 @@ export default function ProductCard({
   title,
   subtitle,
   price,
+  currency = 'NGN',
   number,
   descriptor,
   signatureColor = FALLBACK_COLOR,
@@ -82,7 +84,7 @@ export default function ProductCard({
         )}
         <div className="mt-4 flex items-center justify-between">
           {price !== undefined ? (
-            <span className="text-body font-medium text-bone">{formatNaira(price)}</span>
+            <span className="text-body font-medium text-bone">{formatPrice(price, currency)}</span>
           ) : (
             <span className="text-small text-stone">Price on request</span>
           )}

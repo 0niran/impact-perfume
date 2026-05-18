@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getAllEnrichments } from '@/sanity/queries/shop'
+import { getServerRegion } from '@/lib/serverRegion'
 import QuizClient from '@/components/quiz/QuizClient'
 import { type Enrichment } from '@/components/quiz/quizData'
 
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
 }
 
 export default async function QuizPage() {
-  const enrichments = (await getAllEnrichments()) as Enrichment[]
+  const region = getServerRegion()
+  const enrichments = (await getAllEnrichments(region.medusaRegionId, region.currency)) as Enrichment[]
 
   return <QuizClient enrichments={enrichments} />
 }

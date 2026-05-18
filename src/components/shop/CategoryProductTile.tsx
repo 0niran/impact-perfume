@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { CategoryProduct } from '@/lib/medusa'
 import { useCartStore } from '@/store/cartStore'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 
 interface CategoryProductTileProps {
   product: CategoryProduct
@@ -22,7 +22,9 @@ export default function CategoryProductTile({
 }: CategoryProductTileProps) {
   const { add, setOpen } = useCartStore()
   const [added, setAdded] = useState(false)
-  const canAdd = product.priceKobo > 0
+  const priceAmount = product.priceMinor ?? product.priceKobo
+  const currency = product.currency ?? 'NGN'
+  const canAdd = priceAmount > 0
 
   const image = product.imageUrl ?? fallbackImage
 
@@ -35,7 +37,8 @@ export default function CategoryProductTile({
       productId: product.productId,
       name: product.title,
       variantLabel,
-      unitPriceKobo: product.priceKobo,
+      unitPriceKobo: priceAmount,
+      currency,
       qty: 1,
       thumbnail: image,
     })
@@ -101,7 +104,7 @@ export default function CategoryProductTile({
           <p className="text-body font-medium text-bone truncate">{product.title}</p>
           {canAdd && (
             <p className="text-small text-stone tabular-nums shrink-0">
-              {formatNaira(product.priceKobo)}
+              {formatPrice(priceAmount, currency)}
             </p>
           )}
         </div>

@@ -6,7 +6,10 @@ export type CartLine = {
   productId: string;
   name: string;
   variantLabel: string;
+  /** Amount in smallest currency unit (kobo for NGN, cents for CAD) */
   unitPriceKobo: number;
+  /** ISO currency code (uppercase). All lines in a cart must share the same currency. */
+  currency: string;
   qty: number;
   thumbnail?: string;
   color?: string;
@@ -15,6 +18,7 @@ export type CartLine = {
 type CartState = {
   lines: CartLine[];
   isOpen: boolean;
+  /** Add a line. If the new line's currency differs from existing lines, the cart is cleared first. */
   add: (line: CartLine) => void;
   remove: (variantId: string) => void;
   setQty: (variantId: string, qty: number) => void;
@@ -29,6 +33,11 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       add: (line) =>
         set((state) => {
+          // Guard: mixing currencies isn't supported. Reset to the new line's currency.
+          const cartCurrency = state.lines[0]?.currency;
+          if (cartCurrency && cartCurrency !== line.currency) {
+            return { lines: [line] };
+          }
           const existing = state.lines.find(
             (l) => l.variantId === line.variantId
           );
@@ -56,13 +65,17 @@ export const useCartStore = create<CartState>()(
       clear: () => set({ lines: [] }),
       setOpen: (isOpen) => set({ isOpen }),
     }),
-    { name: "impact-cart-v1" }
+    { name: "impact-cart-v2" }
   )
 );
 
 export const cartSelectors = {
-  subtotalKobo: (state: CartState) =>
+  subtotalMinor: (state: CartState) =>
     state.lines.reduce((sum, l) => sum + l.unitPriceKobo * l.qty, 0),
   itemCount: (state: CartState) =>
     state.lines.reduce((sum, l) => sum + l.qty, 0),
+  currency: (state: CartState) => state.lines[0]?.currency ?? 'NGN',
+  /** @deprecated alias for subtotalMinor — kept until callers migrate */
+  subtotalKobo: (state: CartState) =>
+    state.lines.reduce((sum, l) => sum + l.unitPriceKobo * l.qty, 0),
 };

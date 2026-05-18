@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useCartStore, type CartLine } from '@/store/cartStore'
-import { formatNaira } from '@/lib/format'
+import { formatPrice } from '@/lib/format'
 import { FALLBACK_SWATCH_COLOR } from '@/lib/constants'
 
 interface CartLineItemProps {
@@ -43,7 +43,7 @@ export default function CartLineItem({ line }: CartLineItemProps) {
             <p className="mt-0.5 text-small text-stone">{line.variantLabel}</p>
           </div>
           <p className="shrink-0 text-body font-medium text-bone tabular-nums">
-            {formatNaira(line.unitPriceKobo * line.qty)}
+            {formatPrice(line.unitPriceKobo * line.qty, line.currency)}
           </p>
         </div>
 
