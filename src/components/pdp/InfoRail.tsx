@@ -18,6 +18,7 @@ interface InfoRailProps {
   productId: string
   variantId: string
   priceKobo: number
+  imageUrl?: string
 }
 
 export default function InfoRail({
@@ -34,21 +35,22 @@ export default function InfoRail({
   productId,
   variantId,
   priceKobo,
+  imageUrl,
 }: InfoRailProps) {
   return (
-    <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto">
+    <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto bg-ink text-bone">
       <div className="flex flex-col gap-8 px-6 py-10 md:px-10 lg:px-12 lg:py-14">
 
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb">
-          <ol className="flex items-center gap-2 text-small text-slate">
+          <ol className="flex items-center gap-2 text-small text-stone">
             <li>
-              <Link href="/shop" className="hover:text-ink transition-colors">
+              <Link href="/shop" className="hover:text-bone transition-colors">
                 The Number Series
               </Link>
             </li>
             <li aria-hidden="true">·</li>
-            <li aria-current="page" className="text-ink">
+            <li aria-current="page" className="text-bone">
               No. {number}
             </li>
           </ol>
@@ -66,11 +68,11 @@ export default function InfoRail({
           <p className="text-label uppercase tracking-[0.1em] text-stone">
             No. {number} · {descriptor}
           </p>
-          <h1 className="mt-2 font-display text-[32px] leading-[1.1] md:text-display-l">
+          <h1 className="mt-2 font-display text-[32px] leading-[1.1] md:text-display-l text-bone">
             Impact No. {number}
           </h1>
           {tagline && (
-            <p className="mt-3 font-display text-h3 italic text-slate">
+            <p className="mt-3 font-display text-h3 italic text-stone">
               {tagline}
             </p>
           )}
@@ -86,6 +88,7 @@ export default function InfoRail({
           productName={`Impact No. ${number}`}
           priceKobo={priceKobo}
           signatureColor={signatureColor}
+          imageUrl={imageUrl}
         />
 
         {/* Divider before notes */}
@@ -114,7 +117,7 @@ export default function InfoRail({
               className="group flex flex-col gap-0.5 hover:opacity-70 transition-opacity duration-200"
             >
               <span className="text-label text-stone">← Previous</span>
-              <span className="font-display text-h3 leading-none">No. {number - 1}</span>
+              <span className="font-display text-h3 leading-none text-bone">No. {number - 1}</span>
             </Link>
           ) : (
             <div />
@@ -125,7 +128,7 @@ export default function InfoRail({
               className="group flex flex-col gap-0.5 text-right hover:opacity-70 transition-opacity duration-200"
             >
               <span className="text-label text-stone">Next →</span>
-              <span className="font-display text-h3 leading-none">No. {number + 1}</span>
+              <span className="font-display text-h3 leading-none text-bone">No. {number + 1}</span>
             </Link>
           ) : (
             <div />

@@ -7,8 +7,9 @@ const config: Config = {
       colors: {
         bone: "#F2E6C8",      // warm champagne cream — text on dark, light surfaces
         ink: "#0A0A08",       // true black — primary background
-        accent: "#C9A96E",    // warm mid gold — interactive accents, buttons
+        accent: "#E4B250",    // vivid amber-gold — CTAs, highlights, interactive
         gold: "#E8D5A3",      // light champagne gold — decorative borders, watermarks
+        cream: "#F5EFDF",     // warm editorial cream — light panels, InfoRail, checkout
         stone: "#8A7A60",     // muted gold-stone — secondary text on dark
         mist: "#1D1B16",      // dark warm surface — section alternation against ink
         slate: "#5C4E38",     // warm dark — body text, subdued elements

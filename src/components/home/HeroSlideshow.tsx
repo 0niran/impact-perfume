@@ -68,7 +68,7 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
           className="absolute inset-0 bg-center bg-cover transition-opacity duration-700"
           style={{
             backgroundImage: `url(${s.image})`,
-            opacity: i === current ? (transitioning ? 0 : 0.55) : 0,
+            opacity: i === current ? (transitioning ? 0 : 0.80) : 0,
           }}
         />
       ))}
@@ -79,11 +79,11 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
         style={{ background: slide.gradient }}
       />
 
-      {/* Permanent dark vignette so text is always readable */}
+      {/* Vignette — heavy at bottom (text lives here), barely-there at top */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(to top, rgba(10,10,8,0.85) 0%, rgba(10,10,8,0.30) 50%, rgba(10,10,8,0.20) 100%)',
+          background: 'linear-gradient(to top, rgba(10,10,8,0.92) 0%, rgba(10,10,8,0.40) 35%, rgba(10,10,8,0.05) 75%, transparent 100%)',
         }}
       />
 

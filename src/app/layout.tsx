@@ -7,6 +7,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import CartDrawer from "@/components/cart/CartDrawer";
 import BackToTop from "@/components/layout/BackToTop";
 import RouteProgressBar from "@/components/layout/RouteProgressBar";
+import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import { SITE_CONFIG } from "@/lib/config";
 
 const cormorant = Cormorant_Garamond({
@@ -68,6 +69,7 @@ export default function RootLayout({
         <SiteFooter />
         <CartDrawer />
         <BackToTop />
+        <WhatsAppFAB />
       </body>
     </html>
   );

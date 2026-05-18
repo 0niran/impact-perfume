@@ -1,8 +1,9 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import Container from './Container'
 import { SITE_CONFIG } from '@/lib/config'
 
-const { contact, social, shortName, name } = SITE_CONFIG
+const { contact, social, name } = SITE_CONFIG
 
 type FooterLink = { label: string; href: string; external?: boolean }
 
@@ -44,13 +45,13 @@ function PaymentIcons() {
   return (
     <div className="flex items-center gap-2 mt-4" aria-label="Accepted payment methods">
       {/* Visa */}
-      <div className="flex h-6 w-10 items-center justify-center rounded border border-stone/30 bg-bone/5 px-1">
+      <div className="flex h-6 w-10 items-center justify-center rounded border border-stone/30 bg-stone/10 px-1">
         <svg viewBox="0 0 40 14" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <path d="M15.2 1l-3.4 12H8.4L11.8 1h3.4zm12.2 7.8L29 4.4l1 4.4h-2.6zm3.8 4.2H34L31.4 1H28c-.7 0-1.3.4-1.6 1l-5.6 11h3.9l.8-2.1h4.7l.4 2.1zM21 9c0-3.8-5.3-4-5.3-5.4 0-.5.5-1 1.6-1.1.5 0 2-.1 3.7.6l.7-3.1C20.7.3 19.5 0 18 0c-3.7 0-6.3 2-6.3 4.7 0 2 1.8 3.1 3.2 3.8 1.4.7 1.9 1.1 1.9 1.7 0 .9-1.1 1.3-2.2 1.3-1.8 0-2.9-.5-3.7-.9l-.7 3.2c.9.4 2.4.8 4 .8C18.6 14.6 21 12.7 21 9zM9 1L3.4 13H-.1L-3 4.1c-.2-.7-.4-.9-1-1.2C-4.8 2.4-6.3 2-7.5 1.7l.1-.7h6.3c.8 0 1.5.5 1.7 1.4L2.4 9.8 5.2 1H9z" fill="#1A1F71" transform="translate(6 1) scale(0.7)"/>
         </svg>
       </div>
       {/* Mastercard */}
-      <div className="flex h-6 w-10 items-center justify-center rounded border border-stone/30 bg-bone/5 px-1">
+      <div className="flex h-6 w-10 items-center justify-center rounded border border-stone/30 bg-stone/10 px-1">
         <svg viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <rect x="1" y="1" width="36" height="22" rx="3" fill="none"/>
           <circle cx="14" cy="12" r="7" fill="#EB001B" fillOpacity="0.9"/>
@@ -59,11 +60,11 @@ function PaymentIcons() {
         </svg>
       </div>
       {/* Paystack badge */}
-      <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-bone/5 px-2">
+      <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
         <span className="text-[9px] font-medium text-stone tracking-wide">PAYSTACK</span>
       </div>
       {/* Bank Transfer */}
-      <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-bone/5 px-2">
+      <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
         <span className="text-[9px] font-medium text-stone tracking-wide">BANK</span>
       </div>
     </div>
@@ -82,10 +83,14 @@ export default function SiteFooter() {
 
           {/* Brand */}
           <div className="w-[200px] shrink-0">
-            <p className="font-brand text-[26px] leading-none text-gold">
-              {shortName}
-            </p>
-            <p className="mt-3 text-small text-stone leading-relaxed">
+            <Image
+              src="/images/Logo.png"
+              alt="Impact Perfumes"
+              width={181}
+              height={121}
+              className="h-12 w-auto"
+            />
+            <p className="mt-4 text-small text-stone leading-relaxed">
               Fragrances, oils &amp; home scents crafted in Lagos.
               Composed for character.
             </p>
@@ -102,7 +107,7 @@ export default function SiteFooter() {
           {/* Shop · Company — equal flex columns */}
           {linkColumns.map((col) => (
             <div key={col.heading} className="flex-1 min-w-0">
-              <p className="text-label uppercase tracking-[0.08em] text-slate mb-5">
+              <p className="text-label uppercase tracking-[0.08em] text-stone mb-5">
                 {col.heading}
               </p>
               <ul className="space-y-3">
@@ -122,7 +127,7 @@ export default function SiteFooter() {
 
           {/* Contact */}
           <div className="w-[230px] shrink-0">
-            <p className="text-label uppercase tracking-[0.08em] text-slate mb-5">
+            <p className="text-label uppercase tracking-[0.08em] text-stone mb-5">
               Contact
             </p>
             <ul className="space-y-3">
@@ -171,10 +176,14 @@ export default function SiteFooter() {
 
         {/* Mobile: brand + accordion */}
         <div className="md:hidden">
-          <p className="font-brand text-[26px] leading-none text-gold">
-            {shortName}
-          </p>
-          <p className="mt-3 text-small text-stone leading-relaxed max-w-[260px]">
+          <Image
+            src="/images/Logo.png"
+            alt="Impact Perfumes"
+            width={181}
+            height={121}
+            className="h-11 w-auto"
+          />
+          <p className="mt-4 text-small text-stone leading-relaxed max-w-[260px]">
             Fragrances, oils &amp; home scents crafted in Lagos. Composed for character.
           </p>
           <p className="mt-3 inline-flex items-center gap-1.5 text-label text-stone/50 uppercase tracking-[0.08em]">
@@ -233,14 +242,14 @@ export default function SiteFooter() {
       {/* Bottom bar */}
       <div className="border-t border-stone/20">
         <Container className="h-14 flex items-center justify-between">
-          <p className="text-label text-slate">
+          <p className="text-label text-stone">
             © {year} {name}
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/privacy" className="text-label text-slate hover:text-bone transition-colors duration-150">
+            <Link href="/privacy" className="text-label text-stone hover:text-bone transition-colors duration-150">
               Privacy
             </Link>
-            <Link href="/terms" className="text-label text-slate hover:text-bone transition-colors duration-150">
+            <Link href="/terms" className="text-label text-stone hover:text-bone transition-colors duration-150">
               Terms
             </Link>
           </div>

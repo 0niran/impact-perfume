@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/cn'
 import MegaMenu from './MegaMenu'
 import MobileMenuDrawer from './MobileMenuDrawer'
@@ -12,6 +14,8 @@ import { SITE_CONFIG } from '@/lib/config'
 type MenuKey = 'series' | 'discover'
 
 export default function SiteHeader() {
+  const pathname = usePathname()
+  const isHomepage = pathname === '/'
   const [scrolled, setScrolled] = useState(false)
   const [activeMenu, setActiveMenu] = useState<MenuKey | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -21,7 +25,7 @@ export default function SiteHeader() {
   const setCartOpen = useCartStore((s) => s.setOpen)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    const onScroll = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -43,15 +47,17 @@ export default function SiteHeader() {
     <>
       <header
         className={cn(
-          'fixed top-0 inset-x-0 z-50 bg-ink transition-shadow duration-200',
-          scrolled && 'shadow-[0_1px_0_0_rgba(201_169_110_/_0.2)]'
+          'fixed top-0 inset-x-0 z-50 transition-[background-color,backdrop-filter,box-shadow] duration-500',
+          scrolled || !isHomepage
+            ? 'bg-ink shadow-[0_1px_0_0_rgba(228_178_80_/_0.15)]'
+            : 'bg-transparent'
         )}
       >
-        {/* Utility bar — hides on scroll */}
+        {/* Utility bar — hides on scroll or on homepage hero */}
         <div
           className={cn(
-            'overflow-hidden transition-[max-height] duration-300',
-            scrolled ? 'max-h-0' : 'max-h-10'
+            'overflow-hidden transition-[max-height,opacity] duration-300',
+            scrolled || isHomepage ? 'max-h-0 opacity-0' : 'max-h-10 opacity-100'
           )}
         >
           <div className="container-px mx-auto max-w-container flex items-center justify-between h-9 border-b border-stone/20">
@@ -97,10 +103,17 @@ export default function SiteHeader() {
           <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
             <Link
               href="/"
-              className="block font-brand text-[16px] sm:text-[20px] lg:text-[28px] leading-none text-gold hover:text-accent transition-colors duration-150 whitespace-nowrap"
+              className="block transition-opacity duration-150 hover:opacity-80"
               aria-label="Impact Perfumes — home"
             >
-              Impact Perfumes
+              <Image
+                src="/images/Logo.png"
+                alt="Impact Perfumes"
+                width={181}
+                height={121}
+                priority
+                className="h-9 w-auto sm:h-10 lg:h-12"
+              />
             </Link>
           </div>
 
@@ -162,11 +175,11 @@ export default function SiteHeader() {
         )}
       </header>
 
-      {/* Spacer — matches header height so content isn't hidden */}
+      {/* Spacer — zero on homepage (transparent header sits over hero) */}
       <div
         className={cn(
           'transition-[height] duration-300',
-          scrolled ? 'h-16' : 'h-[116px]'
+          isHomepage ? 'h-0' : scrolled ? 'h-16' : 'h-[80px]'
         )}
         aria-hidden
       />

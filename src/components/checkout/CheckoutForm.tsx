@@ -120,7 +120,7 @@ export default function CheckoutForm() {
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
       <div>
-        <p className="text-label uppercase tracking-[0.1em] text-slate">Your Details</p>
+        <p className="text-label uppercase tracking-[0.1em] text-ink/50">Your Details</p>
         <form id="checkout-form" onSubmit={handlePay} className="mt-6 flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -165,8 +165,8 @@ export default function CheckoutForm() {
             />
           </div>
 
-          <div className="mt-4 border-t border-stone/20 pt-6">
-            <p className="text-label uppercase tracking-[0.1em] text-slate">Delivery Address</p>
+          <div className="mt-4 border-t border-ink/10 pt-6">
+            <p className="text-label uppercase tracking-[0.1em] text-ink/50">Delivery Address</p>
             <div className="mt-4 flex flex-col gap-4">
               <div>
                 <label htmlFor="address1" className={FORM_STYLES.label}>Street address *</label>
@@ -231,15 +231,15 @@ export default function CheckoutForm() {
 
               <div>
                 <label className={FORM_STYLES.label}>Country</label>
-                <p className="px-4 py-3 border border-stone/20 text-body text-stone bg-mist">Nigeria</p>
+                <p className="px-4 py-3 border border-ink/20 text-body text-ink/50 bg-white/30">Nigeria</p>
               </div>
             </div>
           </div>
         </form>
 
         <div className="mt-10">
-          <p className="text-label uppercase tracking-[0.1em] text-slate">Order Summary</p>
-          <ul className="mt-6 flex flex-col gap-6 border-t border-stone/20 pt-6">
+          <p className="text-label uppercase tracking-[0.1em] text-ink/50">Order Summary</p>
+          <ul className="mt-6 flex flex-col gap-6 border-t border-ink/10 pt-6">
             {lines.map((line: CartLine) => (
               <li key={line.variantId}>
                 <CartLineItem line={line} />
@@ -250,32 +250,32 @@ export default function CheckoutForm() {
       </div>
 
       <div className="flex flex-col gap-6">
-        <div className="border border-stone/20 p-6">
-          <p className="text-label uppercase tracking-[0.1em] text-slate">Total</p>
-          <p className="mt-2 font-display text-h1">{formatNaira(subtotalKobo)}</p>
-          <p className="mt-1 text-small text-stone">Delivery fee calculated after order</p>
+        <div className="border border-ink/15 bg-white/40 p-6">
+          <p className="text-label uppercase tracking-[0.1em] text-ink/50">Total</p>
+          <p className="mt-2 font-display text-h1 text-ink">{formatNaira(subtotalKobo)}</p>
+          <p className="mt-1 text-small text-ink/40">Delivery fee calculated after order</p>
 
           {error && (
-            <p className="mt-4 text-small text-red-600">{error}</p>
+            <p className="mt-4 text-small text-error">{error}</p>
           )}
 
           <button
             type="submit"
             form="checkout-form"
             disabled={loading}
-            className="mt-6 flex h-[52px] w-full items-center justify-center bg-ink text-label uppercase tracking-[0.1em] text-bone transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-6 flex h-[52px] w-full items-center justify-center bg-ink text-label uppercase tracking-[0.1em] text-bone transition-all duration-300 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing…' : 'Pay with Paystack'}
           </button>
 
-          <p className="mt-3 text-center text-small text-stone">
+          <p className="mt-3 text-center text-small text-ink/40">
             Secured by Paystack · 256-bit SSL
           </p>
         </div>
 
         <Link
           href="/shop"
-          className="text-center text-small text-slate underline-offset-2 hover:underline"
+          className="text-center text-small text-ink/40 underline-offset-2 hover:underline"
         >
           ← Continue shopping
         </Link>

@@ -109,6 +109,7 @@ export default async function PDPPage({
           productId={product.id}
           variantId={variant?.id ?? product.handle}
           priceKobo={priceKobo}
+          imageUrl={imageUrl ?? undefined}
         />
       </div>
 

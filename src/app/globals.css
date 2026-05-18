@@ -6,12 +6,15 @@
   :root {
     --bone: 242 230 200;
     --ink: 10 10 8;
-    --accent: 201 169 110;
+    --accent: 228 178 80;
     --gold: 232 213 163;
+    --cream: 245 239 223;
   }
 
   html {
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   ::selection {
@@ -19,10 +22,10 @@
     color: rgb(var(--ink));
   }
 
-  /* Visible focus ring on every focusable */
+  /* Visible focus ring — vivid gold */
   *:focus-visible {
     outline: 2px solid rgb(var(--accent));
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 }
 

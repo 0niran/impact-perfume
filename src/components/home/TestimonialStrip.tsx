@@ -20,33 +20,31 @@ const TESTIMONIALS = [
 
 export default function TestimonialStrip() {
   return (
-    <section className="border-t border-stone/20 bg-ink py-20 md:py-24">
+    <section className="bg-ink py-20 md:py-32">
       <Container>
-        <p className="text-label uppercase tracking-[0.12em] text-stone text-center mb-12">
-          Worn across Nigeria
-        </p>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6">
+        <div className="mb-14 flex items-center gap-4">
+          <div className="h-px flex-1 bg-stone/20" />
+          <p className="text-label uppercase tracking-[0.16em] text-stone shrink-0">
+            Worn across Nigeria
+          </p>
+          <div className="h-px flex-1 bg-stone/20" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-10">
           {TESTIMONIALS.map((t) => (
             <div key={t.author} className="flex flex-col gap-4">
-              {/* Stars */}
-              <div className="flex gap-1" aria-label="5 stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <svg key={i} width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                    <path
-                      d="M6 1l1.236 2.507L10 3.93l-2 1.95.472 2.754L6 7.315l-2.472 1.32L4 5.88 2 3.93l2.764-.423L6 1z"
-                      fill="#C4972A"
-                    />
-                  </svg>
-                ))}
+              <span className="font-display text-[56px] leading-none text-accent/25 select-none -mb-2" aria-hidden="true">
+                &ldquo;
+              </span>
+              <p className="font-display text-[20px] leading-relaxed italic text-bone/90">
+                {t.quote}
+              </p>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="h-px w-6 bg-accent/50" />
+                <p className="text-small text-stone">
+                  {t.author} &nbsp;·&nbsp; {t.location}
+                </p>
               </div>
-
-              <p className="font-display text-h3 italic leading-snug text-bone">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-
-              <p className="text-small text-stone">
-                {t.author} · {t.location}
-              </p>
             </div>
           ))}
         </div>

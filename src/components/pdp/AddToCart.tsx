@@ -10,6 +10,7 @@ interface AddToCartProps {
   productName: string
   priceKobo: number
   signatureColor?: string
+  imageUrl?: string
 }
 
 export default function AddToCart({
@@ -18,6 +19,7 @@ export default function AddToCart({
   productName,
   priceKobo,
   signatureColor,
+  imageUrl,
 }: AddToCartProps) {
   const [added, setAdded] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
@@ -44,6 +46,7 @@ export default function AddToCart({
       unitPriceKobo: priceKobo,
       qty: 1,
       color: signatureColor,
+      thumbnail: imageUrl,
     })
     setAdded(true)
     setOpen(true)
@@ -54,17 +57,16 @@ export default function AddToCart({
     <>
       {/* Primary CTA — inline in InfoRail */}
       <div ref={primaryRef} className="flex flex-col gap-4">
-        {/* Price block — typographic, not a form element */}
         <div>
-          <p className="font-display text-h1 leading-none text-accent">
+          <p className="font-display text-h1 leading-none text-bone">
             {priceKobo > 0 ? formatNaira(priceKobo) : 'Price on request'}
           </p>
-          <p className="mt-1.5 text-small text-stone">100 ml · Eau de Parfum</p>
+          <p className="mt-1.5 text-small text-bone/50">100 ml · Eau de Parfum</p>
         </div>
 
         <button
           onClick={handleAdd}
-          className="inline-flex w-full sm:w-fit items-center justify-center bg-ink px-10 text-label uppercase tracking-[0.1em] text-bone transition-opacity duration-200 hover:opacity-90"
+          className="inline-flex w-full sm:w-fit items-center justify-center bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 hover:opacity-90 hover:-translate-y-px"
           style={{ height: 52 }}
         >
           {added ? 'Added to cart' : 'Add to Cart'}
@@ -73,19 +75,19 @@ export default function AddToCart({
 
       {/* Sticky mobile bar — appears when primary CTA scrolls out of view */}
       <div
-        className={`fixed bottom-0 inset-x-0 z-40 border-t border-stone/20 bg-bone px-5 py-3 flex items-center justify-between gap-4 lg:hidden transition-transform duration-300 ${
+        className={`fixed bottom-0 inset-x-0 z-40 border-t border-stone/20 bg-ink px-5 py-3 flex items-center justify-between gap-4 lg:hidden transition-transform duration-300 ${
           stickyVisible ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
         <div>
-          <p className="text-small text-slate">{productName}</p>
-          <p className="text-body font-medium">
+          <p className="text-small text-stone">{productName}</p>
+          <p className="text-body font-medium text-bone">
             {priceKobo > 0 ? formatNaira(priceKobo) : 'Price on request'}
           </p>
         </div>
         <button
           onClick={handleAdd}
-          className="shrink-0 flex items-center justify-center bg-ink px-6 text-label uppercase tracking-[0.1em] text-bone hover:opacity-90 transition-opacity"
+          className="shrink-0 flex items-center justify-center bg-accent px-6 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
           style={{ height: 48 }}
         >
           {added ? 'Added' : 'Add to Cart'}

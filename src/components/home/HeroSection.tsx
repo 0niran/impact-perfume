@@ -14,30 +14,34 @@ export default function HeroSection() {
         aria-hidden="true"
       />
 
-      <Container className="relative pb-16 pt-28 sm:pb-20 sm:pt-40 md:pb-28">
-        <p className="text-label uppercase tracking-[0.12em] text-stone">
-          Impact Perfumes &amp; Oils · Est. Lagos
+      <Container className="relative pb-20 pt-16 sm:pb-28">
+        {/* Thin gold rule — a luxury editorial signature */}
+        <div className="mb-6 w-10 border-t border-accent" />
+
+        <p className="text-label uppercase tracking-[0.14em] text-accent">
+          Est. Lagos · The Number Series
         </p>
 
-        <h1 className="mt-5 max-w-3xl font-display text-[36px] leading-[1.1] sm:text-display-l md:text-display-xl text-balance">
+        <h1 className="mt-4 max-w-2xl font-display text-[40px] leading-[1.05] sm:text-display-l text-balance">
           Crafted in Lagos.
           <br />
           Composed for character.
         </h1>
 
-        <p className="mt-6 max-w-md text-body sm:text-body-l text-stone">
-          Fragrances that leave a mark. Oils that linger.
-          <br />
-          A house built for those who make an impression.
-        </p>
-
-        <div className="mt-10 flex flex-wrap items-center gap-5">
+        <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href="/shop"
-            className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-transform duration-200 ease-soft hover:-translate-y-0.5"
+            className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 ease-soft hover:bg-bone hover:-translate-y-0.5"
             style={{ height: 52 }}
           >
-            Explore Collections
+            Shop the Collection
+          </Link>
+          <Link
+            href="/quiz"
+            className="inline-flex items-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone/80 transition-all duration-300 hover:border-bone hover:text-bone"
+            style={{ height: 52 }}
+          >
+            Find Your Number
           </Link>
         </div>
       </Container>
