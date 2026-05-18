@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/cn'
 
 interface MobileMenuDrawerProps {
@@ -30,12 +31,27 @@ const sections = [
     ],
   },
   {
-    title: 'Home & Gifts',
+    title: 'Home & Car',
     links: [
-      { label: 'Home Fragrance', href: '/home' },
-      { label: 'Discovery Set', href: '/gifts' },
-      { label: 'Gift Sets', href: '/gifts' },
+      { label: 'Shop All', href: '/home' },
+      { label: 'Home Diffusers', href: '/home#home-diffusers' },
+      { label: 'Scent Candles', href: '/home#scent-candles' },
+      { label: 'Scenting Machines', href: '/home#scenting-machines' },
+    ],
+  },
+  {
+    title: 'Gift',
+    links: [
+      { label: 'All Gift Sets', href: '/gifts#gift-sets' },
       { label: 'Corporate Gifting', href: '/b2b' },
+    ],
+  },
+  {
+    title: 'Discovery',
+    links: [
+      { label: 'Discovery Sets', href: '/gifts#discovery-sets' },
+      { label: 'Fragrance Finder', href: '/quiz' },
+      { label: 'By Occasion', href: '/gifts#occasions' },
     ],
   },
   {
@@ -80,10 +96,16 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
           <Link
             href="/"
             onClick={onClose}
-            className="font-brand text-[28px] leading-none text-gold"
+            className="block"
             aria-label="Impact Perfumes — home"
           >
-            Impact Perfumes
+            <Image
+              src="/images/Logo.png"
+              alt="Impact Perfumes"
+              width={181}
+              height={121}
+              className="h-9 w-auto"
+            />
           </Link>
           <button
             onClick={onClose}

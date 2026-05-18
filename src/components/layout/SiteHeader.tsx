@@ -11,7 +11,7 @@ import SearchOverlay from './SearchOverlay'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
 import { SITE_CONFIG } from '@/lib/config'
 
-type MenuKey = 'series' | 'discover'
+type MenuKey = 'series' | 'homeGifts' | 'discover'
 
 export default function SiteHeader() {
   const pathname = usePathname()
@@ -119,12 +119,15 @@ export default function SiteHeader() {
 
           {/* Right side — desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger */}
           <div className="flex items-center gap-4 lg:gap-6">
-            <Link
+            <NavItem
+              label="Home & Gifts"
               href="/gifts"
-              className="hidden lg:block text-label uppercase tracking-[0.08em] text-bone hover:text-accent transition-colors duration-150"
-            >
-              Home &amp; Gifts
-            </Link>
+              hasMenu
+              isActive={activeMenu === 'homeGifts'}
+              className="hidden lg:block"
+              onMouseEnter={() => openMenu('homeGifts')}
+              onMouseLeave={scheduleClose}
+            />
             <NavItem
               label="Our Story"
               href="/house-story"

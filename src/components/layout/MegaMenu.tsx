@@ -17,6 +17,37 @@ const MENUS = {
       },
     ],
   },
+  homeGifts: {
+    columns: [
+      {
+        heading: 'Home & Car',
+        links: [
+          { label: 'Shop All', href: '/home' },
+          { label: 'Home Diffusers', href: '/home#home-diffusers' },
+          { label: 'Scent Candles', href: '/home#scent-candles' },
+          { label: 'Scenting Machines', href: '/home#scenting-machines' },
+        ],
+      },
+      {
+        heading: 'Gift',
+        links: [
+          { label: 'All Gift Sets', href: '/gifts#gift-sets' },
+          { label: 'The Duo', href: '/gifts#gift-sets' },
+          { label: 'Oil Trio', href: '/gifts#gift-sets' },
+          { label: 'The Wardrobe', href: '/gifts#gift-sets' },
+          { label: 'Corporate Gifting', href: '/b2b' },
+        ],
+      },
+      {
+        heading: 'Discovery',
+        links: [
+          { label: 'Discovery Sets', href: '/gifts#discovery-sets' },
+          { label: 'Fragrance Finder', href: '/quiz' },
+          { label: 'By Occasion', href: '/gifts#occasions' },
+        ],
+      },
+    ],
+  },
   discover: {
     columns: [
       {
