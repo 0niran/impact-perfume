@@ -57,7 +57,7 @@ export default function AddToCart({
 
   return (
     <>
-      {/* Primary CTA — inline in InfoRail */}
+      {/* Primary CTA, inline in InfoRail */}
       <div ref={primaryRef} className="flex flex-col gap-4">
         <div>
           <p className="font-display text-h1 leading-none text-bone">
@@ -75,7 +75,7 @@ export default function AddToCart({
         </button>
       </div>
 
-      {/* Sticky mobile bar — appears when primary CTA scrolls out of view */}
+      {/* Sticky mobile bar, appears when primary CTA scrolls out of view */}
       <div
         className={`fixed bottom-0 inset-x-0 z-40 border-t border-stone/20 bg-ink px-5 py-3 flex items-center justify-between gap-4 lg:hidden transition-transform duration-300 ${
           stickyVisible ? 'translate-y-0' : 'translate-y-full'

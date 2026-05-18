@@ -27,7 +27,7 @@ export default function BespokePage() {
           </h1>
           <p className="mt-5 max-w-xl text-body text-stone">
             Build your own Impact fragrance. Pick the silhouette, the signature
-            color, and the engraving — or start with a Number from our existing
+            color, and the engraving, or start with a Number from our existing
             collection. Five steps. A real perfumer at the other end.
           </p>
         </Container>
@@ -37,7 +37,7 @@ export default function BespokePage() {
       <section className="border-b border-stone/20 bg-mist/40 py-10">
         <Container className="grid gap-6 sm:grid-cols-3">
           {[
-            { step: '01', heading: 'Design', body: 'Configure your bottle and notes — see the bottle come together as you go.' },
+            { step: '01', heading: 'Design', body: 'Configure your bottle and notes, see the bottle come together as you go.' },
             { step: '02', heading: 'Brief', body: 'Submit your composition. Our perfumer reviews and confirms within 24h.' },
             { step: '03', heading: 'Craft', body: 'Pay 50% deposit to secure your slot. Final price confirmed before production.' },
           ].map((s) => (

@@ -89,6 +89,8 @@ export default async function OilPDPPage({
           signatureColor={enrichment.signatureColor}
           signatureColorName={enrichment.signatureColorName}
           imageUrl={imageUrl}
+          fallbackImage="/images/Oil_perfume.png"
+          titlePrefix="Oil No."
         />
 
         <InfoRail
@@ -123,7 +125,7 @@ export default async function OilPDPPage({
           <p className="mt-2 max-w-2xl text-body text-bone">
             Apply Oil No. {enrichment.number} to pulse points before your Eau de
             Parfum from the Number Series for a deeper, longer-wearing signature.
-            Pure concentration, no alcohol — perfect for travel and dry skin.
+            Pure concentration, no alcohol, perfect for travel and dry skin.
           </p>
         </div>
       </section>

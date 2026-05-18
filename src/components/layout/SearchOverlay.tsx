@@ -108,10 +108,10 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
       />
 
       {/* Panel */}
-      <div className="relative bg-bone shadow-xl mx-auto w-full max-w-2xl mt-[72px] flex flex-col max-h-[calc(100vh-100px)]">
+      <div className="relative bg-ink border border-stone/20 shadow-xl mx-auto w-full max-w-2xl mt-[72px] flex flex-col max-h-[calc(100vh-100px)]">
         {/* Input row */}
-        <div className="flex items-center border-b border-stone/30 px-5 h-14">
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden className="shrink-0 text-slate">
+        <div className="flex items-center border-b border-stone/20 px-5 h-14">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden className="shrink-0 text-stone">
             <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
             <path d="M12.5 12.5L16 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
@@ -123,12 +123,12 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             value={query}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="flex-1 ml-3 bg-transparent text-body text-ink placeholder:text-stone focus:outline-none"
+            className="flex-1 ml-3 bg-transparent text-body text-bone placeholder:text-stone focus:outline-none"
             autoComplete="off"
           />
           <button
             onClick={onClose}
-            className="ml-3 text-label uppercase tracking-[0.08em] text-slate hover:text-ink transition-colors"
+            className="ml-3 text-label uppercase tracking-[0.08em] text-stone hover:text-bone transition-colors"
           >
             Close
           </button>
@@ -137,12 +137,12 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
         {/* Results */}
         <div className="overflow-y-auto">
           {loading && (
-            <p className="px-5 py-4 text-small text-slate">Searching…</p>
+            <p className="px-5 py-4 text-small text-stone">Searching…</p>
           )}
 
           {!loading && query.length >= 2 && results.length === 0 && (
             <div className="px-5 py-8 text-center">
-              <p className="text-body text-slate">No results for <em>&ldquo;{query}&rdquo;</em></p>
+              <p className="text-body text-bone">No results for <em>&ldquo;{query}&rdquo;</em></p>
               <p className="mt-2 text-small text-stone">Try a number, scent family, or descriptor.</p>
             </div>
           )}
@@ -151,7 +151,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             <div className="py-2">
               {Object.entries(grouped).map(([category, items]) => (
                 <div key={category}>
-                  <p className="px-5 py-2 text-label uppercase tracking-[0.1em] text-slate bg-mist/60">
+                  <p className="px-5 py-2 text-label uppercase tracking-[0.1em] text-stone bg-stone/10">
                     {category}
                   </p>
                   {items.map((result) => {
@@ -164,7 +164,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                         onClick={onClose}
                         className={cn(
                           'flex items-center gap-4 px-5 py-3 transition-colors duration-100',
-                          activeIdx === idx ? 'bg-mist' : 'hover:bg-mist/60'
+                          activeIdx === idx ? 'bg-stone/10' : 'hover:bg-stone/10'
                         )}
                       >
                         <span
@@ -173,9 +173,9 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                           aria-hidden
                         />
                         <div className="min-w-0">
-                          <p className="text-body text-ink truncate">{result.title}</p>
+                          <p className="text-body text-bone truncate">{result.title}</p>
                           {result.descriptor && (
-                            <p className="text-small text-slate truncate">{result.descriptor}</p>
+                            <p className="text-small text-stone truncate">{result.descriptor}</p>
                           )}
                         </div>
                         <svg
@@ -199,13 +199,13 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
           {/* Default state */}
           {query.length < 2 && !loading && (
             <div className="px-5 py-6">
-              <p className="text-small text-slate mb-4 uppercase tracking-[0.08em]">Quick links</p>
+              <p className="text-small text-stone mb-4 uppercase tracking-[0.08em]">Quick links</p>
               <div className="flex flex-wrap gap-2">
                 {['No. 1', 'No. 7', 'Oud', 'Fruity', 'Woody', 'Oils', 'Discovery Set'].map((term) => (
                   <button
                     key={term}
                     onClick={() => { setQuery(term); search(term) }}
-                    className="border border-stone/30 px-3 py-1.5 text-small text-ink hover:border-ink hover:bg-mist transition-colors"
+                    className="border border-stone/30 px-3 py-1.5 text-small text-bone hover:border-accent hover:text-accent transition-colors"
                   >
                     {term}
                   </button>

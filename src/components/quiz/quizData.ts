@@ -25,7 +25,7 @@ export const QUESTIONS: QuizQuestion[] = [
   {
     id: 'pull',
     question: 'What pulls you in first?',
-    subtext: 'Go with your gut — first instinct only.',
+    subtext: 'Go with your gut, first instinct only.',
     options: [
       { label: 'Citrus & freshness', value: 'citrus' },
       { label: 'Fruits & sweetness', value: 'fruity' },
@@ -40,10 +40,10 @@ export const QUESTIONS: QuizQuestion[] = [
     question: 'How loud is your signature?',
     subtext: 'Some fragrances whisper. Some announce.',
     options: [
-      { label: 'A whisper — close-up only', value: 'whisper' },
-      { label: 'Just noticed — intimate trail', value: 'soft' },
-      { label: 'A presence — felt in the room', value: 'medium' },
-      { label: 'Unforgettable — they knew you were there', value: 'bold' },
+      { label: 'A whisper, close-up only', value: 'whisper' },
+      { label: 'Just noticed, intimate trail', value: 'soft' },
+      { label: 'A presence, felt in the room', value: 'medium' },
+      { label: 'Unforgettable, they knew you were there', value: 'bold' },
     ],
   },
   {
@@ -62,7 +62,7 @@ export const QUESTIONS: QuizQuestion[] = [
   {
     id: 'taste',
     question: 'Sweet or savoury at heart?',
-    subtext: 'Not food — fragrance. But the instinct is the same.',
+    subtext: 'Not food, fragrance. But the instinct is the same.',
     options: [
       { label: 'Sweet', value: 'sweet' },
       { label: 'Balanced', value: 'balanced' },

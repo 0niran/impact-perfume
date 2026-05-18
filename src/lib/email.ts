@@ -94,7 +94,7 @@ function baseTemplate(title: string, body: string): string {
 }
 
 export function buildCustomerEmail(data: OrderEmailData): { subject: string; html: string } {
-  const subject = `Order Confirmed — Ref: ${data.reference}`
+  const subject = `Order Confirmed. Ref: ${data.reference}`
   const html = baseTemplate(
     subject,
     `

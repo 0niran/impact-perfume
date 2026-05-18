@@ -25,7 +25,7 @@ function AccordionItem({ title, children }: AccordionItemProps) {
           />
         </svg>
       </summary>
-      <div className="pb-5 text-body text-slate">{children}</div>
+      <div className="pb-5 text-body text-stone">{children}</div>
     </details>
   )
 }

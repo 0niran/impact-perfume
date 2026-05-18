@@ -27,7 +27,7 @@ export const houseStoryQuery = `
 
 export const pageBySlugQuery = `*[_type == "page" && slug.current == $slug][0]`
 
-// Reserved for future reviews feature — not yet consumed
+// Reserved for future reviews feature, not yet consumed
 export const reviewsForProductQuery = `
   *[_type == "review" && productHandle == $handle && status == "Approved"] | order(submittedAt desc) {
     _id, rating, title, body, photos, verified, customerName, submittedAt

@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
     totalKobo: amountKobo as number,
   }
 
-  // 2. Create Medusa order + send emails — both fire-and-forget
+  // 2. Create Medusa order + send emails, both fire-and-forget
   await Promise.allSettled([
     createMedusaOrder({
       customerName: orderData.customerName,

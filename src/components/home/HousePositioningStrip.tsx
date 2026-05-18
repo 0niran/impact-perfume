@@ -20,7 +20,7 @@ const PILLARS = [
 
 export default function HousePositioningStrip() {
   return (
-    <section className="bg-cream py-16 md:py-24">
+    <section className="bg-ink py-16 md:py-24 border-y border-stone/20">
       <Container>
         <dl className="grid gap-12 md:grid-cols-3 md:gap-16">
           {PILLARS.map((pillar, i) => (
@@ -28,17 +28,17 @@ export default function HousePositioningStrip() {
               key={pillar.label}
               className={
                 i < PILLARS.length - 1
-                  ? 'md:border-r md:border-ink/10 md:pr-16'
+                  ? 'md:border-r md:border-stone/20 md:pr-16'
                   : ''
               }
             >
-              <span className="font-display text-[40px] leading-none text-accent/30 select-none">
+              <span className="font-display text-[40px] leading-none text-accent/40 select-none">
                 {pillar.numeral}
               </span>
-              <dt className="mt-4 text-label uppercase tracking-[0.12em] text-ink/50">
+              <dt className="mt-4 text-label uppercase tracking-[0.12em] text-bone/50">
                 {pillar.label}
               </dt>
-              <dd className="mt-3 text-body leading-relaxed text-ink/70">{pillar.body}</dd>
+              <dd className="mt-3 text-body leading-relaxed text-bone/70">{pillar.body}</dd>
             </div>
           ))}
         </dl>

@@ -27,7 +27,7 @@ export async function generateMetadata({
     title: `${product.title} | Impact Perfumes`,
     description:
       (product.metadata?.tagline as string) ??
-      `${product.title} — a luxury Eau de Parfum from the Impact Signature Collection.`,
+      `${product.title}, a luxury Eau de Parfum from the Impact Signature Collection.`,
   }
 }
 
@@ -57,17 +57,17 @@ export default async function SignaturePDPPage({
   return (
     <main>
       {/* Breadcrumb */}
-      <div className="border-b border-stone/20 bg-bone">
+      <div className="border-b border-stone/20 bg-ink">
         <Container className="py-4">
           <nav aria-label="Breadcrumb">
-            <ol className="flex items-center gap-2 text-small text-slate">
+            <ol className="flex items-center gap-2 text-small text-stone">
               <li>
-                <Link href="/signature" className="hover:text-ink transition-colors">
+                <Link href="/signature" className="hover:text-bone transition-colors">
                   Signature Collection
                 </Link>
               </li>
               <li aria-hidden="true">·</li>
-              <li className="text-ink">{product.title}</li>
+              <li className="text-bone">{product.title}</li>
             </ol>
           </nav>
         </Container>
@@ -76,7 +76,7 @@ export default async function SignaturePDPPage({
       {/* PDP grid */}
       <div className="lg:grid lg:grid-cols-2 min-h-screen">
 
-        {/* Left — image panel */}
+        {/* Left, image panel */}
         <div
           className="relative flex min-h-[60vh] lg:min-h-screen items-center justify-center lg:sticky lg:top-0"
           style={{ backgroundColor: signatureColor ?? '#1D1B16' }}
@@ -107,8 +107,8 @@ export default async function SignaturePDPPage({
           </div>
         </div>
 
-        {/* Right — info rail */}
-        <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto">
+        {/* Right, info rail */}
+        <div className="bg-ink lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto">
           <div className="flex flex-col gap-8 px-6 py-10 md:px-10 lg:px-12 lg:py-14">
 
             {/* Title */}
@@ -118,11 +118,11 @@ export default async function SignaturePDPPage({
                   {descriptor}
                 </p>
               )}
-              <h1 className="mt-2 font-display text-display-l leading-none">
+              <h1 className="mt-2 font-display text-display-l leading-none text-bone">
                 {product.title}
               </h1>
               {tagline && (
-                <p className="mt-3 font-display text-h3 italic text-slate">
+                <p className="mt-3 font-display text-h3 italic text-stone">
                   {tagline}
                 </p>
               )}
@@ -168,29 +168,29 @@ export default async function SignaturePDPPage({
 
             {/* About accordion */}
             <details className="group border-t border-stone/30">
-              <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-body font-medium">
+              <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-body font-medium text-bone">
                 About this fragrance
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true">
                   <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </summary>
-              <div className="pb-5 text-body text-slate">
+              <div className="pb-5 text-body text-stone">
                 <p>
                   {tagline ? `${tagline} ` : ''}
-                  A luxury Eau de Parfum from the Impact Signature Collection — named,
+                  A luxury Eau de Parfum from the Impact Signature Collection, named,
                   not numbered. Composed for those who already know who they are.
                 </p>
               </div>
             </details>
 
             <details className="group border-t border-stone/30">
-              <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-body font-medium">
+              <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-body font-medium text-bone">
                 Shipping &amp; Returns
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true">
                   <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </summary>
-              <div className="pb-5 text-body text-slate">
+              <div className="pb-5 text-body text-stone">
                 <p>
                   Free delivery on orders over ₦50,000. Standard delivery 3–5 business
                   days within Lagos; 5–10 days nationwide. Returns accepted within 7 days
@@ -203,7 +203,7 @@ export default async function SignaturePDPPage({
             <div className="border-t border-stone/20 pt-6">
               <Link
                 href="/signature"
-                className="text-small text-slate hover:text-ink transition-colors"
+                className="text-small text-stone hover:text-bone transition-colors"
               >
                 ← Back to Signature Collection
               </Link>

@@ -29,19 +29,19 @@ export default function ResultsHeader({
   onClearFamily,
 }: ResultsHeaderProps) {
   return (
-    <div className="sticky top-16 z-10 border-b border-stone/20 bg-bone/95 backdrop-blur-sm">
+    <div className="sticky top-16 z-10 border-b border-stone/20 bg-ink/95 backdrop-blur-sm">
       <div className="flex items-center gap-4 px-0 py-3">
         {/* Mobile filter button */}
         <button
           onClick={onOpenSheet}
-          className="flex items-center gap-2 border border-stone/40 px-4 py-2 text-label uppercase tracking-[0.1em] text-slate hover:border-ink hover:text-ink transition-colors duration-150 lg:hidden"
+          className="flex items-center gap-2 border border-stone/30 px-4 py-2 text-label uppercase tracking-[0.1em] text-stone hover:border-accent hover:text-bone transition-colors duration-150 lg:hidden"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
           Filter
           {activeFamily && (
-            <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-ink text-[10px] text-bone">
+            <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] text-ink">
               1
             </span>
           )}
@@ -51,7 +51,7 @@ export default function ResultsHeader({
         {activeFamily && (
           <button
             onClick={onClearFamily}
-            className="hidden lg:flex items-center gap-2 bg-ink px-3 py-1.5 text-label text-bone hover:opacity-80 transition-opacity"
+            className="hidden lg:flex items-center gap-2 border border-accent px-3 py-1.5 text-label text-accent hover:opacity-80 transition-opacity"
           >
             {activeFamily}
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -60,12 +60,12 @@ export default function ResultsHeader({
           </button>
         )}
 
-        <p className="text-small text-slate">
+        <p className="text-small text-stone">
           {count === total ? `${total} fragrances` : `${count} of ${total}`}
         </p>
 
         <div className="ml-auto flex items-center gap-2">
-          <label htmlFor="sort-select" className="hidden text-small text-slate sm:block">
+          <label htmlFor="sort-select" className="hidden text-small text-stone sm:block">
             Sort:
           </label>
           <select
@@ -73,7 +73,7 @@ export default function ResultsHeader({
             value={sort}
             onChange={(e) => onSort(e.target.value)}
             className={cn(
-              'border-0 bg-transparent text-small text-ink focus:outline-none cursor-pointer',
+              'border-0 bg-transparent text-small text-bone focus:outline-none cursor-pointer',
               'appearance-none pr-5'
             )}
             style={{

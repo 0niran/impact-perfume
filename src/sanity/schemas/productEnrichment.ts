@@ -173,7 +173,7 @@ export default defineType({
     },
     prepare({ title, subtitle, number }) {
       return {
-        title: number ? `No. ${number} — ${title}` : title,
+        title: number ? `No. ${number}, ${title}` : title,
         subtitle: subtitle
       }
     }

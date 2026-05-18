@@ -29,13 +29,13 @@ export default function CartDrawer() {
         aria-hidden="true"
       />
 
-      {/* Drawer panel — dark surface, text-bone inherited throughout */}
+      {/* Drawer panel, dark surface, text-bone inherited throughout */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
         className={cn(
-          'fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-mist shadow-2xl transition-transform duration-300 ease-soft sm:w-[420px]',
+          'fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-ink shadow-2xl transition-transform duration-300 ease-soft sm:w-[420px]',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >

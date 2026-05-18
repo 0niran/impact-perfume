@@ -7,7 +7,7 @@ const BACKEND_URL =
 const PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? ''
 
-// NGN region — required by Medusa v2 store API to return calculated_price
+// NGN region, required by Medusa v2 store API to return calculated_price
 const REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
 
 function storeHeaders(): Record<string, string> {
@@ -135,13 +135,13 @@ export async function getProductsByCategory(
   }
 }
 
-/** Fetch Signature products — strictly from the "signature" Medusa category */
+/** Fetch Signature products, strictly from the "signature" Medusa category */
 export async function getSignatureProducts(): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
   return getProductsByCategory('signature')
 }
 
-/** Fetch all Number Series products — first from Medusa category, falls back to handle prefix */
+/** Fetch all Number Series products, first from Medusa category, falls back to handle prefix */
 export async function getAllNumberSeriesProducts(
   limit = 100
 ): Promise<MedusaProduct[]> {

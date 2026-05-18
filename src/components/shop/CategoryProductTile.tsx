@@ -24,6 +24,8 @@ export default function CategoryProductTile({
   const [added, setAdded] = useState(false)
   const canAdd = product.priceKobo > 0
 
+  const image = product.imageUrl ?? fallbackImage
+
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
@@ -35,25 +37,28 @@ export default function CategoryProductTile({
       variantLabel,
       unitPriceKobo: product.priceKobo,
       qty: 1,
-      color: product.signatureColor,
-      thumbnail: product.imageUrl ?? undefined,
+      thumbnail: image,
     })
     setAdded(true)
     setOpen(true)
     setTimeout(() => setAdded(false), 1800)
   }
 
-  const image = product.imageUrl ?? fallbackImage
-
   return (
     <Link
       href={href}
-      className="group relative block overflow-hidden focus:outline-none focus:ring-2 focus:ring-accent"
+      className="group relative block overflow-hidden bg-ink focus:outline-none focus:ring-2 focus:ring-accent"
     >
-      <div
-        className="relative overflow-hidden"
-        style={{ backgroundColor: product.signatureColor, aspectRatio: '4/5' }}
-      >
+      <div className="relative" style={{ aspectRatio: '4/5' }}>
+        {/* Subtle signature-color glow for product identity */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-80"
+          style={{
+            background: `radial-gradient(ellipse at center, ${product.signatureColor}33 0%, transparent 65%)`,
+          }}
+          aria-hidden="true"
+        />
+
         {image ? (
           <div className="absolute inset-0 flex items-center justify-center p-6">
             <div className="relative h-[88%] w-[80%]">
@@ -67,7 +72,7 @@ export default function CategoryProductTile({
             </div>
           </div>
         ) : (
-          <span className="absolute inset-0 flex items-center justify-center font-display text-[4rem] text-white/15 select-none">
+          <span className="absolute inset-0 flex items-center justify-center font-display text-[4rem] text-stone/30 select-none">
             {product.title.charAt(0)}
           </span>
         )}

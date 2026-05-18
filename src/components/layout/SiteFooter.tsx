@@ -104,7 +104,7 @@ export default function SiteFooter() {
             <PaymentIcons />
           </div>
 
-          {/* Shop · Company — equal flex columns */}
+          {/* Shop · Company, equal flex columns */}
           {linkColumns.map((col) => (
             <div key={col.heading} className="flex-1 min-w-0">
               <p className="text-label uppercase tracking-[0.08em] text-stone mb-5">
@@ -143,7 +143,7 @@ export default function SiteFooter() {
               ))}
             </ul>
 
-            {/* WhatsApp CTA — outlined button */}
+            {/* WhatsApp CTA, outlined button */}
             <Link
               href={social.whatsapp}
               target="_blank"

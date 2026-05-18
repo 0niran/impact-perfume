@@ -79,7 +79,7 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
         style={{ background: slide.gradient }}
       />
 
-      {/* Vignette — heavy at bottom (text lives here), barely-there at top */}
+      {/* Vignette, heavy at bottom (text lives here), barely-there at top */}
       <div
         className="absolute inset-0"
         style={{
@@ -97,7 +97,7 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
             className="relative h-px overflow-hidden transition-all duration-300"
             style={{ width: i === current ? 40 : 20 }}
           >
-            <span className="absolute inset-0 bg-bone/30" />
+            <span className="absolute inset-0 bg-stone/40" />
             <span
               className="absolute inset-y-0 left-0 bg-accent transition-[width] duration-[5000ms] ease-linear"
               style={{ width: i === current ? '100%' : '0%' }}
@@ -106,7 +106,7 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
         ))}
       </div>
 
-      {/* Active category label — top right corner */}
+      {/* Active category label, top right corner */}
       <div className="absolute top-5 right-4 sm:top-8 sm:right-8 text-right">
         <p
           className="text-label uppercase tracking-[0.14em] text-accent transition-opacity duration-500"

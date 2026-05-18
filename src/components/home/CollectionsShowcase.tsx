@@ -70,7 +70,7 @@ export default function CollectionsShowcase() {
 
         {/* Asymmetric grid: 1 large left + 3 stacked right */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-5 md:grid-rows-2">
-          {/* Feature tile — spans 3 cols, 2 rows */}
+          {/* Feature tile, spans 3 cols, 2 rows */}
           <CollectionTile
             collection={feature}
             className="md:col-span-3 md:row-span-2 min-h-[420px] md:min-h-0"

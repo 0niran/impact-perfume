@@ -69,10 +69,10 @@ const portableTextComponents = {
       <h3 className="mt-8 font-display text-h3">{children as React.ReactNode}</h3>
     ),
     normal: ({ children }: { children?: React.ReactNode }) => (
-      <p className="mt-6 text-body leading-relaxed text-slate">{children as React.ReactNode}</p>
+      <p className="mt-6 text-body leading-relaxed text-stone">{children as React.ReactNode}</p>
     ),
     blockquote: ({ children }: { children?: React.ReactNode }) => (
-      <blockquote className="my-8 border-l-2 border-accent pl-6 font-display text-h3 italic text-ink">
+      <blockquote className="my-8 border-l-2 border-accent pl-6 font-display text-h3 italic text-bone">
         {children as React.ReactNode}
       </blockquote>
     ),
@@ -84,9 +84,9 @@ export default async function JournalPostPage({ params }: Props) {
   if (!post) notFound()
 
   return (
-    <main>
+    <main className="bg-ink text-bone">
       {/* Hero */}
-      <div className="relative h-[60vh] min-h-[400px] bg-mist">
+      <div className="relative h-[60vh] min-h-[400px] bg-stone/20">
         {post.hero && (
           <Image
             src={urlFor(post.hero).width(1600).height(900).url()}
@@ -120,7 +120,7 @@ export default async function JournalPostPage({ params }: Props) {
       <Container className="py-16">
         <div className="mx-auto max-w-2xl">
           {post.excerpt && (
-            <p className="font-display text-h3 italic text-slate">{post.excerpt}</p>
+            <p className="font-display text-h3 italic text-stone">{post.excerpt}</p>
           )}
           {post.body && (
             <PortableText value={post.body as PortableTextBlock[]} components={portableTextComponents} />
@@ -145,7 +145,7 @@ export default async function JournalPostPage({ params }: Props) {
               <div>
                 <p className="text-label uppercase tracking-[0.1em]">{post.author.name}</p>
                 {post.author.role && (
-                  <p className="mt-0.5 text-small text-slate">{post.author.role}</p>
+                  <p className="mt-0.5 text-small text-stone">{post.author.role}</p>
                 )}
                 {post.author.bio && (
                   <p className="mt-2 text-small text-stone">{post.author.bio}</p>
@@ -158,11 +158,11 @@ export default async function JournalPostPage({ params }: Props) {
         {/* Related posts */}
         {post.related && post.related.length > 0 && (
           <div className="mx-auto mt-20 max-w-4xl">
-            <p className="text-label uppercase tracking-[0.1em] text-slate">More from the journal</p>
+            <p className="text-label uppercase tracking-[0.1em] text-accent">More from the journal</p>
             <div className="mt-6 grid gap-8 sm:grid-cols-3">
               {post.related.map((rel) => (
                 <Link key={rel._id} href={`/journal/${rel.slug.current}`} className="group">
-                  <div className="relative aspect-[3/2] overflow-hidden bg-mist">
+                  <div className="relative aspect-[3/2] overflow-hidden bg-stone/20">
                     {rel.hero && (
                       <Image
                         src={urlFor(rel.hero).width(600).height(400).url()}
@@ -173,7 +173,7 @@ export default async function JournalPostPage({ params }: Props) {
                       />
                     )}
                   </div>
-                  <h3 className="mt-4 font-display text-h3 leading-snug transition-opacity group-hover:opacity-70">
+                  <h3 className="mt-4 font-display text-h3 text-bone leading-snug transition-opacity group-hover:opacity-70">
                     {rel.title}
                   </h3>
                 </Link>
@@ -184,7 +184,7 @@ export default async function JournalPostPage({ params }: Props) {
 
         {/* Back link */}
         <div className="mx-auto mt-16 max-w-2xl">
-          <Link href="/journal" className="text-small text-slate underline-offset-2 hover:underline">
+          <Link href="/journal" className="text-small text-stone underline-offset-2 hover:text-bone hover:underline">
             ← Back to Journal
           </Link>
         </div>

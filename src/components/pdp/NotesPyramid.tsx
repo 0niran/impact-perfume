@@ -6,7 +6,7 @@ interface NotesPyramidProps {
 
 function NotePill({ note }: { note: string }) {
   return (
-    <span className="inline-flex items-center border border-stone/30 px-3 py-1 text-small text-slate">
+    <span className="inline-flex items-center border border-stone/30 px-3 py-1 text-small text-stone">
       {note}
     </span>
   )
@@ -49,7 +49,7 @@ export default function NotesPyramid({
 
   return (
     <div>
-      <p className="text-label uppercase tracking-[0.1em] text-ink mb-5">
+      <p className="text-label uppercase tracking-[0.1em] text-bone mb-5">
         Fragrance Notes
       </p>
       <div className="flex flex-col gap-5">

@@ -25,13 +25,13 @@ export default async function JournalPage() {
   const posts: JournalPost[] = await sanity.fetch(journalListQuery, { limit: 24 })
 
   return (
-    <main>
-      <div className="bg-mist py-16 text-center">
+    <main className="bg-ink text-bone">
+      <div className="border-b border-stone/20 bg-ink py-16 text-center">
         <Container>
-          <p className="text-label uppercase tracking-[0.1em] text-slate">Journal</p>
-          <h1 className="mt-4 font-display text-display-l">Scent & Story</h1>
-          <p className="mt-4 text-body text-slate">
-            Dispatches from the house — craft, culture, and the world of fragrance.
+          <p className="text-label uppercase tracking-[0.1em] text-accent">Journal</p>
+          <h1 className="mt-4 font-display text-display-l text-bone">Scent &amp; Story</h1>
+          <p className="mt-4 text-body text-stone">
+            Dispatches from the house, craft, culture, and the world of fragrance.
           </p>
         </Container>
       </div>
@@ -39,13 +39,13 @@ export default async function JournalPage() {
       <Container className="py-16">
         {posts.length === 0 ? (
           <div className="py-24 text-center">
-            <p className="font-display text-h2 text-slate">Stories coming soon.</p>
+            <p className="font-display text-h2 text-stone">Stories coming soon.</p>
             <p className="mt-3 text-body text-stone">
               We&apos;re preparing our first dispatches from the house.
             </p>
             <Link
               href="/shop"
-              className="mt-8 inline-flex h-[52px] items-center bg-ink px-10 text-label uppercase tracking-[0.1em] text-bone transition-opacity hover:opacity-90"
+              className="mt-8 inline-flex h-[52px] items-center bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90"
             >
               Explore the collection
             </Link>
@@ -59,7 +59,7 @@ export default async function JournalPage() {
                 className="group flex flex-col"
               >
                 {/* Hero image */}
-                <div className="relative aspect-[3/2] overflow-hidden bg-mist">
+                <div className="relative aspect-[3/2] overflow-hidden bg-stone/20">
                   {post.hero ? (
                     <Image
                       src={urlFor(post.hero).width(800).height(533).url()}
@@ -70,22 +70,22 @@ export default async function JournalPage() {
                       priority={i === 0}
                     />
                   ) : (
-                    <div className="h-full w-full bg-mist" />
+                    <div className="h-full w-full bg-stone/20" />
                   )}
                 </div>
 
                 {/* Meta */}
                 <div className="mt-5 flex flex-col gap-2">
                   {post.category && (
-                    <p className="text-label uppercase tracking-[0.1em] text-slate">
+                    <p className="text-label uppercase tracking-[0.1em] text-accent">
                       {post.category}
                     </p>
                   )}
-                  <h2 className="font-display text-h3 leading-snug transition-opacity group-hover:opacity-70">
+                  <h2 className="font-display text-h3 text-bone leading-snug transition-opacity group-hover:opacity-70">
                     {post.title}
                   </h2>
                   {post.excerpt && (
-                    <p className="text-small text-slate line-clamp-2">{post.excerpt}</p>
+                    <p className="text-small text-stone line-clamp-2">{post.excerpt}</p>
                   )}
                   <p className="text-small text-stone">
                     {new Date(post.publishedAt).toLocaleDateString('en-NG', {

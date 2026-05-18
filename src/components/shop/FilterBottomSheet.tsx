@@ -46,18 +46,18 @@ export default function FilterBottomSheet({
         aria-modal="true"
         aria-label="Filter fragrances"
         className={cn(
-          'fixed inset-x-0 bottom-0 z-50 bg-bone transition-transform duration-300 ease-soft',
+          'fixed inset-x-0 bottom-0 z-50 bg-ink transition-transform duration-300 ease-soft',
           open ? 'translate-y-0' : 'translate-y-full'
         )}
         style={{ maxHeight: '85dvh', overflowY: 'auto' }}
       >
         {/* Handle */}
-        <div className="sticky top-0 flex items-center justify-between border-b border-stone/20 bg-bone px-6 py-4">
-          <p className="text-label uppercase tracking-[0.1em]">Filters</p>
+        <div className="sticky top-0 flex items-center justify-between border-b border-stone/20 bg-ink px-6 py-4">
+          <p className="text-label uppercase tracking-[0.1em] text-bone">Filters</p>
           <button
             onClick={onClose}
             aria-label="Close filters"
-            className="text-slate hover:text-ink"
+            className="text-stone hover:text-bone"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -66,15 +66,15 @@ export default function FilterBottomSheet({
         </div>
 
         <div className="px-6 py-6">
-          <p className="text-label uppercase tracking-[0.1em] text-ink">Scent Family</p>
+          <p className="text-label uppercase tracking-[0.1em] text-bone">Scent Family</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               onClick={() => setPendingFamily(null)}
               className={cn(
                 'border px-4 py-2 text-small transition-colors duration-150',
                 !pendingFamily
-                  ? 'border-ink bg-ink text-bone'
-                  : 'border-stone/40 text-slate hover:border-ink hover:text-ink'
+                  ? 'border-accent bg-accent text-ink'
+                  : 'border-stone/30 text-stone hover:border-bone hover:text-bone'
               )}
             >
               All
@@ -88,8 +88,8 @@ export default function FilterBottomSheet({
                 className={cn(
                   'border px-4 py-2 text-small transition-colors duration-150',
                   pendingFamily === family
-                    ? 'border-ink bg-ink text-bone'
-                    : 'border-stone/40 text-slate hover:border-ink hover:text-ink'
+                    ? 'border-accent bg-accent text-ink'
+                    : 'border-stone/30 text-stone hover:border-bone hover:text-bone'
                 )}
               >
                 {family}
@@ -99,16 +99,16 @@ export default function FilterBottomSheet({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 flex gap-3 border-t border-stone/20 bg-bone px-6 py-4">
+        <div className="sticky bottom-0 flex gap-3 border-t border-stone/20 bg-ink px-6 py-4">
           <button
             onClick={() => { setPendingFamily(null); onApply(null) }}
-            className="flex-1 border border-stone/40 py-3 text-label uppercase tracking-[0.1em] text-slate hover:border-ink hover:text-ink transition-colors duration-150"
+            className="flex-1 border border-stone/30 py-3 text-label uppercase tracking-[0.1em] text-stone hover:border-bone hover:text-bone transition-colors duration-150"
           >
             Clear
           </button>
           <button
             onClick={() => onApply(pendingFamily)}
-            className="flex-1 bg-ink py-3 text-label uppercase tracking-[0.1em] text-bone hover:opacity-90 transition-opacity duration-150"
+            className="flex-1 bg-accent py-3 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity duration-150"
           >
             Apply
           </button>

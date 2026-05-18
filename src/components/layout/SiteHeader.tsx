@@ -53,7 +53,7 @@ export default function SiteHeader() {
             : 'bg-transparent'
         )}
       >
-        {/* Utility bar — hides on scroll or on homepage hero */}
+        {/* Utility bar, hides on scroll or on homepage hero */}
         <div
           className={cn(
             'overflow-hidden transition-[max-height,opacity] duration-300',
@@ -75,7 +75,7 @@ export default function SiteHeader() {
             scrolled ? 'h-16' : 'h-20'
           )}
         >
-          {/* Left nav — desktop (3 items max to give logo breathing room) */}
+          {/* Left nav, desktop (3 items max to give logo breathing room) */}
           <nav className="hidden lg:flex items-center gap-6" aria-label="Primary navigation">
             <NavItem
               label="Number Collection"
@@ -99,12 +99,12 @@ export default function SiteHeader() {
             </Link>
           </nav>
 
-          {/* Logo — left-aligned on mobile, absolutely centered on desktop */}
+          {/* Logo, left-aligned on mobile, absolutely centered on desktop */}
           <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
             <Link
               href="/"
               className="block transition-opacity duration-150 hover:opacity-80"
-              aria-label="Impact Perfumes — home"
+              aria-label="Impact Perfumes, home"
             >
               <Image
                 src="/images/Logo.png"
@@ -117,7 +117,7 @@ export default function SiteHeader() {
             </Link>
           </div>
 
-          {/* Right side — desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger */}
+          {/* Right side, desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger */}
           <div className="flex items-center gap-4 lg:gap-6">
             <NavItem
               label="Home & Gifts"
@@ -178,7 +178,7 @@ export default function SiteHeader() {
         )}
       </header>
 
-      {/* Spacer — zero on homepage (transparent header sits over hero) */}
+      {/* Spacer, zero on homepage (transparent header sits over hero) */}
       <div
         className={cn(
           'transition-[height] duration-300',

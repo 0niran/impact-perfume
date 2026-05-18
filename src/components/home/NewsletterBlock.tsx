@@ -37,7 +37,7 @@ export default function NewsletterBlock() {
           Be first. Always.
         </h2>
         <p className="mt-4 max-w-md text-body text-stone">
-          New numbers, limited editions, and stories from the house — straight to you.
+          New numbers, limited editions, and stories from the house, straight to you.
         </p>
 
         {status === 'success' ? (
@@ -61,7 +61,7 @@ export default function NewsletterBlock() {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="shrink-0 bg-bone px-8 py-3 text-label uppercase tracking-[0.1em] text-ink transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
+              className="shrink-0 bg-accent px-8 py-3 text-label uppercase tracking-[0.1em] text-ink transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
             >
               {status === 'loading' ? 'Sending…' : 'Subscribe'}
             </button>

@@ -21,7 +21,7 @@ export default function QuizQuestionView({
   const progress = ((stepIndex) / totalSteps) * 100
 
   return (
-    <div className={compact ? 'flex flex-col' : 'flex min-h-screen flex-col'}>
+    <div className={compact ? 'flex flex-col bg-ink text-bone' : 'flex min-h-screen flex-col bg-ink text-bone'}>
       {/* Progress bar */}
       <div className="h-0.5 bg-stone/30">
         <div
@@ -42,7 +42,7 @@ export default function QuizQuestionView({
             {question.question}
           </h2>
           {question.subtext && (
-            <p className="mt-3 text-body text-slate">{question.subtext}</p>
+            <p className="mt-3 text-body text-stone">{question.subtext}</p>
           )}
 
           {/* Options */}
@@ -56,7 +56,7 @@ export default function QuizQuestionView({
               <button
                 key={opt.value}
                 onClick={() => onAnswer(opt.value)}
-                className="group flex items-center justify-between border border-stone/30 px-6 py-4 text-left transition-all duration-150 hover:border-ink hover:bg-ink hover:text-bone"
+                className="group flex items-center justify-between border border-stone/30 px-6 py-4 text-left text-bone transition-all duration-150 hover:border-accent hover:bg-accent hover:text-ink"
               >
                 <span className="text-body">{opt.label}</span>
                 <span className="opacity-0 transition-opacity duration-150 group-hover:opacity-100">
@@ -70,7 +70,7 @@ export default function QuizQuestionView({
           {stepIndex > 0 && (
             <button
               onClick={onBack}
-              className="mt-10 text-small text-slate underline-offset-2 hover:underline"
+              className="mt-10 text-small text-stone underline-offset-2 hover:underline"
             >
               ← Back
             </button>

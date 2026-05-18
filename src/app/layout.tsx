@@ -54,10 +54,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${cormorant.variable} ${kaushan.variable} ${manrope.variable}`}>
       <body className="bg-ink text-bone font-sans antialiased flex flex-col min-h-screen">
-        {/* Skip to main content — keyboard navigation */}
         <a
           href="#main-content"
-          className="fixed left-4 top-4 z-[100] -translate-y-full bg-accent px-4 py-2 text-label uppercase tracking-[0.08em] text-ink transition-transform focus:translate-y-0"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-accent focus:px-4 focus:py-2 focus:text-label focus:uppercase focus:tracking-[0.08em] focus:text-ink"
         >
           Skip to content
         </a>

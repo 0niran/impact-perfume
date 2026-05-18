@@ -4,7 +4,7 @@ import { getMedusaProduct, toEnrichment, getNGNPrice, getProductImage } from '@/
 import { formatNaira } from '@/lib/format'
 import { FALLBACK_COLOR } from '@/lib/constants'
 
-const BOTTLE_FALLBACK = '/images/no-series-bottle.png'
+const BOTTLE_FALLBACK = '/images/no_series.png'
 
 interface RelatedProductsProps {
   currentNumber: number
@@ -55,7 +55,7 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
   if (items.length === 0) return null
 
   return (
-    <section className="border-t border-stone/20 bg-mist px-6 py-16 md:px-10 lg:px-16">
+    <section className="border-t border-stone/20 bg-ink px-6 py-16 md:px-10 lg:px-16">
       <p className="text-label uppercase tracking-[0.1em] text-stone mb-8">
         Others in the series
       </p>
@@ -100,7 +100,7 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
                 {item.descriptor}
               </p>
               {item.tagline && (
-                <p className="text-small text-slate line-clamp-1">{item.tagline}</p>
+                <p className="text-small text-stone line-clamp-1">{item.tagline}</p>
               )}
               <p className="mt-1 text-small text-accent">
                 {item.priceKobo > 0 ? formatNaira(item.priceKobo) : 'Price on request'}

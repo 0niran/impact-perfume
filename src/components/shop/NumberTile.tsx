@@ -7,11 +7,10 @@ import type { TileEnrichment } from '@/types'
 import { useCartStore } from '@/store/cartStore'
 import { formatNaira } from '@/lib/format'
 
-const DEFAULT_FALLBACK = '/images/no-series-bottle.png'
+const DEFAULT_FALLBACK = '/images/no_series.png'
 
 interface NumberTileProps {
   tile: TileEnrichment
-  /** Display config for derivatives (e.g. Oils) — defaults to Number Series */
   hrefBase?: string
   titlePrefix?: string
   variantLabel?: string
@@ -43,8 +42,7 @@ export default function NumberTile({
       variantLabel,
       unitPriceKobo: priceKobo!,
       qty: 1,
-      color: signatureColor,
-      thumbnail: imageUrl,
+      thumbnail: productImage,
     })
     setAdded(true)
     setOpen(true)
@@ -54,13 +52,19 @@ export default function NumberTile({
   return (
     <Link
       href={`${hrefBase}/${number}`}
-      className="group relative block overflow-hidden focus:outline-none focus:ring-2 focus:ring-accent"
-      aria-label={`Impact ${titlePrefix} ${number} — ${descriptor}`}
+      className="group relative block overflow-hidden bg-ink focus:outline-none focus:ring-2 focus:ring-accent"
+      aria-label={`Impact ${titlePrefix} ${number} ${descriptor}`}
     >
-      <div
-        className="relative"
-        style={{ backgroundColor: signatureColor, aspectRatio: '4 / 5' }}
-      >
+      <div className="relative" style={{ aspectRatio: '4 / 5' }}>
+        {/* Subtle signature-color glow behind the bottle for product identity */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-80"
+          style={{
+            background: `radial-gradient(ellipse at center, ${signatureColor}33 0%, transparent 65%)`,
+          }}
+          aria-hidden="true"
+        />
+
         <div className="absolute inset-0 flex items-center justify-center p-6">
           <div className="relative h-[88%] w-[80%]">
             <Image

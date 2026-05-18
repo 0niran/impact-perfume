@@ -6,7 +6,7 @@ import { getAllNumberSeriesProducts, toEnrichment, getNGNPrice, getProductImage 
 import { formatNaira } from '@/lib/format'
 import { FALLBACK_COLOR } from '@/lib/constants'
 
-const BOTTLE_FALLBACK = '/images/no-series-bottle.png'
+const BOTTLE_FALLBACK = '/images/no_series.png'
 
 export default async function FeaturedNumbers() {
   const raw = await getAllNumberSeriesProducts(4)
@@ -33,7 +33,7 @@ export default async function FeaturedNumbers() {
   if (products.length === 0) return null
 
   return (
-    <section className="border-t border-stone/20 bg-mist py-20 md:py-24">
+    <section className="bg-ink py-20 md:py-24">
       <Container>
         {/* Section header */}
         <div className="flex items-end justify-between mb-10">
@@ -101,7 +101,7 @@ export default async function FeaturedNumbers() {
                     {product.descriptor}
                   </p>
                   {product.tagline && (
-                    <p className="text-small text-slate mt-1 line-clamp-1">
+                    <p className="text-small text-stone mt-1 line-clamp-1">
                       {product.tagline}
                     </p>
                   )}

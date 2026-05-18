@@ -13,7 +13,7 @@ export default function FilterRail({ activeFamily, onFamily }: FilterRailProps) 
     <aside className="hidden lg:block w-56 shrink-0">
       <div className="sticky top-20 py-8 pr-8">
         <div>
-          <p className="text-label uppercase tracking-[0.1em] text-ink">
+          <p className="text-label uppercase tracking-[0.1em] text-bone">
             Scent Family
           </p>
           <ul className="mt-3 space-y-1">
@@ -22,7 +22,7 @@ export default function FilterRail({ activeFamily, onFamily }: FilterRailProps) 
                 onClick={() => onFamily(null)}
                 className={cn(
                   'w-full text-left text-small transition-colors duration-150',
-                  !activeFamily ? 'font-medium text-ink' : 'text-slate hover:text-ink'
+                  !activeFamily ? 'font-medium text-accent' : 'text-stone hover:text-bone'
                 )}
               >
                 All families
@@ -35,8 +35,8 @@ export default function FilterRail({ activeFamily, onFamily }: FilterRailProps) 
                   className={cn(
                     'w-full text-left text-small transition-colors duration-150',
                     activeFamily === family
-                      ? 'font-medium text-ink'
-                      : 'text-slate hover:text-ink'
+                      ? 'font-medium text-accent'
+                      : 'text-stone hover:text-bone'
                   )}
                 >
                   {family}

@@ -37,21 +37,21 @@ const sections = [
       { label: 'Home Diffusers', href: '/home#home-diffusers' },
       { label: 'Scent Candles', href: '/home#scent-candles' },
       { label: 'Scenting Machines', href: '/home#scenting-machines' },
+      { label: 'Car Diffusers', href: '/home#car-diffusers' },
     ],
   },
   {
     title: 'Gift',
     links: [
       { label: 'All Gift Sets', href: '/gifts#gift-sets' },
-      { label: 'Corporate Gifting', href: '/b2b' },
     ],
   },
   {
     title: 'Discovery',
     links: [
-      { label: 'Discovery Sets', href: '/gifts#discovery-sets' },
+      { label: 'Number Series Discovery', href: '/gifts#discovery-sets' },
+      { label: 'Signature Discovery', href: '/gifts#discovery-sets' },
       { label: 'Fragrance Finder', href: '/quiz' },
-      { label: 'By Occasion', href: '/gifts#occasions' },
     ],
   },
   {
@@ -98,7 +98,7 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
             href="/"
             onClick={onClose}
             className="block"
-            aria-label="Impact Perfumes — home"
+            aria-label="Impact Perfumes, home"
           >
             <Image
               src="/images/Logo.png"

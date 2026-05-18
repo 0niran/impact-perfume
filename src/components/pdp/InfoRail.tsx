@@ -117,7 +117,7 @@ export default function InfoRail({
           baseNotes={baseNotes}
         />
 
-        {/* Wear profile — constrained width */}
+        {/* Wear profile, constrained width */}
         <div className="max-w-xs">
           <StrengthBars longevity={longevity} sillage={sillage} />
         </div>
@@ -125,7 +125,7 @@ export default function InfoRail({
         {/* Accordion */}
         <PDPAccordion descriptor={descriptor} tagline={tagline} />
 
-        {/* Navigate between numbers — compact inline links */}
+        {/* Navigate between numbers, compact inline links */}
         <div className="flex items-center justify-between border-t border-stone/20 pt-6">
           {number > 1 ? (
             <Link

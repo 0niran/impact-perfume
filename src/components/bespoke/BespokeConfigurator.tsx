@@ -281,7 +281,7 @@ export default function BespokeConfigurator() {
             </button>
             {depositStatus === 'paid' && (
               <p className="mt-4 text-small text-success">
-                Thank you — your deposit is recorded. You&apos;ll receive a confirmation email shortly.
+                Thank you, your deposit is recorded. You&apos;ll receive a confirmation email shortly.
               </p>
             )}
           </div>
@@ -335,7 +335,7 @@ export default function BespokeConfigurator() {
           ))}
         </div>
 
-        {/* Step 1 — Inspiration */}
+        {/* Step 1. Inspiration */}
         {step === 1 && (
           <section className="flex flex-col gap-6">
             <div>
@@ -372,7 +372,7 @@ export default function BespokeConfigurator() {
           </section>
         )}
 
-        {/* Step 2 — Bottle */}
+        {/* Step 2. Bottle */}
         {step === 2 && (
           <section className="flex flex-col gap-8">
             <div>
@@ -453,7 +453,7 @@ export default function BespokeConfigurator() {
           </section>
         )}
 
-        {/* Step 3 — Engraving */}
+        {/* Step 3. Engraving */}
         {step === 3 && (
           <section className="flex flex-col gap-6">
             <div>
@@ -504,7 +504,7 @@ export default function BespokeConfigurator() {
           </section>
         )}
 
-        {/* Step 4 — Quantity & timeline */}
+        {/* Step 4. Quantity & timeline */}
         {step === 4 && (
           <section className="flex flex-col gap-8">
             <div>
@@ -566,7 +566,7 @@ export default function BespokeConfigurator() {
           </section>
         )}
 
-        {/* Step 5 — Contact */}
+        {/* Step 5. Contact */}
         {step === 5 && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div>

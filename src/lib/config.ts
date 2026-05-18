@@ -1,6 +1,6 @@
 /**
  * Single source of truth for all site-level configuration.
- * Update values here — they propagate automatically across the codebase.
+ * Update values here, they propagate automatically across the codebase.
  */
 
 export const SITE_CONFIG = {

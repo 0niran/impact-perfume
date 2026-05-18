@@ -31,18 +31,18 @@ export default async function FeaturedShelf() {
       : FALLBACK_CARDS
 
   return (
-    <Section>
+    <Section className="bg-ink">
       <Container>
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-label uppercase tracking-[0.1em] text-accent">
               The Number Series
             </p>
-            <h2 className="mt-2 font-display text-h1">Start with a Number</h2>
+            <h2 className="mt-2 font-display text-h1 text-bone">Start with a Number</h2>
           </div>
           <Link
             href="/shop"
-            className="link-underline self-start text-small text-slate md:self-auto"
+            className="link-underline self-start text-small text-stone hover:text-bone md:self-auto"
           >
             View all 50
           </Link>

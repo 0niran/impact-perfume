@@ -26,13 +26,13 @@ export default async function JournalPreview() {
   if (!posts.length) return null
 
   return (
-    <Section bg="bg-bone border-t border-stone/20">
+    <Section bg="bg-ink border-t border-stone/20">
       <Container>
         <div className="flex items-end justify-between">
-          <h2 className="font-display text-h1">From the Journal</h2>
+          <h2 className="font-display text-h1 text-bone">From the Journal</h2>
           <Link
             href="/journal"
-            className="link-underline text-small text-slate"
+            className="link-underline text-small text-stone hover:text-bone"
           >
             All posts →
           </Link>

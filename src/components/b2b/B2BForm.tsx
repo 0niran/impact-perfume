@@ -13,9 +13,9 @@ const ENQUIRY_TYPES = [
 ]
 
 const inputClass =
-  'w-full border border-stone/40 bg-transparent px-4 py-3 text-body text-ink placeholder:text-stone/60 focus:border-ink focus:outline-none transition-colors duration-150'
+  'w-full border border-stone/40 bg-transparent px-4 py-3 text-body text-bone placeholder:text-stone/60 focus:border-accent focus:outline-none transition-colors duration-150'
 
-const labelClass = 'block text-label uppercase tracking-[0.08em] text-slate'
+const labelClass = 'block text-label uppercase tracking-[0.08em] text-bone/60'
 
 export default function B2BForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -47,7 +47,7 @@ export default function B2BForm() {
     return (
       <div className="flex flex-col items-start gap-4 py-12">
         <p className="font-display text-h1">We&apos;ve received your enquiry.</p>
-        <p className="text-body text-slate">
+        <p className="text-body text-stone">
           Someone from the team will be in touch within 24 hours.
         </p>
         <button
@@ -69,13 +69,13 @@ export default function B2BForm() {
           {ENQUIRY_TYPES.map((t) => (
             <label
               key={t.value}
-              className="flex cursor-pointer items-center gap-3 border border-stone/40 px-4 py-3 has-[:checked]:border-ink transition-colors duration-150"
+              className="flex cursor-pointer items-center gap-3 border border-stone/40 px-4 py-3 has-[:checked]:border-accent transition-colors duration-150"
             >
               <input
                 type="radio"
                 value={t.value}
                 {...register('type', { required: true })}
-                className="accent-ink"
+                className="accent-amber-400"
               />
               <span className="text-small">{t.label}</span>
             </label>
@@ -158,7 +158,7 @@ export default function B2BForm() {
         <textarea
           id="b2b-message"
           rows={5}
-          placeholder="Describe your requirement — volumes, occasion, timeline, or anything else we should know."
+          placeholder="Describe your requirement, volumes, occasion, timeline, or anything else we should know."
           className={cn(inputClass, 'mt-2 resize-none', errors.message && 'border-error')}
           {...register('message', { required: 'Please describe your requirement' })}
         />
@@ -174,7 +174,7 @@ export default function B2BForm() {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="flex items-center justify-center self-start bg-ink px-10 text-label uppercase tracking-[0.1em] text-bone transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="flex items-center justify-center self-start bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
         style={{ height: 52 }}
       >
         {status === 'loading' ? 'Sending…' : 'Submit enquiry'}

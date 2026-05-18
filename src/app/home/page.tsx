@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { getProductsByCategory, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
-import { HOME_DIFFUSERS } from '@/data/products'
+import { HOME_DIFFUSERS, CAR_DIFFUSERS } from '@/data/products'
 import { SITE_CONFIG } from '@/lib/config'
 import CategoryProductTile from '@/components/shop/CategoryProductTile'
 
@@ -58,6 +58,16 @@ const SUBCATEGORIES: SubCategory[] = [
       'Cold-air diffusion machines for hotels, offices, and large spaces. Consistent fragrance, all day.',
     medusaHandle: 'scenting-machines',
   },
+  {
+    id: 'car-diffusers',
+    label: 'Car Diffusers',
+    eyebrow: 'On the Move',
+    heading: 'Car Diffusers',
+    description:
+      'Vent-mounted clip-on diffusers. Up to 60 days per refill.',
+    medusaHandle: 'car-diffusers',
+    staticFallback: CAR_DIFFUSERS,
+  },
 ]
 
 async function loadSubcategory(sub: SubCategory): Promise<CategoryProduct[]> {
@@ -82,7 +92,7 @@ async function loadSubcategory(sub: SubCategory): Promise<CategoryProduct[]> {
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-5 border border-stone/20 bg-white/[0.02] py-16 px-8 text-center">
-      <p className="font-display text-h2 text-bone">{label} — coming soon</p>
+      <p className="font-display text-h2 text-bone">{label} coming soon</p>
       <p className="max-w-md text-body text-stone">
         We&apos;re curating this collection now. Be the first to know when it lands.
       </p>
@@ -126,7 +136,7 @@ export default async function HomeAndCarPage() {
           </h1>
           <p className="mt-5 max-w-lg text-body text-stone">
             Long-lasting diffusers, hand-poured candles, and professional scenting
-            machines. Composed in Lagos, designed to fill a space — not overpower it.
+            machines. Composed in Lagos, designed to fill a space, not overpower it.
           </p>
         </Container>
       </section>

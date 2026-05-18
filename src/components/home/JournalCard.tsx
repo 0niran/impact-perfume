@@ -26,7 +26,7 @@ export default function JournalCard({
 
   return (
     <Link href={`/journal/${slug}`} className="group flex flex-col">
-      <div className="relative overflow-hidden bg-mist" style={{ aspectRatio: '4/3' }}>
+      <div className="relative overflow-hidden bg-stone/20" style={{ aspectRatio: '4/3' }}>
         {heroUrl ? (
           <Image
             src={heroUrl}
@@ -46,10 +46,10 @@ export default function JournalCard({
             {category}
           </p>
         )}
-        <h3 className="font-display text-h3 transition-colors duration-200 group-hover:text-accent">
+        <h3 className="font-display text-h3 text-bone transition-colors duration-200 group-hover:text-accent">
           {title}
         </h3>
-        {date && <p className="text-small text-slate">{date}</p>}
+        {date && <p className="text-small text-stone">{date}</p>}
       </div>
     </Link>
   )

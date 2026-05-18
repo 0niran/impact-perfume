@@ -5,17 +5,17 @@ import HeroSlideshow from './HeroSlideshow'
 export default function HeroSection() {
   return (
     <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-ink text-bone">
-      {/* Slideshow — images + gradients + indicators */}
+      {/* Slideshow, images + gradients + indicators */}
       <HeroSlideshow />
 
       {/* Decorative vertical rule */}
       <span
-        className="pointer-events-none absolute bottom-0 left-[58%] top-0 hidden w-px select-none bg-bone opacity-[0.05] md:block"
+        className="pointer-events-none absolute bottom-0 left-[58%] top-0 hidden w-px select-none bg-stone opacity-[0.15] md:block"
         aria-hidden="true"
       />
 
       <Container className="relative pb-20 pt-16 sm:pb-28">
-        {/* Thin gold rule — a luxury editorial signature */}
+        {/* Thin gold rule, a luxury editorial signature */}
         <div className="mb-6 w-10 border-t border-accent" />
 
         <p className="text-label uppercase tracking-[0.14em] text-accent">
@@ -31,7 +31,7 @@ export default function HeroSection() {
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href="/shop"
-            className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 ease-soft hover:bg-bone hover:-translate-y-0.5"
+            className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 ease-soft hover:opacity-90 hover:-translate-y-0.5"
             style={{ height: 52 }}
           >
             Shop the Collection

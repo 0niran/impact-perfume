@@ -16,12 +16,12 @@ function Bar({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-small text-slate">{label}</p>
+        <p className="text-small text-stone">{label}</p>
         <p className="text-small text-accent">{descriptor}</p>
       </div>
       <div className="h-px bg-stone/30">
         <div
-          className="h-full bg-ink transition-all duration-700"
+          className="h-full bg-accent transition-all duration-700"
           style={{ width: `${(value / 5) * 100}%` }}
         />
       </div>
@@ -34,7 +34,7 @@ export default function StrengthBars({ longevity, sillage }: StrengthBarsProps) 
 
   return (
     <div>
-      <p className="text-label uppercase tracking-[0.1em] text-ink mb-4">
+      <p className="text-label uppercase tracking-[0.1em] text-bone mb-4">
         Wear Profile
       </p>
       <div className="flex flex-col gap-4">

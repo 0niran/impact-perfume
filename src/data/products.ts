@@ -39,50 +39,30 @@ export interface GiftProduct {
   title: string
   subtitle: string
   description: string
-  signatureColor: string
+  imageUrl: string
   cta: { label: string; href: string }
   featured: boolean
 }
 
 export const GIFTS: GiftProduct[] = [
   {
-    id: 'discovery-set',
-    label: 'Most Popular',
-    title: 'The Discovery Set',
-    subtitle: '5 × 2ml · Find your Number',
-    description: 'Five handpicked miniatures from across the Number Series. The perfect starting point, for you or someone you love.',
-    signatureColor: '#1A1612',
-    cta: { label: 'Shop Discovery Set', href: '/shop' },
+    id: 'discovery-numbers',
+    label: 'Discovery Set',
+    title: 'Number Series Discovery',
+    subtitle: '12 × 5ml',
+    description: 'Twelve handpicked 5ml miniatures from across the Number Series. The simplest way to find your Number, or gift the journey.',
+    imageUrl: '/images/No Series Discovery Set.jpeg',
+    cta: { label: 'Shop the set', href: '/shop' },
     featured: true,
   },
   {
-    id: 'duo-gift',
-    label: 'Gift Set',
-    title: 'The Duo',
-    subtitle: '2 × 50ml · Your pick',
-    description: 'Choose any two Numbers. We present them together in our signature gift box. Ideal for someone who knows what they want.',
-    signatureColor: '#2C4A3E',
-    cta: { label: 'Build Your Duo', href: '/shop' },
-    featured: false,
-  },
-  {
-    id: 'oil-trio',
-    label: 'Gift Set',
-    title: 'Oil Trio',
-    subtitle: '3 × 12ml · Fragrance oils',
-    description: 'Three concentrated fragrance oils in a curated set. Long-lasting, travel-ready, and beautifully presented.',
-    signatureColor: '#3D2B1F',
-    cta: { label: 'Shop Oil Trio', href: '/oils' },
-    featured: false,
-  },
-  {
-    id: 'full-wardrobe',
-    label: 'Ultimate Gift',
-    title: 'The Wardrobe',
-    subtitle: '5 × 50ml · Curated collection',
-    description: 'Five Numbers, one house. For the person who deserves the full experience. Our most expansive and most memorable gift.',
-    signatureColor: '#1E3A5F',
-    cta: { label: 'Enquire', href: '/b2b' },
+    id: 'discovery-signature',
+    label: 'Discovery Set',
+    title: 'Signature Discovery',
+    subtitle: '5 × 5ml',
+    description: 'Five 5ml miniatures from the Signature Collection. Named, not numbered. Bolder compositions.',
+    imageUrl: '/images/Signature Discovery Set 2.png',
+    cta: { label: 'Shop the set', href: '/signature' },
     featured: false,
   },
 ]

@@ -16,9 +16,9 @@ export function sortTiles(tiles: TileEnrichment[], sort: SortKey): TileEnrichmen
   }
 }
 
-/** Shared CSS classes for form inputs and labels — light (cream) checkout context */
+/** Shared CSS classes for form inputs and labels, dark checkout context */
 export const FORM_STYLES = {
   input:
-    'w-full border border-ink/20 bg-white/60 px-4 py-3 text-body text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none transition-colors',
-  label: 'block text-small text-ink/55 mb-1.5',
+    'w-full border border-stone/30 bg-white/5 px-4 py-3 text-body text-bone placeholder:text-bone/30 focus:border-accent focus:outline-none transition-colors',
+  label: 'block text-small text-bone/60 mb-1.5',
 } as const

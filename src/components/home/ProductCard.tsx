@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { FALLBACK_COLOR } from '@/lib/constants'
 import { formatNaira } from '@/lib/format'
 
-const BOTTLE_FALLBACK = '/images/no-series-bottle.png'
+const BOTTLE_FALLBACK = '/images/no_series.png'
 
 interface ProductCardProps {
   handle: string
@@ -35,7 +35,7 @@ export default function ProductCard({
   return (
     <Link
       href={href}
-      className="group flex flex-col overflow-hidden bg-bone transition-transform duration-300 ease-soft hover:-translate-y-1"
+      className="group flex flex-col overflow-hidden bg-ink transition-transform duration-300 ease-soft hover:-translate-y-1"
     >
       {/* Product image on colour background */}
       <div
@@ -64,20 +64,20 @@ export default function ProductCard({
       {/* Info */}
       <div className="flex flex-1 flex-col border border-t-0 border-stone/30 p-5">
         {number && (
-          <p className="text-label uppercase tracking-[0.1em] text-slate">
+          <p className="text-label uppercase tracking-[0.1em] text-stone">
             No. {number}
             {descriptor ? ` · ${descriptor}` : ''}
           </p>
         )}
-        <h3 className="mt-1 font-display text-h3">{title}</h3>
+        <h3 className="mt-1 font-display text-h3 text-bone">{title}</h3>
         {(tagline || subtitle) && (
-          <p className="mt-1 text-small text-slate">{tagline ?? subtitle}</p>
+          <p className="mt-1 text-small text-stone">{tagline ?? subtitle}</p>
         )}
         <div className="mt-4 flex items-center justify-between">
           {price !== undefined ? (
-            <span className="text-body font-medium">{formatNaira(price)}</span>
+            <span className="text-body font-medium text-bone">{formatNaira(price)}</span>
           ) : (
-            <span className="text-small text-slate">Price on request</span>
+            <span className="text-small text-stone">Price on request</span>
           )}
           <span className="text-label uppercase tracking-[0.1em] text-accent transition-transform duration-200 group-hover:translate-x-1">
             Explore

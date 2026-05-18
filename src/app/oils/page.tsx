@@ -26,7 +26,7 @@ export default async function OilsPage() {
 
   return (
     <>
-      {/* Hero — minimal */}
+      {/* Hero, minimal */}
       <section className="border-b border-stone/20 bg-ink py-14 md:py-20">
         <Container>
           <p className="text-label uppercase tracking-[0.12em] text-accent">Impact Oils</p>
@@ -58,7 +58,7 @@ export default async function OilsPage() {
                     tile={tile}
                     hrefBase="/oil"
                     titlePrefix="Oil No."
-                    variantLabel="12ml · Concentrated Oil"
+                    variantLabel="12ml Concentrated Oil"
                     fallbackImage="/images/Oil_perfume.png"
                   />
                 </div>
