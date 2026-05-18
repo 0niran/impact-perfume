@@ -54,7 +54,8 @@ const MENUS = {
         heading: 'The House',
         links: [
           { label: 'House Story', href: '/house-story' },
-          { label: 'B2B / Bespoke', href: '/b2b' },
+          { label: 'Bespoke', href: '/bespoke' },
+          { label: 'B2B', href: '/b2b' },
           { label: 'Journal', href: '/journal' },
         ],
       },
