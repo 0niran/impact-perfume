@@ -37,13 +37,20 @@ export default function ProductCard({
       href={href}
       className="group flex flex-col overflow-hidden bg-ink transition-transform duration-300 ease-soft hover:-translate-y-1"
     >
-      {/* Product image on colour background */}
+      {/* Product on dark surface with subtle signature glow */}
       <div
-        className="relative flex items-center justify-center overflow-hidden"
-        style={{ backgroundColor: signatureColor, aspectRatio: '3/4' }}
+        className="relative flex items-center justify-center overflow-hidden bg-ink"
+        style={{ aspectRatio: '3/4' }}
       >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-80"
+          style={{
+            background: `radial-gradient(ellipse at center, ${signatureColor}33 0%, transparent 65%)`,
+          }}
+          aria-hidden="true"
+        />
         {src ? (
-          <div className="relative w-[75%] h-[85%]">
+          <div className="relative z-10 w-[75%] h-[85%]">
             <Image
               src={src}
               alt={title}
@@ -54,7 +61,7 @@ export default function ProductCard({
           </div>
         ) : (
           number && (
-            <span className="font-display text-[80px] leading-none text-white/20 select-none">
+            <span className="relative z-10 font-display text-[80px] leading-none text-stone/30 select-none">
               {number}
             </span>
           )

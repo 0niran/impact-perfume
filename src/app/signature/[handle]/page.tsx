@@ -77,12 +77,18 @@ export default async function SignaturePDPPage({
       <div className="lg:grid lg:grid-cols-2 min-h-screen">
 
         {/* Left, image panel */}
-        <div
-          className="relative flex min-h-[60vh] lg:min-h-screen items-center justify-center lg:sticky lg:top-0"
-          style={{ backgroundColor: signatureColor ?? '#1D1B16' }}
-        >
+        <div className="relative flex min-h-[60vh] lg:min-h-screen items-center justify-center overflow-hidden bg-ink lg:sticky lg:top-0">
+          {signatureColor && (
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background: `radial-gradient(ellipse at center, ${signatureColor}33 0%, transparent 60%)`,
+              }}
+              aria-hidden="true"
+            />
+          )}
           {imageUrl ? (
-            <div className="relative w-[70%] max-w-[480px] aspect-[3/4]">
+            <div className="relative z-10 w-[70%] max-w-[480px] aspect-[3/4]">
               <Image
                 src={imageUrl}
                 alt={product.title}
@@ -93,17 +99,17 @@ export default async function SignaturePDPPage({
               />
             </div>
           ) : (
-            <p className="font-brand text-[140px] leading-none text-white/10 select-none">
+            <p className="relative z-10 font-brand text-[140px] leading-none text-stone/30 select-none">
               {product.title.charAt(0)}
             </p>
           )}
 
           {/* Bottom label */}
-          <div className="absolute bottom-8 text-center text-white">
-            <p className="text-label uppercase tracking-[0.12em] text-white/60">
+          <div className="absolute bottom-8 text-center z-10">
+            <p className="text-label uppercase tracking-[0.12em] text-stone">
               Signature Collection
             </p>
-            <p className="mt-1 font-display text-h3 text-white/90">{product.title}</p>
+            <p className="mt-1 font-display text-h3 text-bone">{product.title}</p>
           </div>
         </div>
 

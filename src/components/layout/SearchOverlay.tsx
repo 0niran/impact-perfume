@@ -168,8 +168,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                         )}
                       >
                         <span
-                          className="h-9 w-9 shrink-0"
-                          style={{ backgroundColor: result.signatureColor }}
+                          className="h-9 w-9 shrink-0 bg-mist"
                           aria-hidden
                         />
                         <div className="min-w-0">

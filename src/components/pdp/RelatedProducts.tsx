@@ -66,18 +66,15 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
             href={`/no/${item.number}`}
             className="group flex flex-col overflow-hidden border border-stone/20 hover:border-stone/50 transition-colors duration-200"
           >
-            {/* Color swatch + bottle */}
-            <div
-              className="relative flex h-56 items-center justify-center overflow-hidden"
-              style={{ backgroundColor: item.signatureColor }}
-            >
-              {/* Number watermark */}
-              <span
-                className="pointer-events-none absolute select-none font-display text-[120px] leading-none text-white/10 transition-opacity duration-300 group-hover:text-white/[0.06]"
+            {/* Product on dark surface with subtle signature glow */}
+            <div className="relative flex h-56 items-center justify-center overflow-hidden bg-ink">
+              <div
+                className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-80"
+                style={{
+                  background: `radial-gradient(ellipse at center, ${item.signatureColor}33 0%, transparent 65%)`,
+                }}
                 aria-hidden="true"
-              >
-                {item.number}
-              </span>
+              />
 
               {/* Bottle image */}
               <div className="relative z-10 w-[45%] h-[80%]">

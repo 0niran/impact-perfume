@@ -64,21 +64,18 @@ export default async function FeaturedNumbers() {
                 href={`/no/${product.number}`}
                 className="group flex flex-col"
               >
-                {/* Colour swatch with bottle */}
+                {/* Product on dark surface with subtle signature glow */}
                 <div
-                  className="relative flex items-center justify-center overflow-hidden"
-                  style={{
-                    backgroundColor: product.signatureColor,
-                    aspectRatio: '3 / 4',
-                  }}
+                  className="relative flex items-center justify-center overflow-hidden bg-ink"
+                  style={{ aspectRatio: '3 / 4' }}
                 >
-                  {/* Number watermark */}
-                  <span
-                    className="pointer-events-none absolute select-none font-display text-[30vw] leading-none text-white/10 lg:text-[10vw] transition-opacity duration-300 group-hover:text-white/[0.06]"
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-80"
+                    style={{
+                      background: `radial-gradient(ellipse at center, ${product.signatureColor}33 0%, transparent 65%)`,
+                    }}
                     aria-hidden="true"
-                  >
-                    {product.number}
-                  </span>
+                  />
 
                   {/* Bottle image */}
                   <div className="relative z-10 w-[65%] h-[75%]">
