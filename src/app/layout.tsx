@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Kaushan_Script, Manrope } from "next/font/google";
 import "./globals.css";
@@ -9,6 +10,8 @@ import BackToTop from "@/components/layout/BackToTop";
 import RouteProgressBar from "@/components/layout/RouteProgressBar";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import { SITE_CONFIG } from "@/lib/config";
+import { RegionProvider } from "@/lib/regionContext";
+import type { RegionId } from "@/lib/region";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -51,6 +54,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const cookieValue = cookies().get('impact_region')?.value;
+  const initialRegionId: RegionId | undefined =
+    cookieValue === 'NG' || cookieValue === 'CA' ? cookieValue : undefined;
+
   return (
     <html lang="en" className={`${cormorant.variable} ${kaushan.variable} ${manrope.variable}`}>
       <body className="bg-ink text-bone font-sans antialiased flex flex-col min-h-screen">
@@ -60,15 +67,17 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <Suspense fallback={null}>
-          <RouteProgressBar />
-        </Suspense>
-        <SiteHeader />
-        <main id="main-content" className="flex-1">{children}</main>
-        <SiteFooter />
-        <CartDrawer />
-        <BackToTop />
-        <WhatsAppFAB />
+        <RegionProvider initialRegionId={initialRegionId}>
+          <Suspense fallback={null}>
+            <RouteProgressBar />
+          </Suspense>
+          <SiteHeader />
+          <main id="main-content" className="flex-1">{children}</main>
+          <SiteFooter />
+          <CartDrawer />
+          <BackToTop />
+          <WhatsAppFAB />
+        </RegionProvider>
       </body>
     </html>
   );

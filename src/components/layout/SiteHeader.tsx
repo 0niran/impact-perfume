@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn'
 import MegaMenu from './MegaMenu'
 import MobileMenuDrawer from './MobileMenuDrawer'
 import SearchOverlay from './SearchOverlay'
+import RegionSwitcher from './RegionSwitcher'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
 import { SITE_CONFIG } from '@/lib/config'
 
@@ -64,7 +65,7 @@ export default function SiteHeader() {
             <p className="text-label text-stone">
               Free delivery on orders over {SITE_CONFIG.commerce.freeDeliveryDisplay}
             </p>
-            <span className="text-label text-stone">{SITE_CONFIG.commerce.currency}</span>
+            <RegionSwitcher />
           </div>
         </div>
 
