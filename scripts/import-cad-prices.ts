@@ -50,7 +50,7 @@ async function admin(p: string, options: RequestInit = {}) {
   return body
 }
 
-interface VariantPayload { id: string; productId: string; ngn: number; cad: number; handle: string }
+interface VariantPayload { variantId: string; productId: string; ngn: number; cad: number; handle: string }
 
 // Naive CSV parser tolerant of quoted fields with embedded commas.
 function parseCsv(text: string): string[][] {
