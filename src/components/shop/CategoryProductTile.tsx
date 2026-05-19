@@ -50,7 +50,7 @@ export default function CategoryProductTile({
   return (
     <Link
       href={href}
-      className="group relative block overflow-hidden bg-ink focus:outline-none focus:ring-2 focus:ring-accent"
+      className="group relative block overflow-hidden border border-stone/15 bg-ink focus:outline-none focus:ring-2 focus:ring-accent"
     >
       <div className="relative" style={{ aspectRatio: '4/5' }}>
         {/* Subtle signature-color glow for product identity */}

@@ -185,7 +185,7 @@ export default async function HomeAndCarPage() {
             </div>
 
             {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-px bg-stone/15 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
                 {products.map((p) => (
                   <CategoryProductTile
                     key={p.handle}

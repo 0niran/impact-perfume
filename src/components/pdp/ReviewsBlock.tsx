@@ -76,9 +76,9 @@ export default async function ReviewsBlock({ productHandle, productName, variant
         </div>
       </div>
 
-      <ul className="grid gap-px bg-stone/15 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((r) => (
-          <li key={r._id} className="bg-ink p-6 flex flex-col gap-3">
+          <li key={r._id} className="border border-stone/15 bg-ink p-6 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <StarRow rating={r.rating} size={14} />
               <span className="text-label uppercase tracking-[0.06em] text-stone">{relativeTime(r.submittedAt)}</span>

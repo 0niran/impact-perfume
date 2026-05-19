@@ -70,10 +70,10 @@ export function RecentlyViewedRail({ excludeHandle, title = 'Recently viewed', v
   return (
     <section className="border-t border-stone/20 bg-ink px-6 py-12 md:px-10 lg:px-16">
       <p className="text-label uppercase tracking-[0.1em] text-accent mb-6">{title}</p>
-      <ul className="grid grid-cols-2 gap-px bg-stone/15 sm:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-4">
         {filtered.slice(0, 4).map((item) => (
           <li key={item.handle}>
-            <Link href={item.href} className="group relative block overflow-hidden bg-ink focus:outline-none focus:ring-2 focus:ring-accent">
+            <Link href={item.href} className="group relative block overflow-hidden border border-stone/15 bg-ink focus:outline-none focus:ring-2 focus:ring-accent">
               <div
                 className="relative"
                 style={{ aspectRatio: '4 / 5' }}

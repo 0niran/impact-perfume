@@ -107,7 +107,7 @@ export default async function GiftsPage() {
           </div>
 
           {discoveryLive.length > 0 ? (
-            <div className="grid grid-cols-1 gap-px bg-stone/15 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
               {discoveryLive.map((p) => (
                 <CategoryProductTile
                   key={p.handle}
@@ -117,7 +117,7 @@ export default async function GiftsPage() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-px bg-stone/15 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
               {GIFTS.map((gift) => (
                 <DiscoverySetCard key={gift.id} gift={gift} />
               ))}
@@ -134,7 +134,7 @@ export default async function GiftsPage() {
               <p className="text-label uppercase tracking-[0.1em] text-accent">Gift Sets</p>
               <h2 className="mt-2 font-display text-h1 text-bone">Ready to give</h2>
             </div>
-            <div className="grid grid-cols-1 gap-px bg-stone/15 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {giftsLive.map((p) => (
                 <CategoryProductTile
                   key={p.handle}

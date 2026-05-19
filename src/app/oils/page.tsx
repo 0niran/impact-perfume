@@ -50,12 +50,12 @@ export default async function OilsPage() {
             </p>
           ) : (
             <div
-              className="grid grid-cols-2 gap-px bg-stone/15 lg:grid-cols-3"
+              className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
               role="list"
               aria-label="Impact Oils collection"
             >
               {tiles.map((tile) => (
-                <div key={tile.productHandle} role="listitem" className="bg-ink">
+                <div key={tile.productHandle} role="listitem">
                   <NumberTile
                     tile={tile}
                     hrefBase="/oil"
