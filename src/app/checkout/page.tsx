@@ -1,11 +1,17 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useCartStore } from '@/store/cartStore'
 import { Container } from '@/components/layout'
 import Link from 'next/link'
 import CheckoutForm from '@/components/checkout/CheckoutForm'
-import StripeCheckoutPanel from '@/components/checkout/StripeCheckoutPanel'
 import { useRegion } from '@/lib/regionContext'
+
+// Lazy-load the Stripe panel so the @stripe/* bundles don't ship to NG visitors.
+const StripeCheckoutPanel = dynamic(
+  () => import('@/components/checkout/StripeCheckoutPanel'),
+  { ssr: false, loading: () => <p className="text-body text-stone">Loading secure checkout…</p> }
+)
 
 export default function CheckoutPage() {
   const lines = useCartStore((s) => s.lines)

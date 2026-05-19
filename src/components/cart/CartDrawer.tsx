@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
 import { getShippingThreshold } from '@/lib/region'
+import { useRegion } from '@/lib/regionContext'
 import { RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import CartLineItem from './CartLineItem'
 
@@ -14,11 +15,46 @@ export default function CartDrawer() {
   const subtotal = useCartStore(cartSelectors.subtotalMinor)
   const currency = useCartStore(cartSelectors.currency)
   const itemCount = useCartStore(cartSelectors.itemCount)
+  const { region } = useRegion()
+
+  const [saveEmail, setSaveEmail] = useState('')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'loading' | 'saved' | 'error'>('idle')
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
+
+  async function handleSaveCart(e: React.FormEvent) {
+    e.preventDefault()
+    if (!saveEmail.trim() || lines.length === 0) return
+    setSaveStatus('loading')
+    try {
+      const res = await fetch('/api/cart/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: saveEmail.trim(),
+          region: region.id,
+          currency,
+          subtotalMinor: subtotal,
+          lines: lines.map((l) => ({
+            variantId: l.variantId,
+            productId: l.productId,
+            name: l.name,
+            variantLabel: l.variantLabel,
+            qty: l.qty,
+            unitPriceMinor: l.unitPriceKobo,
+            thumbnail: l.thumbnail,
+          })),
+        }),
+      })
+      const data = await res.json()
+      setSaveStatus(data.ok ? 'saved' : 'error')
+    } catch {
+      setSaveStatus('error')
+    }
+  }
 
   return (
     <>
@@ -142,6 +178,48 @@ export default function CartDrawer() {
             >
               Shop Impact Oils →
             </Link>
+          </div>
+        )}
+
+        {/* Save cart for later */}
+        {lines.length > 0 && saveStatus !== 'saved' && (
+          <div className="border-t border-stone/10 bg-ink/40 px-6 py-4">
+            <form onSubmit={handleSaveCart}>
+              <label htmlFor="cart-save-email" className="text-label uppercase tracking-[0.08em] text-stone mb-2 block">
+                Save cart, finish later
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="cart-save-email"
+                  type="email"
+                  required
+                  value={saveEmail}
+                  onChange={(e) => setSaveEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="flex-1 border border-stone/30 bg-white/5 px-3 py-2 text-small text-bone placeholder:text-stone/50 focus:border-accent focus:outline-none transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={saveStatus === 'loading'}
+                  className="shrink-0 border border-stone/40 px-4 text-label uppercase tracking-[0.08em] text-bone hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+                >
+                  {saveStatus === 'loading' ? '…' : 'Save'}
+                </button>
+              </div>
+              {saveStatus === 'error' && (
+                <p className="mt-2 text-label text-error">Couldn&apos;t save. Try again later.</p>
+              )}
+              <p className="mt-2 text-label text-stone/50">
+                We&apos;ll send a reminder if you don&apos;t complete checkout.
+              </p>
+            </form>
+          </div>
+        )}
+        {saveStatus === 'saved' && (
+          <div className="border-t border-stone/10 bg-accent/10 px-6 py-3">
+            <p className="text-small text-bone">
+              Cart saved. Finish whenever you&apos;re ready.
+            </p>
           </div>
         )}
 

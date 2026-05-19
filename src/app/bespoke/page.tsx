@@ -1,6 +1,13 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { Container } from '@/components/layout'
-import BespokeConfigurator from '@/components/bespoke/BespokeConfigurator'
+
+// Lazy-load: the configurator is a 6.6 kB client bundle (SVG preview + form
+// state) and only matters when a visitor lands on /bespoke.
+const BespokeConfigurator = dynamic(
+  () => import('@/components/bespoke/BespokeConfigurator'),
+  { loading: () => <div className="py-20 text-center text-stone">Loading…</div> }
+)
 
 export const metadata: Metadata = {
   title: 'Bespoke',

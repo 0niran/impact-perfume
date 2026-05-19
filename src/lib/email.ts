@@ -188,6 +188,76 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
   return { subject, html }
 }
 
+interface AbandonedCartItem {
+  name: string
+  variantLabel?: string
+  qty: number
+  unitPriceMinor: number
+}
+
+interface AbandonedCartData {
+  customerEmail: string
+  currency: string
+  totalMinor: number
+  items: AbandonedCartItem[]
+}
+
+function abandonedItemRows(items: AbandonedCartItem[], currency: string): string {
+  return items
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;color:#1A1612;font-size:14px;">
+        ${item.name}${item.variantLabel ? ` · ${item.variantLabel}` : ''}
+      </td>
+      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:center;color:#6B6459;font-size:14px;">
+        ${item.qty}
+      </td>
+      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:right;color:#1A1612;font-size:14px;">
+        ${formatPrice(item.unitPriceMinor * item.qty, currency)}
+      </td>
+    </tr>`
+    )
+    .join('')
+}
+
+export function buildAbandonedCartEmail(data: AbandonedCartData): { subject: string; html: string } {
+  const subject = `Still thinking it over?`
+  const html = baseTemplate(
+    subject,
+    `
+    <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:28px;font-weight:400;color:#1A1612;">
+      Your scent is waiting.
+    </h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#6B6459;line-height:1.6;">
+      You left a few pieces in your bag. We've kept them safe — pick up where you left off whenever you're ready.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E8E3DC;margin-bottom:24px;">
+      <tr style="background:#F5F1EB;">
+        <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Item</th>
+        <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Qty</th>
+        <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Total</th>
+      </tr>
+      ${abandonedItemRows(data.items, data.currency)}
+      <tr>
+        <td colspan="2" style="padding:14px 0;text-align:right;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;padding-right:12px;">Cart total</td>
+        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatPrice(data.totalMinor, data.currency)}</td>
+      </tr>
+    </table>
+
+    <a href="${SITE_CONFIG.url}/checkout" style="display:inline-block;background:#1A1612;color:#F5F1EB;padding:14px 32px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;">
+      Return to your cart
+    </a>
+
+    <p style="margin:32px 0 0;font-size:11px;color:#9B9289;line-height:1.6;">
+      Not interested? You can ignore this email — we won't send another reminder for this cart.
+    </p>
+    `
+  )
+  return { subject, html }
+}
+
 export async function sendEmail({
   to,
   subject,
