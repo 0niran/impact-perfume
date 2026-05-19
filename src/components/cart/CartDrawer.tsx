@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
+import { getShippingThreshold } from '@/lib/region'
 import CartLineItem from './CartLineItem'
 
 export default function CartDrawer() {
@@ -93,6 +94,31 @@ export default function CartDrawer() {
             </ul>
           )}
         </div>
+
+        {/* Free-shipping progress */}
+        {lines.length > 0 && (() => {
+          const threshold = getShippingThreshold(currency)
+          if (threshold <= 0) return null
+          const remaining = Math.max(0, threshold - subtotal)
+          const pct = threshold > 0 ? Math.min(100, Math.round((subtotal / threshold) * 100)) : 0
+          const qualified = remaining === 0
+          return (
+            <div className="border-t border-stone/10 bg-ink/40 px-6 py-4">
+              <p className="text-small text-bone mb-2">
+                {qualified
+                  ? 'Free delivery unlocked.'
+                  : <>Add <span className="font-medium text-accent">{formatPrice(remaining, currency)}</span> for free delivery.</>}
+              </p>
+              <div className="h-[3px] w-full bg-stone/20 overflow-hidden">
+                <div
+                  className="h-full bg-accent transition-all duration-500 ease-out"
+                  style={{ width: `${pct}%` }}
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Upsell strip */}
         {lines.length > 0 && (

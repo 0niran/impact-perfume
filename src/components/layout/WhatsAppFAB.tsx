@@ -1,15 +1,24 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { SITE_CONFIG } from '@/lib/config'
 
 export default function WhatsAppFAB() {
+  const pathname = usePathname() ?? ''
+  // PDPs render a sticky add-to-cart bar at the bottom on mobile; lift the FAB
+  // above it on small screens so the two don't visually collide.
+  const onPDP = pathname.startsWith('/no/') || pathname.startsWith('/oil/') || pathname.startsWith('/signature/')
+  const positionClass = onPDP
+    ? 'bottom-24 right-5 lg:bottom-6'
+    : 'bottom-6 right-5'
+
   return (
     <a
       href={SITE_CONFIG.social.whatsapp}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-6 right-5 z-40 flex items-center gap-2.5 rounded-full px-4 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95"
+      className={`fixed ${positionClass} z-40 flex items-center gap-2.5 rounded-full px-4 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95`}
       style={{ backgroundColor: '#E4B250', height: 52, color: '#0A0A08' }}
     >
       <svg

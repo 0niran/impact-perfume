@@ -10,7 +10,8 @@ import MobileMenuDrawer from './MobileMenuDrawer'
 import SearchOverlay from './SearchOverlay'
 import RegionSwitcher from './RegionSwitcher'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
-import { SITE_CONFIG } from '@/lib/config'
+import { useRegion } from '@/lib/regionContext'
+import { formatPrice as formatPriceByCurrency } from '@/lib/format'
 
 type MenuKey = 'series' | 'homeGifts' | 'discover'
 
@@ -24,6 +25,8 @@ export default function SiteHeader() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const itemCount = useCartStore(cartSelectors.itemCount)
   const setCartOpen = useCartStore((s) => s.setOpen)
+  const { region } = useRegion()
+  const freeDeliveryDisplay = formatPriceByCurrency(region.freeDeliveryThresholdMinor, region.currency)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -63,7 +66,7 @@ export default function SiteHeader() {
         >
           <div className="container-px mx-auto max-w-container flex items-center justify-between h-9 border-b border-stone/20">
             <p className="text-label text-stone">
-              Free delivery on orders over {SITE_CONFIG.commerce.freeDeliveryDisplay}
+              Free delivery on orders over {freeDeliveryDisplay}
             </p>
             <RegionSwitcher />
           </div>

@@ -78,3 +78,9 @@ export function formatPriceFromCurrency(amountMinor: number, currency: Currency 
   const region = Object.values(REGIONS).find((r) => r.currency === currency) ?? REGIONS[DEFAULT_REGION_ID]
   return formatPrice(amountMinor, region)
 }
+
+/** Free-shipping threshold for a given ISO currency code (uppercase). Falls back to 0. */
+export function getShippingThreshold(currency: string): number {
+  const region = Object.values(REGIONS).find((r) => r.currency === currency.toUpperCase())
+  return region?.freeDeliveryThresholdMinor ?? 0
+}

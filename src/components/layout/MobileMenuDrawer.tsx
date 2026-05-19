@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/cn'
+import { useRegion } from '@/lib/regionContext'
+import type { RegionId } from '@/lib/region'
 
 interface MobileMenuDrawerProps {
   isOpen: boolean
@@ -66,10 +68,16 @@ const sections = [
 ]
 
 export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerProps) {
+  const { region, setRegion, availableRegions } = useRegion()
+
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
+
+  function pickRegion(id: RegionId) {
+    setRegion(id)
+  }
 
   return (
     <>
@@ -117,6 +125,36 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
               <path d="M2 2L16 16M16 2L2 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
+        </div>
+
+        {/* Region switcher */}
+        <div className="border-b border-stone/20 px-6 py-4 shrink-0">
+          <p className="text-label uppercase tracking-[0.08em] text-stone mb-2">Shipping to</p>
+          <div className="flex gap-2">
+            {availableRegions.map((r) => {
+              const isActive = r.id === region.id
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => pickRegion(r.id)}
+                  className={cn(
+                    'flex-1 border px-3 py-2 text-left transition-colors',
+                    isActive
+                      ? 'border-accent bg-accent/5'
+                      : 'border-stone/30 hover:border-stone'
+                  )}
+                >
+                  <span className="block text-small text-bone">
+                    {r.countryCode === 'NG' ? '🇳🇬' : '🇨🇦'} {r.name}
+                  </span>
+                  <span className="block text-label text-stone">
+                    {r.currency}
+                    {!r.checkoutEnabled && ' · soon'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Nav */}
