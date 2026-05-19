@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { getMedusaProduct, getPrice, getProductImage } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
+import { shippingCopyFor } from '@/lib/shippingCopy'
 import { formatPrice } from '@/lib/format'
 import NotesPyramid from '@/components/pdp/NotesPyramid'
 import StrengthBars from '@/components/pdp/StrengthBars'
@@ -202,11 +203,7 @@ export default async function SignaturePDPPage({
                 </svg>
               </summary>
               <div className="pb-5 text-body text-stone">
-                <p>
-                  Free delivery on orders over ₦50,000. Standard delivery 3–5 business
-                  days within Lagos; 5–10 days nationwide. Returns accepted within 7 days
-                  on unopened, sealed products.
-                </p>
+                <p>{shippingCopyFor(region)}</p>
               </div>
             </details>
 

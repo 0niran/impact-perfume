@@ -28,6 +28,7 @@ interface InfoRailProps {
   prevHref?: (n: number) => string
   nextHref?: (n: number) => string
   maxNumber?: number
+  shippingCopy?: string
 }
 
 export default function InfoRail({
@@ -53,6 +54,7 @@ export default function InfoRail({
   prevHref = (n) => `/no/${n}`,
   nextHref = (n) => `/no/${n}`,
   maxNumber = 50,
+  shippingCopy,
 }: InfoRailProps) {
   return (
     <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto bg-ink text-bone">
@@ -126,7 +128,7 @@ export default function InfoRail({
         </div>
 
         {/* Accordion */}
-        <PDPAccordion descriptor={descriptor} tagline={tagline} />
+        <PDPAccordion descriptor={descriptor} tagline={tagline} shippingCopy={shippingCopy} />
 
         {/* Navigate between numbers, compact inline links */}
         <div className="flex items-center justify-between border-t border-stone/20 pt-6">

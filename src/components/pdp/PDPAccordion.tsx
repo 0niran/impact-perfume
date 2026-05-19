@@ -33,9 +33,13 @@ function AccordionItem({ title, children }: AccordionItemProps) {
 interface PDPAccordionProps {
   descriptor: string
   tagline?: string
+  shippingCopy?: string
 }
 
-export default function PDPAccordion({ descriptor, tagline }: PDPAccordionProps) {
+const DEFAULT_NG_SHIPPING =
+  'Free delivery on orders over ₦50,000. Standard delivery 3–5 business days within Lagos; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.'
+
+export default function PDPAccordion({ descriptor, tagline, shippingCopy }: PDPAccordionProps) {
   return (
     <div className="border-b border-stone/30">
       <AccordionItem title="About this fragrance">
@@ -48,11 +52,7 @@ export default function PDPAccordion({ descriptor, tagline }: PDPAccordionProps)
       </AccordionItem>
 
       <AccordionItem title="Shipping & Returns">
-        <p>
-          Free delivery on orders over ₦50,000. Standard delivery 3–5 business
-          days within Lagos; 5–10 days nationwide. Returns accepted within 7 days
-          of delivery on unopened, sealed products. Contact us to initiate a return.
-        </p>
+        <p>{shippingCopy ?? DEFAULT_NG_SHIPPING}</p>
       </AccordionItem>
 
       <AccordionItem title="B2B & Gifting Enquiries">

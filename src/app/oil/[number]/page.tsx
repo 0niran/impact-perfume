@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import { getMedusaProduct, getPrice, toEnrichment, getProductImage } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
+import { shippingCopyFor } from '@/lib/shippingCopy'
 import { SITE_URL } from '@/lib/constants'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
@@ -113,6 +114,7 @@ export default async function OilPDPPage({
           priceKobo={price.amount}
           currency={price.currency}
           imageUrl={imageUrl ?? undefined}
+          shippingCopy={shippingCopyFor(region)}
           collectionLabel="Impact Oils"
           collectionHref="/oils"
           titlePrefix="Impact Oil No."
