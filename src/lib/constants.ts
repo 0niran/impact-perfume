@@ -12,6 +12,22 @@ export const NIGERIAN_STATES = [
   'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
 ] as const
 
+export const CANADIAN_PROVINCES = [
+  { code: 'AB', name: 'Alberta' },
+  { code: 'BC', name: 'British Columbia' },
+  { code: 'MB', name: 'Manitoba' },
+  { code: 'NB', name: 'New Brunswick' },
+  { code: 'NL', name: 'Newfoundland and Labrador' },
+  { code: 'NS', name: 'Nova Scotia' },
+  { code: 'NT', name: 'Northwest Territories' },
+  { code: 'NU', name: 'Nunavut' },
+  { code: 'ON', name: 'Ontario' },
+  { code: 'PE', name: 'Prince Edward Island' },
+  { code: 'QC', name: 'Quebec' },
+  { code: 'SK', name: 'Saskatchewan' },
+  { code: 'YT', name: 'Yukon' },
+] as const
+
 export const SCENT_FAMILIES = [
   'Fruity', 'Woody', 'Vanilla', 'Amber', 'Sweet', 'Citrus',
   'Aromatic', 'Warm Spicy', 'Floral', 'Rose', 'Sweet Oud',

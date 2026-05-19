@@ -4,6 +4,7 @@ import { useCartStore } from '@/store/cartStore'
 import { Container } from '@/components/layout'
 import Link from 'next/link'
 import CheckoutForm from '@/components/checkout/CheckoutForm'
+import StripeCheckoutPanel from '@/components/checkout/StripeCheckoutPanel'
 import { useRegion } from '@/lib/regionContext'
 
 export default function CheckoutPage() {
@@ -18,10 +19,10 @@ export default function CheckoutPage() {
             {region.name} · {region.currency}
           </p>
           <h1 className="font-display text-display-l leading-none text-bone">
-            Canadian shipping launches soon.
+            {region.name} shipping launches soon.
           </h1>
           <p className="text-body text-stone">
-            We&apos;re finalising fulfilment and payment partners for Canada.
+            We&apos;re finalising fulfilment and payment partners for {region.name}.
             Switch back to Nigeria to complete your order today, or chat with us
             on WhatsApp for early access.
           </p>
@@ -70,7 +71,7 @@ export default function CheckoutPage() {
           <p className="text-label uppercase tracking-[0.14em] text-bone/40">Secure Checkout</p>
           <h1 className="mt-2 font-display text-[32px] leading-none text-bone">Complete Your Order</h1>
         </div>
-        <CheckoutForm />
+        {region.paymentProvider === 'stripe' ? <StripeCheckoutPanel /> : <CheckoutForm />}
       </Container>
     </div>
   )

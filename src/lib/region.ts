@@ -52,7 +52,7 @@ export const REGIONS: Record<RegionId, Region> = {
     locale: 'en-CA',
     medusaRegionId: process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_CA,
     paymentProvider: 'stripe',
-    checkoutEnabled: false, // flipped to true once Medusa CA region + Stripe are live
+    checkoutEnabled: true,
     freeDeliveryThresholdMinor: 15_000, // 150 CAD
   },
 }
