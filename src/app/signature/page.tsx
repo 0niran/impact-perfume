@@ -56,7 +56,7 @@ export default async function SignaturePage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-px bg-stone/20 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => {
                 const imageUrl = getProductImage(product)
                 const priceInfo = getPrice(product, region.currency)
@@ -66,7 +66,7 @@ export default async function SignaturePage() {
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col overflow-hidden bg-ink"
+                    className="group relative flex flex-col overflow-hidden border border-stone/15 bg-ink"
                   >
                     {/* Clickable image panel */}
                     <Link
