@@ -12,7 +12,9 @@
     "seed-oils": "tsx scripts/seed-oils.ts",
     "migrate-notes": "tsx scripts/migrate-notes.ts",
     "cleanup-categories": "tsx scripts/cleanup-categories.ts",
-    "setup-ca": "tsx scripts/setup-ca-region.ts"
+    "setup-ca": "tsx scripts/setup-ca-region.ts",
+    "export-prices": "tsx scripts/export-prices.ts",
+    "import-cad-prices": "tsx scripts/import-cad-prices.ts"
   },
   "dependencies": {
     "@medusajs/medusa-js": "^6.1.8",
