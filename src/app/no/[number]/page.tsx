@@ -7,6 +7,8 @@ import { SITE_URL } from '@/lib/constants'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
 import RelatedProducts from '@/components/pdp/RelatedProducts'
+import ReviewsBlock from '@/components/pdp/ReviewsBlock'
+import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 
 export const revalidate = 3600
 
@@ -116,7 +118,17 @@ export default async function PDPPage({
         />
       </div>
 
+      <RecentlyViewedTracker
+        handle={`no-${enrichment.number}`}
+        href={`/no/${enrichment.number}`}
+        title={`Impact No. ${enrichment.number}`}
+        subtitle={enrichment.descriptor}
+        imageUrl={imageUrl ?? undefined}
+        signatureColor={enrichment.signatureColor}
+      />
+      <ReviewsBlock productHandle={`no-${enrichment.number}`} productName={`Impact No. ${enrichment.number}`} />
       <RelatedProducts currentNumber={enrichment.number} />
+      <RecentlyViewedRail excludeHandle={`no-${enrichment.number}`} />
     </>
   )
 }

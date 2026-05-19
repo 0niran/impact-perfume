@@ -8,6 +8,8 @@ import { getServerRegion } from '@/lib/serverRegion'
 import { formatPrice } from '@/lib/format'
 import NotesPyramid from '@/components/pdp/NotesPyramid'
 import StrengthBars from '@/components/pdp/StrengthBars'
+import ReviewsBlock from '@/components/pdp/ReviewsBlock'
+import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
 
 export const revalidate = 60
@@ -221,6 +223,17 @@ export default async function SignaturePDPPage({
           </div>
         </div>
       </div>
+
+      <RecentlyViewedTracker
+        handle={product.handle}
+        href={`/signature/${product.handle}`}
+        title={product.title}
+        subtitle={descriptor}
+        imageUrl={imageUrl ?? undefined}
+        signatureColor={signatureColor}
+      />
+      <ReviewsBlock productHandle={product.handle} productName={product.title} />
+      <RecentlyViewedRail excludeHandle={product.handle} />
     </main>
   )
 }

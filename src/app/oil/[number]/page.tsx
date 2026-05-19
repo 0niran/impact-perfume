@@ -6,6 +6,8 @@ import { getServerRegion } from '@/lib/serverRegion'
 import { SITE_URL } from '@/lib/constants'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
+import ReviewsBlock from '@/components/pdp/ReviewsBlock'
+import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 
 export const revalidate = 3600
 
@@ -132,6 +134,17 @@ export default async function OilPDPPage({
           </p>
         </div>
       </section>
+
+      <RecentlyViewedTracker
+        handle={`oil-no-${enrichment.number}`}
+        href={`/oil/${enrichment.number}`}
+        title={`Impact Oil No. ${enrichment.number}`}
+        subtitle={enrichment.descriptor}
+        imageUrl={imageUrl ?? undefined}
+        signatureColor={enrichment.signatureColor}
+      />
+      <ReviewsBlock productHandle={`oil-no-${enrichment.number}`} productName={`Impact Oil No. ${enrichment.number}`} />
+      <RecentlyViewedRail excludeHandle={`oil-no-${enrichment.number}`} />
     </>
   )
 }

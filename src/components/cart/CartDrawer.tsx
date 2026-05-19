@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn'
 import { useCartStore, cartSelectors } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
 import { getShippingThreshold } from '@/lib/region'
+import { RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import CartLineItem from './CartLineItem'
 
 export default function CartDrawer() {
@@ -119,6 +120,11 @@ export default function CartDrawer() {
             </div>
           )
         })()}
+
+        {/* Recently viewed */}
+        {lines.length > 0 && (
+          <RecentlyViewedRail variant="drawer" title="Recently viewed" />
+        )}
 
         {/* Upsell strip */}
         {lines.length > 0 && (

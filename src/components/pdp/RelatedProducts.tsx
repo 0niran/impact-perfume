@@ -1,6 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getMedusaProduct, toEnrichment, getPrice, getProductImage } from '@/lib/medusa'
+import {
+  getMedusaProduct,
+  getAllNumberSeriesProducts,
+  toEnrichment,
+  getPrice,
+  getProductImage,
+} from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { formatPrice } from '@/lib/format'
 import { FALLBACK_COLOR } from '@/lib/constants'
@@ -14,6 +20,7 @@ interface RelatedProductsProps {
 interface RelatedItem {
   number: number
   descriptor: string
+  scentFamily?: string
   signatureColor: string
   tagline?: string
   priceKobo: number
@@ -21,52 +28,58 @@ interface RelatedItem {
   imageUrl: string | null
 }
 
-async function fetchRelated(
-  numbers: number[],
-  regionId: string | undefined,
-  currency: string
-): Promise<RelatedItem[]> {
-  const results = await Promise.allSettled(
-    numbers.map((n) => getMedusaProduct(`no-${n}`, regionId))
-  )
-  const items: RelatedItem[] = []
-  for (const r of results) {
-    if (r.status !== 'fulfilled' || !r.value) continue
-    const product = r.value
-    const enrichment = toEnrichment(product, currency)
-    if (!enrichment) continue
-    const price = getPrice(product, currency)
-    items.push({
+export default async function RelatedProducts({ currentNumber }: RelatedProductsProps) {
+  const region = getServerRegion()
+
+  // Look up the current product to find its scent family.
+  const current = await getMedusaProduct(`no-${currentNumber}`, region.medusaRegionId)
+  const currentFamily = (current?.metadata as { scent_family?: string } | undefined)?.scent_family
+
+  // Fetch the whole catalogue once so we can rank by family then by distance.
+  const all = await getAllNumberSeriesProducts(100, region.medusaRegionId)
+
+  const candidates: RelatedItem[] = []
+  for (const p of all) {
+    const enrichment = toEnrichment(p, region.currency)
+    if (!enrichment || enrichment.number === currentNumber) continue
+    const price = getPrice(p, region.currency)
+    candidates.push({
       number: enrichment.number,
       descriptor: enrichment.descriptor,
+      scentFamily: enrichment.scentFamily,
       signatureColor: enrichment.signatureColor ?? FALLBACK_COLOR,
       tagline: enrichment.tagline,
       priceKobo: price.amount,
       currency: price.currency,
-      imageUrl: getProductImage(product),
+      imageUrl: getProductImage(p),
     })
   }
-  return items
-}
 
-export default async function RelatedProducts({ currentNumber }: RelatedProductsProps) {
-  const region = getServerRegion()
-  const candidates = [
-    currentNumber - 2,
-    currentNumber - 1,
-    currentNumber + 1,
-    currentNumber + 2,
-  ].filter((n) => n >= 1 && n <= 100 && n !== currentNumber)
+  // Primary pick: same scent family. Secondary pick: numerical neighbours.
+  // Sort same-family by closeness to currentNumber so they feel curated.
+  const sameFamily = currentFamily
+    ? candidates
+        .filter((c) => c.scentFamily === currentFamily)
+        .sort((a, b) => Math.abs(a.number - currentNumber) - Math.abs(b.number - currentNumber))
+    : []
 
-  const neighbours = candidates.slice(0, 3)
-  const items = await fetchRelated(neighbours, region.medusaRegionId, region.currency)
+  const used = new Set(sameFamily.slice(0, 3).map((c) => c.number))
+  const fillers = candidates
+    .filter((c) => !used.has(c.number))
+    .sort((a, b) => Math.abs(a.number - currentNumber) - Math.abs(b.number - currentNumber))
+
+  const items = [...sameFamily.slice(0, 3), ...fillers].slice(0, 3)
 
   if (items.length === 0) return null
+
+  const headline = currentFamily && sameFamily.length >= 3
+    ? `More in ${currentFamily}`
+    : 'Others in the series'
 
   return (
     <section className="border-t border-stone/20 bg-ink px-6 py-16 md:px-10 lg:px-16">
       <p className="text-label uppercase tracking-[0.1em] text-stone mb-8">
-        Others in the series
+        {headline}
       </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {items.map((item) => (
@@ -75,7 +88,6 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
             href={`/no/${item.number}`}
             className="group flex flex-col overflow-hidden border border-stone/20 hover:border-stone/50 transition-colors duration-200"
           >
-            {/* Product on dark surface with subtle signature glow */}
             <div className="relative flex h-56 items-center justify-center overflow-hidden bg-ink">
               <div
                 className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-80"
@@ -85,7 +97,6 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
                 aria-hidden="true"
               />
 
-              {/* Bottle image */}
               <div className="relative z-10 w-[45%] h-[80%]">
                 <Image
                   src={item.imageUrl ?? BOTTLE_FALLBACK}
@@ -97,7 +108,6 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
               </div>
             </div>
 
-            {/* Info */}
             <div className="flex flex-col gap-1 px-5 py-4">
               <p className="text-label uppercase tracking-[0.08em] text-stone">
                 No. {item.number}
