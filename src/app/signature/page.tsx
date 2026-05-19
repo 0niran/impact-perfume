@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { getSignatureProducts, getPrice, getProductImage } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
-import { signatureImageFor } from '@/lib/signatureImages'
 import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
@@ -59,7 +58,7 @@ export default async function SignaturePage() {
           ) : (
             <div className="grid grid-cols-1 gap-px bg-stone/20 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => {
-                const imageUrl = signatureImageFor(product.handle) ?? getProductImage(product)
+                const imageUrl = getProductImage(product)
                 const priceInfo = getPrice(product, region.currency)
                 const variant = product.variants?.[0]
                 const variantId = variant?.id ?? product.handle ?? product.id

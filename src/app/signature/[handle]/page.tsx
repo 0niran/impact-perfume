@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { getMedusaProduct, getPrice, getProductImage } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
-import { signatureImageFor } from '@/lib/signatureImages'
 import { shippingCopyFor } from '@/lib/shippingCopy'
 import { formatPrice } from '@/lib/format'
 import NotesPyramid from '@/components/pdp/NotesPyramid'
@@ -49,7 +48,7 @@ export default async function SignaturePDPPage({
   const variant = product.variants?.[0]
   const variantId = variant?.id ?? product.handle ?? product.id
   const priceInfo = getPrice(product, region.currency)
-  const imageUrl = signatureImageFor(product.handle) ?? getProductImage(product)
+  const imageUrl = getProductImage(product)
 
   const topNotes = splitNotes(m.top_notes)
   const heartNotes = splitNotes(m.heart_notes)
