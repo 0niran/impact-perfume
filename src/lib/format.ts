@@ -34,12 +34,20 @@ export function formatPrice(amountMinor: number, currency: string = 'NGN'): stri
   const cur = currency.toUpperCase() as SupportedCurrency
   const locale = LOCALE_BY_CURRENCY[cur] ?? 'en-US'
   const fractionDigits = FRACTION_DIGITS_BY_CURRENCY[cur] ?? 2
-  return new Intl.NumberFormat(locale, {
+  const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: cur,
     maximumFractionDigits: fractionDigits,
     minimumFractionDigits: fractionDigits,
   }).format(amountMinor / 100)
+
+  // Intl.NumberFormat('en-CA') outputs CAD with a bare '$' (it's
+  // unambiguous to Canadians) but on a multi-region site that reads as USD.
+  // Prepend 'CA' so it's unambiguous everywhere.
+  if (cur === 'CAD' && formatted.startsWith('$')) {
+    return `CA${formatted}`
+  }
+  return formatted
 }
 
 /** @deprecated Use formatPrice(amountMinor, 'NGN') instead. Kept until all call sites migrate. */
