@@ -83,7 +83,7 @@ export default function SiteHeader() {
           <nav className="hidden lg:flex items-center gap-6" aria-label="Primary navigation">
             <NavItem
               label="Number Collection"
-              href="/shop"
+              href="/no-series"
               hasMenu
               isActive={activeMenu === 'series'}
               onMouseEnter={() => openMenu('series')}

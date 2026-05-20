@@ -5,7 +5,7 @@ const { url } = SITE_CONFIG
 
 const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url, priority: 1, changeFrequency: 'weekly' },
-  { url: `${url}/shop`, priority: 0.9, changeFrequency: 'weekly' },
+  { url: `${url}/no-series`, priority: 0.9, changeFrequency: 'weekly' },
   { url: `${url}/oils`, priority: 0.8, changeFrequency: 'weekly' },
   { url: `${url}/home`, priority: 0.8, changeFrequency: 'weekly' },
   { url: `${url}/gifts`, priority: 0.8, changeFrequency: 'weekly' },

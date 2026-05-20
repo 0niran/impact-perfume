@@ -16,8 +16,8 @@ const sections = [
   {
     title: 'Number Collection',
     links: [
-      { label: 'Shop All', href: '/shop' },
-      { label: 'By Scent Family', href: '/shop' },
+      { label: 'Shop All', href: '/no-series' },
+      { label: 'By Scent Family', href: '/no-series' },
     ],
   },
   {
@@ -53,7 +53,7 @@ const sections = [
     links: [
       { label: 'Number Series Discovery', href: '/gifts#discovery-sets' },
       { label: 'Signature Discovery', href: '/gifts#discovery-sets' },
-      { label: 'Fragrance Finder', href: '/quiz' },
+      { label: 'Take the Scent Quiz', href: '/quiz' },
     ],
   },
   {

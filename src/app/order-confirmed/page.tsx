@@ -37,7 +37,7 @@ export default async function OrderConfirmedPage({
 
       <div className="mt-12 flex flex-col items-center gap-4">
         <Link
-          href="/shop"
+          href="/no-series"
           className="inline-flex h-[52px] items-center bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90"
         >
           Continue Shopping

@@ -44,7 +44,7 @@ export default async function JournalPage() {
               We&apos;re preparing our first dispatches from the house.
             </p>
             <Link
-              href="/shop"
+              href="/no-series"
               className="mt-8 inline-flex h-[52px] items-center bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90"
             >
               Explore the collection

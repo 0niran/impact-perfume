@@ -8,7 +8,7 @@ const COLLECTIONS = [
     description:
       '50 numbered Eau de Parfums. One silhouette. An infinite world of difference inside each bottle.',
     cta: 'Shop the Series',
-    href: '/shop',
+    href: '/no-series',
     accent: 'rgba(107,68,35,0.15)',
     large: true,
   },
@@ -61,7 +61,7 @@ export default function CollectionsShowcase() {
             </h2>
           </div>
           <Link
-            href="/shop"
+            href="/no-series"
             className="hidden text-small uppercase tracking-[0.1em] text-stone transition-colors hover:text-bone md:block"
           >
             View All
@@ -89,7 +89,7 @@ export default function CollectionsShowcase() {
         {/* Mobile CTA */}
         <div className="mt-8 md:hidden">
           <Link
-            href="/shop"
+            href="/no-series"
             className="text-small uppercase tracking-[0.1em] text-stone"
           >
             View All Collections

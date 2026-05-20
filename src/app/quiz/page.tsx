@@ -5,12 +5,12 @@ import QuizClient from '@/components/quiz/QuizClient'
 import { type Enrichment } from '@/components/quiz/quizData'
 
 export const metadata: Metadata = {
-  title: 'Find Your Number',
+  title: 'Find Your Fragrance',
   description:
-    'Answer 5 questions and discover the Impact fragrance made for you.',
+    'Five questions, ninety seconds. We match you to the Impact fragrance composed for you.',
   openGraph: {
-    title: 'Find Your Number · Impact Perfumes',
-    description: 'Answer 5 questions. We match you to your Number.',
+    title: 'Find Your Fragrance · Impact Perfumes',
+    description: 'Five questions, ninety seconds. We match you to the fragrance for you.',
   },
 }
 

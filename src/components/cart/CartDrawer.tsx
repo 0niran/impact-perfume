@@ -113,7 +113,7 @@ export default function CartDrawer() {
                 Add a fragrance from the collection to get started.
               </p>
               <Link
-                href="/shop"
+                href="/no-series"
                 onClick={() => setOpen(false)}
                 className="mt-2 inline-flex items-center border border-stone/40 px-6 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
                 style={{ height: 44 }}

@@ -30,7 +30,7 @@ export default function HeroSection() {
 
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
-            href="/shop"
+            href="/no-series"
             className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 ease-soft hover:opacity-90 hover:-translate-y-0.5"
             style={{ height: 52 }}
           >
@@ -41,7 +41,7 @@ export default function HeroSection() {
             className="inline-flex items-center border border-bone/30 px-8 text-label uppercase tracking-[0.1em] text-bone/80 transition-all duration-300 hover:border-bone hover:text-bone"
             style={{ height: 52 }}
           >
-            Find Your Number
+            Find your fragrance
           </Link>
         </div>
       </Container>

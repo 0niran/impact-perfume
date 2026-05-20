@@ -275,7 +275,7 @@ export default function CheckoutForm() {
         </div>
 
         <Link
-          href="/shop"
+          href="/no-series"
           className="text-center text-small text-bone/40 underline-offset-2 hover:underline"
         >
           ← Continue shopping

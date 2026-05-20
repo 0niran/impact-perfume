@@ -11,7 +11,7 @@ const linkColumns: { heading: string; links: FooterLink[] }[] = [
   {
     heading: 'Shop',
     links: [
-      { label: 'Number Collection', href: '/shop' },
+      { label: 'Number Collection', href: '/no-series' },
       { label: 'Impact Oils', href: '/oils' },
       { label: 'Home Diffusers', href: '/home' },
       { label: 'Gift Sets', href: '/gifts' },

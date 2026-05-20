@@ -20,6 +20,9 @@ const nextConfig = {
       { source: "/our-brand", destination: "/house-story", permanent: true },
       { source: "/our-team", destination: "/house-story#team", permanent: true },
       { source: "/product/:slug", destination: "/no/:slug", permanent: false },
+      // Old generic /shop path moved to the more semantic /no-series.
+      { source: "/shop", destination: "/no-series", permanent: true },
+      { source: "/shop/:path*", destination: "/no-series/:path*", permanent: true },
     ];
   },
 };

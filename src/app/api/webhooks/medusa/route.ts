@@ -46,7 +46,7 @@ function pathsFor(handle: string, categories: string[] = []): string[] {
   const noMatch = handle.match(/^no-(\d+)$/)
   if (noMatch) {
     paths.add(`/no/${noMatch[1]}`)
-    paths.add('/shop')
+    paths.add('/no-series')
   }
 
   const oilMatch = handle.match(/^oil-no-(\d+)$/)

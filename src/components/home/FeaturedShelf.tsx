@@ -41,7 +41,7 @@ export default async function FeaturedShelf() {
             <h2 className="mt-2 font-display text-h1 text-bone">Start with a Number</h2>
           </div>
           <Link
-            href="/shop"
+            href="/no-series"
             className="link-underline self-start text-small text-stone hover:text-bone md:self-auto"
           >
             View all 50

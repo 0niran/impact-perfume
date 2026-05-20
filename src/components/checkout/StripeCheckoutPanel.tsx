@@ -367,7 +367,7 @@ function SummaryRail({ subtotal, currency }: { subtotal: number; currency: strin
         <p className="mt-1 text-small text-bone/40">Delivery fee calculated after order</p>
       </div>
       <Link
-        href="/shop"
+        href="/no-series"
         className="text-center text-small text-bone/40 underline-offset-2 hover:underline"
       >
         ← Continue shopping

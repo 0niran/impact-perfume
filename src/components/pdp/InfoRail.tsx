@@ -48,7 +48,7 @@ export default function InfoRail({
   currency = 'NGN',
   imageUrl,
   collectionLabel = 'The Number Series',
-  collectionHref = '/shop',
+  collectionHref = '/no-series',
   titlePrefix = 'Impact No.',
   variantLabel,
   prevHref = (n) => `/no/${n}`,

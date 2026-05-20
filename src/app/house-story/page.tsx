@@ -202,7 +202,7 @@ export default function HouseStoryPage() {
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/shop"
+              href="/no-series"
               className="inline-flex items-center bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90"
               style={{ height: 52 }}
             >

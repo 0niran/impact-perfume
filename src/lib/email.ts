@@ -132,7 +132,7 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
       </tr>
     </table>
 
-    <a href="${SITE_CONFIG.url}/shop" style="display:inline-block;background:#1A1612;color:#F5F1EB;padding:14px 32px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;">
+    <a href="${SITE_CONFIG.url}/no-series" style="display:inline-block;background:#1A1612;color:#F5F1EB;padding:14px 32px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;">
       Continue Shopping
     </a>
     `

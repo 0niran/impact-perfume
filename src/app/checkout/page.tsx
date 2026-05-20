@@ -59,7 +59,7 @@ export default function CheckoutPage() {
         <Container className="flex flex-col items-center justify-center py-32 text-center">
           <p className="font-display text-h1 text-bone/50">Your cart is empty.</p>
           <Link
-            href="/shop"
+            href="/no-series"
             className="mt-6 inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
             style={{ height: 52 }}
           >

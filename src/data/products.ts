@@ -52,7 +52,7 @@ export const GIFTS: GiftProduct[] = [
     subtitle: '12 × 5ml',
     description: 'Twelve handpicked 5ml miniatures from across the Number Series. The simplest way to find your Number, or gift the journey.',
     imageUrl: '/images/No Series Discovery Set.jpeg',
-    cta: { label: 'Shop the set', href: '/shop' },
+    cta: { label: 'Shop the set', href: '/no-series' },
     featured: true,
   },
   {

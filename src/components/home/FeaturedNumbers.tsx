@@ -50,7 +50,7 @@ export default async function FeaturedNumbers() {
             </h2>
           </div>
           <Link
-            href="/shop"
+            href="/no-series"
             className="hidden md:inline-flex items-center border border-stone/30 px-6 text-label uppercase tracking-[0.08em] text-bone/70 hover:border-bone hover:text-bone transition-colors duration-200 shrink-0"
             style={{ height: 40 }}
           >
@@ -129,7 +129,7 @@ export default async function FeaturedNumbers() {
         {/* Mobile "View all" CTA */}
         <div className="mt-10 flex justify-center md:hidden">
           <Link
-            href="/shop"
+            href="/no-series"
             className="inline-flex items-center border border-stone/30 px-8 text-label uppercase tracking-[0.08em] text-bone/70 hover:border-bone hover:text-bone transition-colors duration-200"
             style={{ height: 44 }}
           >

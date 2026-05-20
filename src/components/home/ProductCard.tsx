@@ -31,7 +31,7 @@ export default function ProductCard({
   tagline,
   imageUrl,
 }: ProductCardProps) {
-  const href = number ? `/no/${number}` : '/shop'
+  const href = number ? `/no/${number}` : '/no-series'
   const src = imageUrl ?? (number ? BOTTLE_FALLBACK : null)
 
   return (
