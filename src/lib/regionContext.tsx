@@ -10,6 +10,7 @@ import {
 } from './region'
 
 const COOKIE_NAME = 'impact_region'
+const MANUAL_COOKIE_NAME = 'impact_region_manual'
 const COOKIE_MAX_AGE_DAYS = 180
 
 interface RegionContextValue {
@@ -34,6 +35,9 @@ function writeCookie(id: RegionId) {
   const expires = new Date()
   expires.setDate(expires.getDate() + COOKIE_MAX_AGE_DAYS)
   document.cookie = `${COOKIE_NAME}=${id}; expires=${expires.toUTCString()}; path=/; samesite=lax`
+  // Mark the choice as manual so the geo middleware stops overriding it
+  // on future requests (e.g. when the visitor uses a VPN).
+  document.cookie = `${MANUAL_COOKIE_NAME}=1; expires=${expires.toUTCString()}; path=/; samesite=lax`
 }
 
 interface RegionProviderProps {

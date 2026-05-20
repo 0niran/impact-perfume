@@ -1,7 +1,19 @@
 /**
- * Shared post-payment fulfillment: create the Medusa draft order, send
+ * Shared post-payment fulfillment: create a real Medusa order, send
  * confirmation + business notification emails. Used by both the Paystack
  * verify route (NGN) and the Stripe confirm route (CAD).
+ *
+ * Medusa v2 doesn't expose a direct "create order" admin endpoint. The
+ * supported flow for "I already captured payment externally, record this
+ * as a finalised order" is:
+ *
+ *   1. POST /admin/draft-orders                  -> draft
+ *   2. POST /admin/draft-orders/{id}/convert-to-order  -> real order
+ *
+ * Native Medusa payment_status remains `not_paid` after this — wiring the
+ * payment_collection / payment / capture chain is a separate task. For now
+ * we stamp `payment_status: paid` into metadata so the owner can see the
+ * captured state alongside the external reference.
  */
 
 import { buildCustomerEmail, buildBusinessEmail, sendEmail } from '@/lib/email'
@@ -44,17 +56,29 @@ async function getMedusaAdminToken(): Promise<string | null> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   const email = process.env.MEDUSA_ADMIN_EMAIL
   const password = process.env.MEDUSA_ADMIN_PASSWORD
-  if (!backendUrl || !email || !password) return null
+  if (!backendUrl || !email || !password) {
+    console.error('[orderFulfillment] Missing Medusa admin env vars', {
+      hasBackend: Boolean(backendUrl),
+      hasEmail: Boolean(email),
+      hasPassword: Boolean(password),
+    })
+    return null
+  }
   try {
     const res = await fetch(`${backendUrl}/auth/user/emailpass`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      console.error('[orderFulfillment] Medusa auth failed', { status: res.status, body: text.slice(0, 300) })
+      return null
+    }
     const { token } = await res.json()
     return token ?? null
-  } catch {
+  } catch (err) {
+    console.error('[orderFulfillment] Medusa auth threw', err instanceof Error ? err.message : err)
     return null
   }
 }
@@ -62,56 +86,111 @@ async function getMedusaAdminToken(): Promise<string | null> {
 async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   const region = REGIONS[input.regionId]
-  if (!backendUrl || !region.medusaRegionId) return
-
-  const token = await getMedusaAdminToken()
-  if (!token) {
-    console.error('[orderFulfillment] No Medusa admin token; skipping draft order')
+  if (!backendUrl || !region.medusaRegionId) {
+    console.error('[orderFulfillment] Missing backend URL or region id', {
+      hasBackend: Boolean(backendUrl),
+      regionId: input.regionId,
+      medusaRegionId: region.medusaRegionId,
+      reference: input.reference,
+    })
     return
   }
+
+  const token = await getMedusaAdminToken()
+  if (!token) return
 
   const nameParts = input.customerName.trim().split(' ')
   const firstName = nameParts[0] || '-'
   const lastName = nameParts.slice(1).join(' ') || '-'
 
-  const res = await fetch(`${backendUrl}/admin/draft-orders`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+  // 1) Create the draft
+  const draftBody = {
+    email: input.customerEmail,
+    region_id: region.medusaRegionId,
+    shipping_address: {
+      first_name: firstName,
+      last_name: lastName,
+      phone: input.customerPhone,
+      address_1: input.shippingAddress.address1,
+      address_2: input.shippingAddress.address2 ?? '',
+      city: input.shippingAddress.city,
+      province: input.shippingAddress.state,
+      postal_code: input.shippingAddress.postalCode ?? '',
+      country_code: region.countryCode.toLowerCase(),
     },
-    body: JSON.stringify({
-      email: input.customerEmail,
-      region_id: region.medusaRegionId,
-      shipping_address: {
-        first_name: firstName,
-        last_name: lastName,
-        phone: input.customerPhone,
-        address_1: input.shippingAddress.address1,
-        address_2: input.shippingAddress.address2 ?? '',
-        city: input.shippingAddress.city,
-        province: input.shippingAddress.state,
-        postal_code: input.shippingAddress.postalCode ?? '',
-        country_code: region.countryCode.toLowerCase(),
-      },
-      items: input.lines.map((l) => ({
-        variant_id: l.variantId,
-        quantity: l.qty,
-        unit_price: l.unitPriceKobo,
-      })),
-      metadata: {
-        [`${input.paymentProvider}_reference`]: input.paymentRef,
-        payment_status: 'paid',
-        payment_provider: input.paymentProvider,
-        customer_phone: input.customerPhone,
-      },
-    }),
+    items: input.lines.map((l) => ({
+      variant_id: l.variantId,
+      quantity: l.qty,
+      unit_price: l.unitPriceKobo,
+    })),
+    metadata: {
+      [`${input.paymentProvider}_reference`]: input.paymentRef,
+      payment_status: 'paid',
+      payment_provider: input.paymentProvider,
+      customer_phone: input.customerPhone,
+      reference: input.reference,
+    },
+  }
+
+  const draftRes = await fetch(`${backendUrl}/admin/draft-orders`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(draftBody),
   })
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    console.error('[orderFulfillment] Medusa draft order failed:', res.status, text)
+  if (!draftRes.ok) {
+    const text = await draftRes.text().catch(() => '')
+    console.error('[orderFulfillment] draft creation failed', {
+      status: draftRes.status,
+      body: text.slice(0, 800),
+      reference: input.reference,
+      regionId: input.regionId,
+      lineCount: input.lines.length,
+    })
+    return
   }
+
+  const draftJson = await draftRes.json().catch(() => ({} as Record<string, unknown>))
+  const draftOrder = (draftJson as { draft_order?: { id?: string } }).draft_order
+  const draftId = draftOrder?.id ?? (draftJson as { id?: string }).id
+  if (!draftId) {
+    console.error('[orderFulfillment] draft response missing id', {
+      body: JSON.stringify(draftJson).slice(0, 500),
+      reference: input.reference,
+    })
+    return
+  }
+
+  // 2) Promote draft to a real order so it shows up under Orders, not Draft Orders
+  const convRes = await fetch(
+    `${backendUrl}/admin/draft-orders/${draftId}/convert-to-order`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: '{}',
+    }
+  )
+
+  if (!convRes.ok) {
+    const text = await convRes.text().catch(() => '')
+    console.error('[orderFulfillment] convert-to-order failed', {
+      status: convRes.status,
+      body: text.slice(0, 800),
+      draftId,
+      reference: input.reference,
+    })
+    return
+  }
+
+  const conv = await convRes.json().catch(() => ({} as Record<string, unknown>))
+  const orderId = (conv as { order?: { id?: string } }).order?.id ?? draftId
+  console.log('[orderFulfillment] order created', {
+    orderId,
+    reference: input.reference,
+    regionId: input.regionId,
+    total: input.totalKobo,
+    currency: input.currency,
+  })
 }
 
 export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
@@ -131,7 +210,7 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
     currency: input.currency,
   }
 
-  await Promise.allSettled([
+  const results = await Promise.allSettled([
     createMedusaOrder(input),
     sendEmail({
       to: input.customerEmail,
@@ -142,4 +221,15 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
       ...buildBusinessEmail(orderEmailData),
     }),
   ])
+
+  // Surface rejections too — Promise.allSettled hides them otherwise.
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') {
+      const label = ['createMedusaOrder', 'customerEmail', 'businessEmail'][i] ?? 'unknown'
+      console.error(`[orderFulfillment] ${label} rejected`, {
+        reason: r.reason instanceof Error ? r.reason.message : r.reason,
+        reference: input.reference,
+      })
+    }
+  })
 }
