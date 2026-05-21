@@ -8,7 +8,7 @@ const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http:/
 const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
 const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
 
-// Signature Collection — prices in kobo (₦1 = 100 kobo)
+// Signature Collection — Medusa v2 stores prices in MAJOR units (₦1 = 1).
 const SIGNATURE_PRODUCTS = [
   {
     title: 'Enigma',
@@ -23,7 +23,7 @@ const SIGNATURE_PRODUCTS = [
     baseNotes: 'Amber, Musk, Sandalwood',
     longevity: '5',
     sillage: '4',
-    priceKobo: 8_000_000,
+    priceNgn: 80_000,
   },
   {
     title: 'OUD Osmosis Unlimited',
@@ -38,7 +38,7 @@ const SIGNATURE_PRODUCTS = [
     baseNotes: 'Amber, Benzoin, Musk',
     longevity: '5',
     sillage: '5',
-    priceKobo: 10_000_000,
+    priceNgn: 100_000,
   },
   {
     title: 'Royale Silver',
@@ -53,7 +53,7 @@ const SIGNATURE_PRODUCTS = [
     baseNotes: 'Vetiver, Musk, White Amber',
     longevity: '4',
     sillage: '3',
-    priceKobo: 8_000_000,
+    priceNgn: 80_000,
   },
   {
     title: 'Solid OUD',
@@ -68,7 +68,7 @@ const SIGNATURE_PRODUCTS = [
     baseNotes: 'Sandalwood, Amber, Musk',
     longevity: '5',
     sillage: '4',
-    priceKobo: 10_000_000,
+    priceNgn: 100_000,
   },
 ]
 
@@ -196,7 +196,7 @@ async function seedProduct(p: typeof SIGNATURE_PRODUCTS[number], categoryId: str
       {
         title: `${p.title} — 100ml EDP`,
         sku: `${p.handle.toUpperCase()}-100ML`,
-        prices: [{ amount: p.priceKobo, currency_code: 'ngn' }],
+        prices: [{ amount: p.priceNgn, currency_code: 'ngn' }],
         options: { Volume: '100ml' },
       },
     ],
@@ -233,7 +233,7 @@ async function main() {
   // Seed each product
   console.log('2. Seeding Signature products...')
   for (const product of SIGNATURE_PRODUCTS) {
-    console.log(`\n  → ${product.title} (₦${(product.priceKobo / 100).toLocaleString('en-NG')})`)
+    console.log(`\n  → ${product.title} (₦${product.priceNgn.toLocaleString('en-NG')})`)
     await seedProduct(product, categoryId)
     await new Promise((r) => setTimeout(r, 200))
   }

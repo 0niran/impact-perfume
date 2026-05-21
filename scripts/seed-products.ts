@@ -48,8 +48,8 @@ const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
 const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 const SANITY_API_TOKEN = process.env.SANITY_API_WRITE_TOKEN || ''
 
-// Price in kobo (₦50,000 = 5,000,000 kobo)
-const PLACEHOLDER_PRICE_NGN = 5000000
+// Medusa v2 stores prices in MAJOR units. ₦50,000 → 50000.
+const PLACEHOLDER_PRICE_NGN = 50000
 
 // Initialize Sanity client
 const sanityClient = createClient({
@@ -304,7 +304,7 @@ async function createDiscoverySet(): Promise<void> {
         sku: 'DISCOVERY-SET-10X5ML',
         prices: [
           {
-            amount: 2500000,
+            amount: 25000,
             currency_code: 'ngn'
           }
         ],

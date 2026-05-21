@@ -6,8 +6,9 @@
  * Columns:
  *   handle, title, variant_id, variant_title, ngn_amount_minor, cad_amount_minor
  *
- * Amounts are in the smallest currency unit (kobo / cents). To get NGN naira
- * divide by 100; same for CAD dollars.
+ * Amounts in the CSV are in the smallest currency unit (kobo / cents).
+ * Medusa v2 itself stores prices in MAJOR units, so we multiply by 100 on
+ * the way out so the CSV preserves its historical contract.
  *
  * Re-running overwrites the CSV — version-control it if you want history.
  */
@@ -92,10 +93,14 @@ async function main() {
     'handle,title,variant_id,variant_title,ngn_amount_minor,cad_amount_minor',
   ]
   let total = 0
+  // Medusa stores MAJOR units; CSV is MINOR units (kobo / cents).
+  const toMinor = (a: number | undefined): number | '' =>
+    typeof a === 'number' ? Math.round(a * 100) : ''
+
   for (const p of all) {
     for (const v of p.variants ?? []) {
-      const ngn = (v.prices ?? []).find((pr) => pr.currency_code === 'ngn')?.amount ?? ''
-      const cad = (v.prices ?? []).find((pr) => pr.currency_code === 'cad')?.amount ?? ''
+      const ngn = toMinor((v.prices ?? []).find((pr) => pr.currency_code === 'ngn')?.amount)
+      const cad = toMinor((v.prices ?? []).find((pr) => pr.currency_code === 'cad')?.amount)
       rows.push(
         [
           csvEscape(p.handle),

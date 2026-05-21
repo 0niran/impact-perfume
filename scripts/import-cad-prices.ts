@@ -172,7 +172,9 @@ async function main() {
   let failed = 0
   for (const t of targets) {
     try {
-      await setCadPrice(t.productId, t.variantId, t.cad)
+      // CSV is MINOR units (cents); Medusa v2 expects MAJOR units (dollars).
+      const cadMajor = Math.round(t.cad / 100)
+      await setCadPrice(t.productId, t.variantId, cadMajor)
       process.stdout.write('.')
       updated++
     } catch (err) {

@@ -18,7 +18,8 @@ const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
 const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
 
 // Placeholder price — owner sets real prices in Medusa admin
-const PLACEHOLDER_PRICE_NGN = 2500000 // ₦25,000 for 12ml oil (vs ₦50k for 100ml EDP)
+// Medusa v2 stores prices in MAJOR units. ₦25,000 → 25000.
+const PLACEHOLDER_PRICE_NGN = 25000
 
 interface SeedOil {
   number: number

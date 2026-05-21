@@ -179,6 +179,11 @@ function resolveNumber(p: MedusaProduct, m: MedusaProductMetadata): number {
  * When `region_id` was passed on the fetch, Medusa returns `calculated_price`
  * already in the right currency. Without it, fall back to scanning the prices
  * array for the matching currency code.
+ *
+ * Medusa v2 stores prices in MAJOR units (₦50,000 → 50000, CAD $65 → 65).
+ * The rest of the storefront — formatPrice, Paystack, Stripe — works in
+ * MINOR units. We multiply by 100 here at the read boundary so the contract
+ * stays consistent everywhere downstream.
  */
 export function getPrice(
   product: MedusaProduct,
@@ -192,7 +197,7 @@ export function getPrice(
   const calc = variant.calculated_price
   if (calc?.calculated_amount && (!calc.currency_code || calc.currency_code === cur)) {
     return {
-      amount: calc.calculated_amount,
+      amount: calc.calculated_amount * 100,
       currency: (calc.currency_code ?? cur).toUpperCase(),
     }
   }
@@ -200,13 +205,13 @@ export function getPrice(
   // Fallback: scan the prices array for the right currency
   const direct = variant.prices?.find((p) => p.currency_code === cur)
   if (direct) {
-    return { amount: direct.amount, currency: direct.currency_code.toUpperCase() }
+    return { amount: direct.amount * 100, currency: direct.currency_code.toUpperCase() }
   }
 
   // Last resort: first available price
   const first = variant.prices?.[0]
   if (first) {
-    return { amount: first.amount, currency: first.currency_code.toUpperCase() }
+    return { amount: first.amount * 100, currency: first.currency_code.toUpperCase() }
   }
 
   return { amount: 0, currency: cur.toUpperCase() }

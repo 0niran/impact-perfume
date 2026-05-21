@@ -7,13 +7,14 @@
  * supported flow for "I already captured payment externally, record this
  * as a finalised order" is:
  *
- *   1. POST /admin/draft-orders                  -> draft
- *   2. POST /admin/draft-orders/{id}/convert-to-order  -> real order
+ *   1. POST /admin/draft-orders                            -> draft
+ *   2. POST /admin/draft-orders/{id}/convert-to-order      -> real order
+ *   3. POST /admin/payment-collections                     -> payment collection
+ *   4. POST /admin/payment-collections/{id}/mark-as-paid   -> captured
  *
- * Native Medusa payment_status remains `not_paid` after this — wiring the
- * payment_collection / payment / capture chain is a separate task. For now
- * we stamp `payment_status: paid` into metadata so the owner can see the
- * captured state alongside the external reference.
+ * Storefront amounts are in MINOR units (kobo / cents) but Medusa v2
+ * stores prices in MAJOR units (₦50,000 → 50000, CAD $65 → 65). We divide
+ * by 100 here at the write boundary.
  */
 
 import { buildCustomerEmail, buildBusinessEmail, sendEmail } from '@/lib/email'
@@ -121,7 +122,8 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
     items: input.lines.map((l) => ({
       variant_id: l.variantId,
       quantity: l.qty,
-      unit_price: l.unitPriceKobo,
+      // Medusa v2 expects MAJOR units; storefront tracks MINOR units.
+      unit_price: Math.round(l.unitPriceKobo / 100),
     })),
     metadata: {
       [`${input.paymentProvider}_reference`]: input.paymentRef,
@@ -190,6 +192,67 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
     regionId: input.regionId,
     total: input.totalKobo,
     currency: input.currency,
+  })
+
+  // 3) Capture payment so the order shows as Paid (not "Not paid").
+  //    Medusa v2 expects MAJOR units on payment-collection amounts too.
+  const captureAmount = Math.round(input.totalKobo / 100)
+  const pcRes = await fetch(`${backendUrl}/admin/payment-collections`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: orderId, amount: captureAmount }),
+  })
+
+  if (!pcRes.ok) {
+    const text = await pcRes.text().catch(() => '')
+    console.error('[orderFulfillment] payment-collection create failed', {
+      status: pcRes.status,
+      body: text.slice(0, 800),
+      orderId,
+      reference: input.reference,
+    })
+    return
+  }
+
+  const pcJson = await pcRes.json().catch(() => ({} as Record<string, unknown>))
+  const paymentCollectionId =
+    (pcJson as { payment_collection?: { id?: string } }).payment_collection?.id ??
+    (pcJson as { id?: string }).id
+  if (!paymentCollectionId) {
+    console.error('[orderFulfillment] payment-collection response missing id', {
+      body: JSON.stringify(pcJson).slice(0, 500),
+      orderId,
+      reference: input.reference,
+    })
+    return
+  }
+
+  const markRes = await fetch(
+    `${backendUrl}/admin/payment-collections/${paymentCollectionId}/mark-as-paid`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: orderId }),
+    }
+  )
+
+  if (!markRes.ok) {
+    const text = await markRes.text().catch(() => '')
+    console.error('[orderFulfillment] mark-as-paid failed', {
+      status: markRes.status,
+      body: text.slice(0, 800),
+      paymentCollectionId,
+      orderId,
+      reference: input.reference,
+    })
+    return
+  }
+
+  console.log('[orderFulfillment] payment captured', {
+    orderId,
+    paymentCollectionId,
+    amount: captureAmount,
+    reference: input.reference,
   })
 }
 
