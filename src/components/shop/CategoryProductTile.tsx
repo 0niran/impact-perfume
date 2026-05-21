@@ -41,6 +41,9 @@ export default function CategoryProductTile({
       currency,
       qty: 1,
       thumbnail: image,
+      color: product.signatureColor,
+      handle: product.handle,
+      href,
     })
     setAdded(true)
     setOpen(true)

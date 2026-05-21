@@ -113,7 +113,7 @@ export default async function OilPDPPage({
           variantId={variant?.id ?? product.handle}
           priceKobo={price.amount}
           currency={price.currency}
-          imageUrl={imageUrl ?? undefined}
+          imageUrl={imageUrl ?? '/images/Oil_perfume.png'}
           shippingCopy={shippingCopyFor(region)}
           collectionLabel="Impact Oils"
           collectionHref="/oils"
@@ -122,6 +122,8 @@ export default async function OilPDPPage({
           prevHref={(n) => `/oil/${n}`}
           nextHref={(n) => `/oil/${n}`}
           maxNumber={50}
+          handle={`oil-no-${enrichment.number}`}
+          href={`/oil/${enrichment.number}`}
         />
       </div>
 

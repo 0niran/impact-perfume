@@ -17,6 +17,16 @@ export default function CartDrawer() {
   const itemCount = useCartStore(cartSelectors.itemCount)
   const { region } = useRegion()
 
+  // The cross-sell suggests pairing with an oil. Suppress it when the cart
+  // already contains one — either via stored handle (new lines) or via the
+  // variant label (older persisted lines).
+  const hasOilInCart = lines.some(
+    (l) =>
+      l.handle?.startsWith('oil-no-') ||
+      /oil/i.test(l.variantLabel ?? '')
+  )
+  const cartHandles = lines.map((l) => l.handle).filter(Boolean) as string[]
+
   const [saveEmail, setSaveEmail] = useState('')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'loading' | 'saved' | 'error'>('idle')
 
@@ -159,25 +169,46 @@ export default function CartDrawer() {
 
         {/* Recently viewed */}
         {lines.length > 0 && (
-          <RecentlyViewedRail variant="drawer" title="Recently viewed" />
+          <RecentlyViewedRail
+            variant="drawer"
+            title="Recently viewed"
+            excludeHandles={cartHandles}
+          />
         )}
 
-        {/* Upsell strip */}
+        {/* Upsell strip — flip to Number Series once the cart already has an oil */}
         {lines.length > 0 && (
           <div className="border-t border-stone/10 bg-ink/40 px-6 py-4">
             <p className="text-label uppercase tracking-[0.08em] text-stone mb-1">
               Complete the set
             </p>
-            <p className="text-small text-stone/60 mb-3">
-              Pair your fragrance with a matching oil or home diffuser.
-            </p>
-            <Link
-              href="/oils"
-              onClick={() => setOpen(false)}
-              className="inline-flex items-center text-small text-accent hover:underline underline-offset-2 transition-colors"
-            >
-              Shop Impact Oils →
-            </Link>
+            {hasOilInCart ? (
+              <>
+                <p className="text-small text-stone/60 mb-3">
+                  Pair your oil with the full-strength Number Series.
+                </p>
+                <Link
+                  href="/no-series"
+                  onClick={() => setOpen(false)}
+                  className="inline-flex items-center text-small text-accent hover:underline underline-offset-2 transition-colors"
+                >
+                  Shop the Number Series →
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-small text-stone/60 mb-3">
+                  Pair your fragrance with a matching oil or home diffuser.
+                </p>
+                <Link
+                  href="/oils"
+                  onClick={() => setOpen(false)}
+                  className="inline-flex items-center text-small text-accent hover:underline underline-offset-2 transition-colors"
+                >
+                  Shop Impact Oils →
+                </Link>
+              </>
+            )}
           </div>
         )}
 

@@ -29,6 +29,8 @@ interface InfoRailProps {
   nextHref?: (n: number) => string
   maxNumber?: number
   shippingCopy?: string
+  handle?: string
+  href?: string
 }
 
 export default function InfoRail({
@@ -55,6 +57,8 @@ export default function InfoRail({
   nextHref = (n) => `/no/${n}`,
   maxNumber = 50,
   shippingCopy,
+  handle,
+  href,
 }: InfoRailProps) {
   return (
     <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto bg-ink text-bone">
@@ -110,6 +114,8 @@ export default function InfoRail({
           signatureColor={signatureColor}
           imageUrl={imageUrl}
           variantLabel={variantLabel}
+          handle={handle}
+          href={href}
         />
 
         {/* Divider before notes */}

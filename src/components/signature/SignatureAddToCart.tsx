@@ -11,6 +11,8 @@ interface SignatureAddToCartProps {
   currency?: string
   imageUrl?: string
   className?: string
+  handle?: string
+  signatureColor?: string
 }
 
 export default function SignatureAddToCart({
@@ -21,6 +23,8 @@ export default function SignatureAddToCart({
   currency = 'NGN',
   imageUrl,
   className = '',
+  handle,
+  signatureColor,
 }: SignatureAddToCartProps) {
   const [added, setAdded] = useState(false)
   const { add, setOpen } = useCartStore()
@@ -37,6 +41,9 @@ export default function SignatureAddToCart({
       currency,
       qty: 1,
       thumbnail: imageUrl,
+      color: signatureColor,
+      handle,
+      href: handle ? `/signature/${handle}` : undefined,
     })
     setAdded(true)
     setOpen(true)

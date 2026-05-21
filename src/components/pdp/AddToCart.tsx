@@ -13,6 +13,8 @@ interface AddToCartProps {
   signatureColor?: string
   imageUrl?: string
   variantLabel?: string
+  handle?: string
+  href?: string
 }
 
 export default function AddToCart({
@@ -24,6 +26,8 @@ export default function AddToCart({
   signatureColor,
   imageUrl,
   variantLabel = '100ml EDP',
+  handle,
+  href,
 }: AddToCartProps) {
   const [added, setAdded] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
@@ -52,6 +56,8 @@ export default function AddToCart({
       qty: 1,
       color: signatureColor,
       thumbnail: imageUrl,
+      handle,
+      href,
     })
     setAdded(true)
     setOpen(true)

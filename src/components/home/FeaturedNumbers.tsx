@@ -119,6 +119,8 @@ export default async function FeaturedNumbers() {
                     priceKobo={product.priceKobo}
                     currency={product.currency}
                     signatureColor={product.signatureColor}
+                    imageUrl={product.imageUrl ?? undefined}
+                    number={product.number}
                   />
                 </div>
               </Link>

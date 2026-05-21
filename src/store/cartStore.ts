@@ -13,7 +13,45 @@ export type CartLine = {
   qty: number;
   thumbnail?: string;
   color?: string;
+  /** Product handle (eg. "no-5", "oil-no-12"). Used by the recently-viewed rail. */
+  handle?: string;
+  /** PDP url. Used by the recently-viewed rail. */
+  href?: string;
 };
+
+const RECENTLY_VIEWED_KEY = "impact-recently-viewed-v1";
+const RECENTLY_VIEWED_MAX = 8;
+
+/**
+ * Mirror an add-to-cart event into the recently-viewed rail. Lets the cart
+ * drawer's "Recently viewed" section reflect what the user has actually
+ * touched even if they added directly from a listing without visiting the PDP.
+ */
+function pushToRecentlyViewed(line: CartLine): void {
+  if (typeof window === "undefined") return;
+  if (!line.handle || !line.href) return;
+  try {
+    const raw = window.localStorage.getItem(RECENTLY_VIEWED_KEY);
+    const prev: Array<{ handle: string }> = raw ? JSON.parse(raw) : [];
+    const without = Array.isArray(prev)
+      ? prev.filter((p) => p && p.handle !== line.handle)
+      : [];
+    const next = [
+      {
+        handle: line.handle,
+        href: line.href,
+        title: line.name,
+        subtitle: line.variantLabel,
+        imageUrl: line.thumbnail,
+        signatureColor: line.color,
+      },
+      ...without,
+    ].slice(0, RECENTLY_VIEWED_MAX);
+    window.localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(next));
+  } catch {
+    /* quota / privacy mode — ignore */
+  }
+}
 
 type CartState = {
   lines: CartLine[];
@@ -33,6 +71,7 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       add: (line) =>
         set((state) => {
+          pushToRecentlyViewed(line);
           // Guard: mixing currencies isn't supported. Reset to the new line's currency.
           const cartCurrency = state.lines[0]?.currency;
           if (cartCurrency && cartCurrency !== line.currency) {

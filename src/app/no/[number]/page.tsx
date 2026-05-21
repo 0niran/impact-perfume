@@ -115,8 +115,10 @@ export default async function PDPPage({
           variantId={variant?.id ?? product.handle}
           priceKobo={price.amount}
           currency={price.currency}
-          imageUrl={imageUrl ?? undefined}
+          imageUrl={imageUrl ?? '/images/no_series.png'}
           shippingCopy={shippingCopyFor(region)}
+          handle={`no-${enrichment.number}`}
+          href={`/no/${enrichment.number}`}
         />
       </div>
 

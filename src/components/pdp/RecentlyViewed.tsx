@@ -22,14 +22,22 @@ export function RecentlyViewedTracker(props: TrackerProps) {
 
 interface RailProps {
   excludeHandle?: string
+  excludeHandles?: string[]
   title?: string
   /** Visual variant — "drawer" is compact for the cart drawer, "wide" for PDP. */
   variant?: 'wide' | 'drawer'
 }
 
-export function RecentlyViewedRail({ excludeHandle, title = 'Recently viewed', variant = 'wide' }: RailProps) {
+export function RecentlyViewedRail({
+  excludeHandle,
+  excludeHandles,
+  title = 'Recently viewed',
+  variant = 'wide',
+}: RailProps) {
   const { items } = useRecentlyViewed()
-  const filtered = items.filter((i) => i.handle !== excludeHandle)
+  const excludeSet = new Set<string>(excludeHandles ?? [])
+  if (excludeHandle) excludeSet.add(excludeHandle)
+  const filtered = items.filter((i) => !excludeSet.has(i.handle))
   if (filtered.length === 0) return null
 
   if (variant === 'drawer') {

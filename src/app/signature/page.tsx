@@ -118,6 +118,8 @@ export default async function SignaturePage() {
                             priceKobo={priceInfo.amount}
                             currency={priceInfo.currency}
                             imageUrl={imageUrl ?? undefined}
+                            handle={product.handle}
+                            signatureColor={product.metadata?.signature_color}
                             className="px-5 shrink-0"
                           />
                         )}

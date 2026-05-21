@@ -157,6 +157,8 @@ export default async function SignaturePDPPage({
                   priceKobo={priceInfo.amount}
                   currency={priceInfo.currency}
                   imageUrl={imageUrl ?? undefined}
+                  handle={product.handle}
+                  signatureColor={signatureColor}
                   className="w-fit px-10"
                 />
               )}

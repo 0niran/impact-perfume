@@ -10,6 +10,8 @@ interface FeaturedNumberAddToCartProps {
   priceKobo: number
   currency?: string
   signatureColor?: string
+  imageUrl?: string
+  number: number
 }
 
 export default function FeaturedNumberAddToCart({
@@ -19,6 +21,8 @@ export default function FeaturedNumberAddToCart({
   priceKobo,
   currency = 'NGN',
   signatureColor,
+  imageUrl,
+  number,
 }: FeaturedNumberAddToCartProps) {
   const [added, setAdded] = useState(false)
   const { add, setOpen } = useCartStore()
@@ -34,6 +38,9 @@ export default function FeaturedNumberAddToCart({
       currency,
       qty: 1,
       color: signatureColor,
+      thumbnail: imageUrl ?? '/images/no_series.png',
+      handle: `no-${number}`,
+      href: `/no/${number}`,
     })
     setAdded(true)
     setOpen(true)

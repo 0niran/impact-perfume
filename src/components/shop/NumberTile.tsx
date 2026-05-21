@@ -46,6 +46,9 @@ export default function NumberTile({
       currency: lineCurrency,
       qty: 1,
       thumbnail: productImage,
+      color: signatureColor,
+      handle: tile.productHandle,
+      href: `${hrefBase}/${number}`,
     })
     setAdded(true)
     setOpen(true)
