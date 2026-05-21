@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
+import ClearCartOnConfirm from '@/components/checkout/ClearCartOnConfirm'
 
 export const metadata: Metadata = {
   title: 'Order Confirmed · Impact Perfumes',
@@ -15,6 +16,7 @@ export default async function OrderConfirmedPage({
 
   return (
     <div className="bg-ink min-h-screen">
+    {ref && <ClearCartOnConfirm />}
     <Container className="flex flex-col items-center py-24 text-center">
       <div className="mb-8 flex h-16 w-16 items-center justify-center border border-stone/30 text-accent">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
