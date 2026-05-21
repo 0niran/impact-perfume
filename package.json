@@ -15,7 +15,8 @@
     "setup-ca": "tsx scripts/setup-ca-region.ts",
     "export-prices": "tsx scripts/export-prices.ts",
     "import-cad-prices": "tsx scripts/import-cad-prices.ts",
-    "migrate-prices": "tsx scripts/migrate-prices-to-major.ts"
+    "migrate-prices": "tsx scripts/migrate-prices-to-major.ts",
+    "seed-reviews": "tsx scripts/seed-reviews.ts"
   },
   "dependencies": {
     "@medusajs/medusa-js": "^6.1.8",
