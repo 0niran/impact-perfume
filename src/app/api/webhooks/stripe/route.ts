@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
+import { claimPayment } from '@/lib/processedPayment'
 
 /**
  * Stripe webhook receiver. Verifies the request signature using
@@ -43,6 +44,13 @@ export async function POST(req: NextRequest) {
   }
 
   console.log('[stripe-webhook] event received', { type: event.type, id: event.id })
+
+  // Stripe explicitly recommends deduplicating by event.id — they may
+  // replay the same event under retry conditions (audit M-2).
+  const eventLockClaimed = await claimPayment(`stripe-event-${event.id}`, 'stripe', 'webhook')
+  if (!eventLockClaimed) {
+    return NextResponse.json({ ok: true, deduped: true })
+  }
 
   if (event.type === 'payment_intent.succeeded') {
     const intent = event.data.object as Stripe.PaymentIntent

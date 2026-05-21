@@ -29,7 +29,13 @@ interface PaystackOptions {
 }
 
 function generateRef(): string {
-  return `impact-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  // crypto.getRandomValues is widely supported in modern browsers; refs
+  // need to be unpredictable so attackers can't pre-compute valid refs
+  // and probe the verify endpoint (audit M-4).
+  const bytes = new Uint8Array(4)
+  crypto.getRandomValues(bytes)
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+  return `impact-${Date.now()}-${hex}`
 }
 
 export default function CheckoutForm() {

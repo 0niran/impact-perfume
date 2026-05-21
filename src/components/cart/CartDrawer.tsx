@@ -29,6 +29,7 @@ export default function CartDrawer() {
 
   const [saveEmail, setSaveEmail] = useState('')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'loading' | 'saved' | 'error'>('idle')
+  const [saveConsent, setSaveConsent] = useState(false)
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
@@ -37,7 +38,7 @@ export default function CartDrawer() {
 
   async function handleSaveCart(e: React.FormEvent) {
     e.preventDefault()
-    if (!saveEmail.trim() || lines.length === 0) return
+    if (!saveEmail.trim() || lines.length === 0 || !saveConsent) return
     setSaveStatus('loading')
     try {
       const res = await fetch('/api/cart/save', {
@@ -48,6 +49,7 @@ export default function CartDrawer() {
           region: region.id,
           currency,
           subtotalMinor: subtotal,
+          consentToContact: saveConsent,
           lines: lines.map((l) => ({
             variantId: l.variantId,
             productId: l.productId,
@@ -240,9 +242,18 @@ export default function CartDrawer() {
               {saveStatus === 'error' && (
                 <p className="mt-2 text-label text-error">Couldn&apos;t save. Try again later.</p>
               )}
-              <p className="mt-2 text-label text-stone/50">
-                We&apos;ll send a reminder if you don&apos;t complete checkout.
-              </p>
+              <label className="mt-3 flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={saveConsent}
+                  onChange={(e) => setSaveConsent(e.target.checked)}
+                  className="mt-0.5 h-3.5 w-3.5 accent-accent cursor-pointer"
+                  required
+                />
+                <span className="text-label text-stone/70 leading-snug">
+                  Send me one reminder if I don&apos;t finish checkout. We&apos;ll only contact you about this cart.
+                </span>
+              </label>
             </form>
           </div>
         )}

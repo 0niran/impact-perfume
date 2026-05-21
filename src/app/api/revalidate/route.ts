@@ -17,12 +17,16 @@ import { revalidatePath, revalidateTag } from 'next/cache'
  * Returns the list of paths that were flushed.
  */
 export async function GET(req: NextRequest) {
+  // Fails CLOSED when CRON_SECRET is unset — refusing to flush is better
+  // than letting anyone trigger cache regeneration when env vars are
+  // misconfigured (audit H-2).
   const secret = process.env.CRON_SECRET
-  if (secret) {
-    const auth = req.headers.get('authorization')
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
-    }
+  if (!secret) {
+    return NextResponse.json({ ok: false, message: 'Revalidation not configured.' }, { status: 503 })
+  }
+  const auth = req.headers.get('authorization')
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }
 
   const url = req.nextUrl

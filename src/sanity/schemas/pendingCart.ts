@@ -80,6 +80,18 @@ export default defineType({
       },
       initialValue: 'pending',
     }),
+    defineField({
+      name: 'consentToContact',
+      title: 'Consent to contact',
+      description: 'Customer explicitly opted in to receive a reminder.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'consentedAt',
+      title: 'Consented at',
+      type: 'datetime',
+    }),
   ],
   orderings: [
     {

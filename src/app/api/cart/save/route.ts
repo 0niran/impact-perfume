@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
+import { rateLimit } from '@/lib/rateLimit'
 
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -27,6 +28,8 @@ interface SavePayload {
   currency: string
   subtotalMinor: number
   lines: IncomingLine[]
+  /** Whether the customer ticked "send me a reminder" on the save form. */
+  consentToContact?: boolean
 }
 
 function isValidEmail(value: unknown): value is string {
@@ -34,6 +37,14 @@ function isValidEmail(value: unknown): value is string {
 }
 
 export async function POST(req: NextRequest) {
+  const limit = await rateLimit(req, 'cart-save', { limit: 5, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests. Please slow down.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.SANITY_API_WRITE_TOKEN) {
     return NextResponse.json({ ok: false, message: 'Cart save not configured.' }, { status: 500 })
   }
@@ -48,6 +59,13 @@ export async function POST(req: NextRequest) {
   }
   if (!Array.isArray(body.lines) || body.lines.length === 0) {
     return NextResponse.json({ ok: false, message: 'Cart is empty.' }, { status: 400 })
+  }
+  // Explicit opt-in required for follow-up email (audit L-2 / GDPR / PIPEDA).
+  if (body.consentToContact !== true) {
+    return NextResponse.json(
+      { ok: false, message: 'Please confirm consent to be contacted about your cart.' },
+      { status: 400 }
+    )
   }
 
   const normalisedLines = body.lines.map((l) => ({
@@ -79,6 +97,8 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
       remindersSent: 0,
       status: 'pending',
+      consentToContact: true,
+      consentedAt: new Date().toISOString(),
     }
 
     if (existing.length > 0) {

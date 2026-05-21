@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { OILS, CAR_DIFFUSERS, HOME_DIFFUSERS } from '@/data/products'
 import { getAllNumberSeriesProducts } from '@/lib/medusa'
 import { FALLBACK_COLOR } from '@/lib/constants'
+import { rateLimit } from '@/lib/rateLimit'
 
 export interface SearchResult {
   handle: string
@@ -80,6 +81,14 @@ function score(result: SearchResult, q: string): number {
 }
 
 export async function GET(req: NextRequest) {
+  const limit = await rateLimit(req, 'search', { limit: 30, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   const q = req.nextUrl.searchParams.get('q')?.trim() ?? ''
 
   if (q.length < 2) {

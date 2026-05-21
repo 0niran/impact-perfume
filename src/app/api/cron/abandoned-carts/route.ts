@@ -31,9 +31,14 @@ interface PendingCartDoc {
 
 // Vercel cron sends `Authorization: Bearer ${CRON_SECRET}` when it fires this
 // route. Reject anything without a matching secret so the URL isn't open.
+//
+// Fails CLOSED (returns false) when CRON_SECRET is unset — refusing to run
+// is better than running unauthenticated if env vars are misconfigured
+// (audit H-2). Local-dev convenience is recovered by setting CRON_SECRET
+// in .env.local.
 function isAuthorised(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
-  if (!secret) return true // not configured — allow (e.g. for local dev)
+  if (!secret) return false
   const auth = req.headers.get('authorization')
   return auth === `Bearer ${secret}`
 }
@@ -50,10 +55,12 @@ export async function GET(req: NextRequest) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   // Carts older than 1 hour, still pending, no reminder yet → send one and mark.
+  // Audit L-2: only send to customers who explicitly consented at save time.
   const due = await writeClient.fetch<PendingCartDoc[]>(
     `*[
       _type == "pendingCart"
       && status == "pending"
+      && consentToContact == true
       && remindersSent == 0
       && createdAt < $oneHourAgo
       && createdAt > $sevenDaysAgo

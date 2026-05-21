@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import Stripe from 'stripe'
+import { validateLinePricing } from '@/lib/pricingGuard'
+import { rateLimit } from '@/lib/rateLimit'
 
 interface CartLineDTO {
   variantId: string
@@ -10,6 +13,14 @@ interface CartLineDTO {
 }
 
 export async function POST(req: NextRequest) {
+  const limit = await rateLimit(req, 'stripe-create-intent', { limit: 10, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests. Please slow down.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) {
     return NextResponse.json(
@@ -41,14 +52,32 @@ export async function POST(req: NextRequest) {
   }
 
   const typedLines = lines as CartLineDTO[]
-  const total = typedLines.reduce((s, l) => s + l.unitPriceKobo * l.qty, 0)
+
+  // Server-side re-pricing — refuse to create an intent if client prices
+  // disagree with Medusa (audit H-1).
+  const validation = await validateLinePricing(
+    typedLines.map((l) => ({
+      variantId: l.variantId,
+      qty: l.qty,
+      unitPriceKobo: l.unitPriceKobo,
+    })),
+    'CA'
+  )
+  if (!validation.ok) {
+    return NextResponse.json(
+      { ok: false, message: validation.message ?? 'Could not verify pricing.' },
+      { status: 400 }
+    )
+  }
+  const total = validation.totalMinor
   if (total <= 0) {
     return NextResponse.json({ ok: false, message: 'Invalid order total.' }, { status: 400 })
   }
 
   const stripe = new Stripe(stripeKey, { apiVersion: '2026-04-22.dahlia' })
 
-  const reference = `impact-ca-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  // Cryptographically random suffix so refs aren't predictable (audit M-4).
+  const reference = `impact-ca-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`
 
   try {
     const intent = await stripe.paymentIntents.create({
@@ -64,13 +93,15 @@ export async function POST(req: NextRequest) {
         // Metadata values must be strings; stringify the structured fields.
         // Stripe limits metadata to 50 keys, 500 chars each — well under our typical payload.
         shippingAddress: JSON.stringify(shippingAddress ?? {}),
+        // Persist SERVER-derived prices in metadata so the webhook /
+        // confirm route uses verified amounts at fulfilment time.
         lines: JSON.stringify(
-          typedLines.map((l) => ({
+          typedLines.map((l, i) => ({
             v: l.variantId,
             n: l.name,
             l: l.variantLabel,
             q: l.qty,
-            p: l.unitPriceKobo,
+            p: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
           }))
         ),
       },
@@ -82,13 +113,11 @@ export async function POST(req: NextRequest) {
       reference,
     })
   } catch (err) {
+    // Log the full error server-side but return a generic message to the
+    // client so internal Stripe state isn't leaked (audit M-3).
     console.error('[stripe.create-intent] failed:', err)
     return NextResponse.json(
-      {
-        ok: false,
-        message:
-          err instanceof Error ? err.message : 'Could not initialise payment.',
-      },
+      { ok: false, message: 'Could not initialise payment. Please try again.' },
       { status: 500 }
     )
   }

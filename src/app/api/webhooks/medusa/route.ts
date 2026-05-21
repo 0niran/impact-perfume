@@ -29,9 +29,11 @@ function expectedSecret(): string | undefined {
   return process.env.MEDUSA_WEBHOOK_SECRET || process.env.CRON_SECRET
 }
 
+// Fails CLOSED when no secret is configured — refusing the webhook is
+// better than letting anyone churn the cache (audit H-2).
 function isAuthorised(req: NextRequest): boolean {
   const secret = expectedSecret()
-  if (!secret) return true // not configured — allow (e.g. local dev)
+  if (!secret) return false
   return req.headers.get('authorization') === `Bearer ${secret}`
 }
 
@@ -71,6 +73,13 @@ function pathsFor(handle: string, categories: string[] = []): string[] {
 }
 
 export async function POST(req: NextRequest) {
+  const secret = expectedSecret()
+  if (!secret) {
+    return NextResponse.json(
+      { ok: false, message: 'Webhook not configured.' },
+      { status: 503 }
+    )
+  }
   if (!isAuthorised(req)) {
     return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }

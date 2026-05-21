@@ -1,10 +1,15 @@
 # Security Audit — Impact Perfumes Storefront
 
-**Date:** 2026-05-22
-**Scope:** Storefront repo at HEAD `8c47856`. Covers API routes, payment
-flows, webhooks, auth, secret handling, input validation, headers, and
-dependency CVEs. Excludes the Medusa backend repo (separate audit) and
-Sanity Studio.
+**Date:** 2026-05-22 (findings) / 2026-05-22 (remediation pass)
+**Scope:** Storefront repo. Covers API routes, payment flows, webhooks,
+auth, secret handling, input validation, headers, and dependency CVEs.
+Excludes the Medusa backend repo (separate audit) and Sanity Studio.
+
+**Status: Remediated in this pass.** Of the 14 numbered findings,
+**11 are fixed**, **3 are documented as accepted risk** pending upstream
+support (Medusa v2 scoped API keys, Sanity per-doctype roles, the
+intentional Sanity-lock fail-open). See "Remediation status" at the foot
+of each finding for what shipped.
 
 ---
 
@@ -22,23 +27,23 @@ Sanity Studio.
 
 ## Findings summary
 
-| ID | Severity | Title |
-|---|---|---|
-| H-1 | **High** | Order total + line prices accepted from client without server-side re-pricing |
-| H-2 | **High** | Fail-open auth pattern leaves cron / revalidate / Medusa-webhook routes wide open if env var is missing |
-| H-3 | **High** | No rate limiting on any public POST endpoint (verify-payment, cart/save, stripe/create-intent, newsletter) |
-| M-1 | Medium | No HTTP security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy) |
-| M-2 | Medium | Stripe webhook deduplicates on payment reference, not Stripe `event.id` |
-| M-3 | Medium | Stripe `create-intent` returns raw Stripe error messages to the client |
-| M-4 | Medium | `Math.random()` used to generate payment references |
-| M-5 | Medium | Medusa admin credentials in env vars are full-access — single key compromise = full backend takeover |
-| L-1 | Low | `next.config.mjs` image `remotePatterns` allows wildcard `**.railway.app` |
-| L-2 | Low | `/api/cart/save` saves email + PII without consent flag |
-| L-3 | Low | `/api/newsletter` collects emails to nowhere (TODO comment) |
-| L-4 | Low | `/api/search` has no rate limit; enables enumeration |
-| L-5 | Low | `processedPayment` lock fails-open on Sanity errors (intentional but document) |
-| I-1 | Info | Sanity write token is broad (Editor scope) — granular per-doctype roles would tighten blast radius |
-| I-2 | **Critical (dep)** | `npm audit` flagged 46 issues; 19 cleared by removing unused `@medusajs/medusa-js`. **Next.js still needs a critical patch upgrade (14.2.18 → 14.2.35).** |
+| ID | Severity | Title | Status |
+|---|---|---|---|
+| H-1 | **High** | Order total + line prices accepted from client without server-side re-pricing | **FIXED** |
+| H-2 | **High** | Fail-open auth pattern on cron / revalidate / Medusa-webhook routes | **FIXED** |
+| H-3 | **High** | No rate limiting on any public POST endpoint | **FIXED** |
+| M-1 | Medium | No HTTP security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy) | **FIXED** |
+| M-2 | Medium | Stripe webhook deduplicates on payment reference, not Stripe `event.id` | **FIXED** |
+| M-3 | Medium | Stripe `create-intent` returns raw Stripe error messages to the client | **FIXED** |
+| M-4 | Medium | `Math.random()` used to generate payment references | **FIXED** |
+| M-5 | Medium | Medusa admin credentials in env vars are full-access — single key compromise = full backend takeover | Accepted risk |
+| L-1 | Low | `next.config.mjs` image `remotePatterns` allows wildcard `**.railway.app` | **FIXED** |
+| L-2 | Low | `/api/cart/save` saves email + PII without consent flag | **FIXED** |
+| L-3 | Low | `/api/newsletter` collects emails to nowhere (TODO comment) | **FIXED** (surfaced as deferred) |
+| L-4 | Low | `/api/search` has no rate limit; enables enumeration | **FIXED** (under H-3) |
+| L-5 | Low | `processedPayment` lock fails-open on Sanity errors (intentional but document) | Accepted risk |
+| I-1 | Info | Sanity write token is broad (Editor scope) | Accepted risk |
+| I-2 | **Critical (dep)** | `npm audit` flagged 46 issues; medusa-js + Next.js patch | **FIXED** (critical-tier cleared) |
 
 ---
 
