@@ -29,8 +29,13 @@ interface LimitResult {
   retryAfter: number
 }
 
-const url = process.env.UPSTASH_REDIS_REST_URL
-const token = process.env.UPSTASH_REDIS_REST_TOKEN
+// Upstash provisioned via the Vercel Marketplace injects env vars under the
+// legacy KV_REST_API_* naming (kept from when Vercel had its own KV product).
+// A direct Upstash install uses the UPSTASH_REDIS_REST_* names. Accept either.
+const url =
+  process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL
+const token =
+  process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN
 
 const redis = url && token ? new Redis({ url, token }) : null
 
