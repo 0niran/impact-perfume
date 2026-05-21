@@ -25,6 +25,7 @@ interface PaystackOptions {
   ref: string
   callback: (response: { reference: string }) => void
   onClose: () => void
+  metadata?: Record<string, unknown>
 }
 
 function generateRef(): string {
@@ -106,6 +107,33 @@ export default function CheckoutForm() {
 
     setLoading(true)
 
+    // Stuff order details into Paystack metadata so the server-side webhook
+    // can recover and fulfil the order even if the browser dies before the
+    // verify call lands. Paystack passes metadata through verbatim.
+    const shippingAddress = {
+      address1: address1.trim(),
+      address2: address2.trim(),
+      city: city.trim(),
+      state,
+      country: 'Nigeria',
+    }
+    const metadata = {
+      customerName: name.trim(),
+      customerEmail: email.trim(),
+      customerPhone: phone.trim(),
+      shippingAddress,
+      lines: lines.map((l) => ({
+        variantId: l.variantId,
+        productId: l.productId,
+        name: l.name,
+        variantLabel: l.variantLabel,
+        qty: l.qty,
+        unitPriceKobo: l.unitPriceKobo,
+        currency: l.currency,
+      })),
+      amountKobo: subtotalKobo,
+    }
+
     const handler = window.PaystackPop.setup({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
       email: email.trim(),
@@ -113,6 +141,7 @@ export default function CheckoutForm() {
       ref: generateRef(),
       callback: (response) => { handleVerify(response.reference) },
       onClose: () => { setLoading(false) },
+      metadata,
     })
 
     handler.openIframe()

@@ -20,6 +20,7 @@
 import { buildCustomerEmail, buildBusinessEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { REGIONS, type RegionId } from '@/lib/region'
+import { claimPayment, recordMedusaOrderId, type PaymentSource } from '@/lib/processedPayment'
 
 export interface ShippingAddress {
   address1: string
@@ -51,6 +52,11 @@ export interface FulfillmentInput {
   lines: CartLine[]
   paymentProvider: 'paystack' | 'stripe'
   paymentRef: string
+  /**
+   * Where this call originated. Used for the idempotency log. Defaults to
+   * 'verify' (the browser-redirect path); webhook callers should pass 'webhook'.
+   */
+  source?: PaymentSource
 }
 
 async function getMedusaAdminToken(): Promise<string | null> {
@@ -84,7 +90,7 @@ async function getMedusaAdminToken(): Promise<string | null> {
   }
 }
 
-async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
+async function createMedusaOrder(input: FulfillmentInput): Promise<string | null> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   const region = REGIONS[input.regionId]
   if (!backendUrl || !region.medusaRegionId) {
@@ -94,11 +100,11 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       medusaRegionId: region.medusaRegionId,
       reference: input.reference,
     })
-    return
+    return null
   }
 
   const token = await getMedusaAdminToken()
-  if (!token) return
+  if (!token) return null
 
   const nameParts = input.customerName.trim().split(' ')
   const firstName = nameParts[0] || '-'
@@ -149,7 +155,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       regionId: input.regionId,
       lineCount: input.lines.length,
     })
-    return
+    return null
   }
 
   const draftJson = await draftRes.json().catch(() => ({} as Record<string, unknown>))
@@ -160,7 +166,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       body: JSON.stringify(draftJson).slice(0, 500),
       reference: input.reference,
     })
-    return
+    return null
   }
 
   // 2) Promote draft to a real order so it shows up under Orders, not Draft Orders
@@ -181,7 +187,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       draftId,
       reference: input.reference,
     })
-    return
+    return null
   }
 
   const conv = await convRes.json().catch(() => ({} as Record<string, unknown>))
@@ -211,7 +217,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       orderId,
       reference: input.reference,
     })
-    return
+    return orderId
   }
 
   const pcJson = await pcRes.json().catch(() => ({} as Record<string, unknown>))
@@ -224,7 +230,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       orderId,
       reference: input.reference,
     })
-    return
+    return orderId
   }
 
   const markRes = await fetch(
@@ -245,7 +251,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
       orderId,
       reference: input.reference,
     })
-    return
+    return orderId
   }
 
   console.log('[orderFulfillment] payment captured', {
@@ -254,9 +260,25 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<void> {
     amount: captureAmount,
     reference: input.reference,
   })
+  return orderId
 }
 
 export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
+  // Idempotency: webhook and redirect-verify can fire for the same payment.
+  // First caller to claim the lock proceeds; later callers no-op.
+  const won = await claimPayment(
+    input.reference,
+    input.paymentProvider,
+    input.source ?? 'verify'
+  )
+  if (!won) {
+    console.log('[orderFulfillment] payment already processed, skipping', {
+      reference: input.reference,
+      source: input.source ?? 'verify',
+    })
+    return
+  }
+
   const orderEmailData = {
     reference: input.reference,
     customerName: input.customerName,
@@ -274,7 +296,10 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
   }
 
   const results = await Promise.allSettled([
-    createMedusaOrder(input),
+    createMedusaOrder(input).then((orderId) => {
+      if (orderId) recordMedusaOrderId(input.reference, orderId).catch(() => undefined)
+      return orderId
+    }),
     sendEmail({
       to: input.customerEmail,
       ...buildCustomerEmail(orderEmailData),

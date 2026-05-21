@@ -33,6 +33,7 @@ export default defineConfig({
               S.list().title('Operations').items([
                 S.documentTypeListItem('inquiry').title('B2B Inquiries'),
                 S.documentTypeListItem('review').title('Reviews'),
+                S.documentTypeListItem('processedPayment').title('Processed Payments'),
               ])
             ),
             S.listItem().title('Settings').child(

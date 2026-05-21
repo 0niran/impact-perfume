@@ -23,6 +23,7 @@ interface PaystackOptions {
   ref: string
   callback: (response: { reference: string }) => void
   onClose: () => void
+  metadata?: Record<string, unknown>
 }
 
 interface ShapeOption {

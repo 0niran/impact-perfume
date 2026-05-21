@@ -6,6 +6,7 @@ import journalPost from './journalPost'
 import navigation from './navigation'
 import page from './page'
 import pendingCart from './pendingCart'
+import processedPayment from './processedPayment'
 import review from './review'
 import siteSettings from './siteSettings'
 
@@ -20,6 +21,7 @@ export const schemaTypes = [
   inquiry,
   review,
   pendingCart,
+  processedPayment,
 
   // Settings documents (singletons)
   siteSettings,
