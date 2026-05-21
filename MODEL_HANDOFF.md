@@ -6,39 +6,51 @@ This file lets a new model session take over the project cleanly. Read it once a
 
 Impact Perfumes & Oils — a Lagos-based luxury fragrance house (running for several years) is migrating its e-commerce off WordPress to a modern Next.js + headless commerce stack benchmarked against Jo Malone London, Le Labo, and Chanel. The hero collection is a **"Number Series"** of 50 numbered Eau de Parfum signatures. Each fragrance has its own signature color and scent family. The number is the brand's identity hook ("You're a No. 14").
 
-## Where we are right now
+## Where we are right now (as of 2026-05-21)
 
-**Done (Tasks 15–17, 19, 29):**
+The site is **live in production** on Vercel at `https://impact-perfume.vercel.app`. All initial build tasks (20–28) shipped. The current focus is reliability hardening + owner-side handoff.
 
-- Next.js 14 storefront scaffold deployed (Tailwind + shadcn primitives, design tokens, `next/font` Cormorant + Manrope).
-- Medusa.js commerce backend live on Railway (Hobby plan, $20/mo cap). Admin user created. URL: `https://impact-perfumes-medusa-production.up.railway.app/app`.
-- Sanity project created (project ID: **`rryknw9w`**, dataset `production`, organization `Niran`). Read token saved (Viewer scope). CORS origins added for `localhost:3000`, `localhost:3333`, `staging.impactperfumes.com`.
-- Brand discovery applied: 50-color signature palette in `tailwind.config.ts`, full Sanity schema system, all 11 schemas registered.
-- Product seeding script written: `scripts/seed-products.ts`. Reads `data/products.seed.json` (50 fragrances parsed from the official catalogue PDF). ₦50,000 placeholder pricing across the board. Discovery Set product at ₦25,000. Three product-line placeholders for Oils / Car Diffusers / Reed Diffusers.
+**Live capabilities:**
 
-**Pending (in priority order):**
+- Storefront fully built: Home, /no-series (Number Wall, 50 tiles), /oils (50 oil PDPs), /signature (4 + Mystikal), /gifts, /b2b, /bespoke, /quiz, /house-story, /journal, /checkout, /order-confirmed, Sanity Studio at /studio. ~21 pages total.
+- Catalogue: 109 variants — 50 Number Series EDPs + 50 Impact Oils + 4 Signature + Mystikal. Two regions: Nigeria (NGN/Paystack) and Canada (CAD/Stripe). Geo middleware auto-detects via Vercel IP; manual region switcher persists choice with `impact_region_manual=1` cookie so a VPN flip doesn't override the user.
+- Payments end-to-end: Paystack inline + Stripe Payment Element (with Apple Pay / Google Pay). Both verify server-side and now have signed webhooks (`/api/webhooks/paystack`, `/api/webhooks/stripe`) for browser-died fallback. Fulfilment is idempotent via the `processedPayment` Sanity doc.
+- Order pipeline: payment success → Medusa draft-order → convert-to-order → payment_collection → mark-as-paid (orders land in Orders tab with `payment_status=captured`). Resend sends redesigned dark-luxe transactional emails (customer + business) with the Impact logo.
+- Cache pipeline: ISR with 60s data revalidation, `/api/revalidate` for on-demand path flushes, Medusa webhook receiver for auto-invalidate when products change (storefront half is wired; Medusa-side subscriber on Railway is still owner-todo).
+- Tooling: seed-products, seed-oils, seed-signature, seed-reviews, export-prices, import-cad-prices, migrate-prices-to-major. CSV-based pricing workflow for the owner.
+- Sanity: 13 schemas registered (productEnrichment, fragranceNote, perfumer, review, journalPost, author, houseStorySection, page, inquiry, pendingCart, processedPayment, siteSettings, navigation). 10 launch reviews seeded as `status=pending`.
 
-| # | Task | Notes |
-|---|---|---|
-| 18 | Configure **Paystack** on Medusa | Flutterwave is OUT. Browser-driven setup likely needed by the human. |
-| 20 | Build site shell (Header, mega-menu, Footer, layout) | Local Claude Code work. The mega-menu structure is in `docs/brand-discovery.md` §"Product line architecture". |
-| 21 | Build Home page | Hero, House Positioning Strip, Featured Shelf (3 from Medusa), Editorial Break, Discovery Block, Journal Preview, Newsletter. |
-| 22 | Build Shop page = **the Number Wall** | 50 colored tiles in a grid, each rendering its medallion. THIS is the brand's signature on-site experience. See `docs/brand-discovery.md`. |
-| 23 | Build PDP | New layout: full-bleed signature-color hero (left) + sticky info rail (right). See `docs/brand-discovery.md` §"Updated PDP structure". |
-| 24 | Build Cart drawer + Checkout | Paystack Inline JS only. |
-| 25 | Build House Story, Journal, B2B pages | Driven from Sanity. |
-| 26 | Build Fragrance Finder, Gift Finder, Discovery Set | Quiz logic spelled out in `docs/brand-discovery.md` §"Fragrance Finder — concrete logic". |
-| 27 | SEO + 301 redirect map | Owner provides old URL list. |
-| 28 | Performance, accessibility, mobile QA pass | Lighthouse ≥ 90 mobile across Performance, A11y, Best Practices, SEO. |
-| 14 | DNS cutover | Last step. Lower TTL → switch DNS to Netlify → old WP goes dark. |
+**Owner-side actions still pending (cannot be done by a model):**
+
+| Item | Where |
+|---|---|
+| Place a real test order to validate the full Paystack/Stripe → Medusa → email chain | Storefront |
+| Add Stripe webhook signing secret (`STRIPE_WEBHOOK_SECRET`) on Vercel after creating the endpoint in Stripe dashboard | Vercel + Stripe |
+| Register the Paystack webhook URL in Paystack dashboard | Paystack |
+| Add Medusa subscriber file + 2 env vars on Railway for auto cache invalidation | Railway + Medusa repo |
+| Register Apple Pay merchant domain in Stripe | Stripe dashboard |
+| Attach custom domain (`impactperfumes.com`) on Vercel and update `NEXT_PUBLIC_SITE_URL` | Vercel + DNS |
+| Approve any seeded reviews in Sanity Studio that match real feedback heard | Sanity Studio |
+| Number Series product photography (currently using fallback bottle render) | Owner-supplied |
+| 301 redirect map from old WordPress URLs to new routes (Task 27) | Owner-supplied |
+| iPhone QA pass on live site | Owner-driven |
+
+**Most recent shipped commits (top of `main`):**
+
+- `2a2495e` redesign transactional emails in dark-luxe brand language (with logo header)
+- `eb9dd3e` payment webhooks for Paystack + Stripe with idempotent fulfilment
+- `e4a6dcd` cart thumbnail fallback, oil-aware cross-sell, recently-viewed auto-track
+- `f652878` seed-reviews script for draft reviews in Sanity
+- `dee234d` align price units with Medusa v2 (major units) + capture payment
 
 ## Stack (locked, do not propose alternatives)
 
 - Next.js 14 App Router + TypeScript + Tailwind + shadcn/ui
 - Hosting: Netlify (storefront), Railway (Medusa)
 - Commerce: Medusa.js v2
-- CMS: Sanity (Growth Trial → Free in 30 days)
-- Payments: **Paystack only** (NGN). Flutterwave was removed.
+- CMS: Sanity (Free tier)
+- Hosting: **Vercel** (storefront), **Railway** (Medusa)
+- Payments: **Paystack** (NGN, Nigeria region) + **Stripe** (CAD, Canada region) — webhooks live on both, with idempotency. Flutterwave was removed.
 - Email: Resend (transactional). MailerLite (newsletter).
 - CRM: HubSpot Free (B2B inquiries).
 - Analytics: GA4.
@@ -115,12 +127,12 @@ If you need any of these and they're missing, **stop and ask** — do not invent
 
 ## Recommended first action for the new session
 
-Run this checklist:
+The site is live; build-out is done. Pick up by:
 
-1. Read `CLAUDE.md`, `docs/brand-discovery.md`, `data/products.seed.json`.
-2. Confirm the seeding has actually been run (50 products in Medusa admin, 50 enrichment docs in Sanity). If not, fix the write token issue first (gotcha #1) and run it.
-3. Ask the owner which task they want next. Recommend Task 20 (site shell + Number Wall) — it produces the most visible progress and unlocks Tasks 21–23.
-4. Before writing code for Task 20, list the steps you'll take and ask for confirmation.
+1. Read this file + `docs/payment-webhooks-setup.md` + `docs/medusa-webhook-setup.md` + `docs/brand-discovery.md` (for any design questions).
+2. Run `git log --oneline -20` to see the most recent shipped work.
+3. Ask the owner which open thread they want to advance — most are now owner-side actions (see "Owner-side actions still pending" above). On the storefront side, common next-up work: real Number Series photography integration, custom domain attach, iPhone QA pass.
+4. When the owner has completed the dashboard configurations (Stripe webhook secret, Paystack webhook URL, Medusa subscriber), help them run a real test order and verify the full chain (Paystack/Stripe → Medusa Orders → Resend email → Sanity processedPayment lock).
 
 ## File map (where things live in the repo)
 

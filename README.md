@@ -1,14 +1,14 @@
 # Impact Perfumes — Storefront
 
-Next.js 14 (App Router) storefront for Impact Perfumes. Headless commerce powered by Medusa.js, content by Sanity.
+Next.js 14 (App Router) storefront for Impact Perfumes. Headless commerce powered by Medusa.js, content by Sanity. Multi-region (Nigeria + Canada) with provider-aware checkout.
 
 ## Stack
 
 - **Framework**: Next.js 14 + TypeScript + Tailwind + shadcn/ui
-- **Commerce**: Medusa.js (separate backend)
+- **Commerce**: Medusa.js v2 (Railway)
 - **CMS**: Sanity (free tier)
-- **Hosting**: Netlify
-- **Payments**: Paystack + Flutterwave
+- **Hosting**: Vercel
+- **Payments**: Paystack (NGN) + Stripe (CAD, with Apple Pay / Google Pay)
 - **Email**: Resend
 - **CRM**: HubSpot (B2B inquiries)
 
