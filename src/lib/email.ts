@@ -1,6 +1,31 @@
 import { SITE_CONFIG } from '@/lib/config'
 import { formatPrice } from '@/lib/format'
 
+/**
+ * Email templates for transactional messaging. Inline styles only — many
+ * clients (Outlook especially) strip <style> blocks and don't support web
+ * fonts. We stick to Georgia (universally available) for the brand voice
+ * and Arial as a fallback.
+ *
+ * Palette mirrors the storefront's tailwind tokens:
+ *   ink    #0A0A08    bone   #F2E6C8    accent  #E4B250
+ *   cream  #F5EFDF    gold   #E8D5A3    stone   #8A7A60
+ *   slate  #5C4E38    mist   #1D1B16
+ */
+
+const PALETTE = {
+  ink: '#0A0A08',
+  bone: '#F2E6C8',
+  accent: '#E4B250',
+  cream: '#F5EFDF',
+  gold: '#E8D5A3',
+  stone: '#8A7A60',
+  slate: '#5C4E38',
+  mist: '#1D1B16',
+  border: '#E0D4B0',
+  outerBg: '#EDE4CB',
+} as const
+
 interface OrderItem {
   name: string
   variantLabel?: string
@@ -25,61 +50,123 @@ interface OrderEmailData {
   currency?: string
 }
 
+/* ----------------------------------------------------------------------------
+ * Reusable fragments
+ * ------------------------------------------------------------------------- */
+
+function header(): string {
+  // Absolute URL is required — most email clients won't resolve relative paths.
+  // The image is served from /public, set publicly by Vercel/Next.js.
+  const logoSrc = `${SITE_CONFIG.url}/images/Logo.png`
+  return `
+  <tr>
+    <td style="background:${PALETTE.ink};padding:32px 40px 28px;text-align:center;border-bottom:1px solid ${PALETTE.mist};">
+      <a href="${SITE_CONFIG.url}" style="text-decoration:none;display:inline-block;">
+        <img
+          src="${logoSrc}"
+          alt="${SITE_CONFIG.name}"
+          width="140"
+          height="94"
+          style="display:block;border:0;outline:none;text-decoration:none;width:140px;height:auto;max-width:140px;margin:0 auto;color:${PALETTE.bone};font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;"
+        />
+      </a>
+      <div style="height:1px;background:${PALETTE.accent};width:32px;margin:16px auto 0;line-height:1px;font-size:1px;">&nbsp;</div>
+    </td>
+  </tr>`
+}
+
+function footer(): string {
+  return `
+  <tr>
+    <td style="background:${PALETTE.ink};padding:32px 40px;text-align:center;">
+      <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.bone};letter-spacing:0.18em;text-transform:uppercase;">
+        ${SITE_CONFIG.name}
+      </p>
+      <p style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:${PALETTE.stone};">
+        Crafted in Lagos. Worn around the world.
+      </p>
+      <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:${PALETTE.stone};">
+        ${SITE_CONFIG.contact.address.line1}, ${SITE_CONFIG.contact.address.line2}<br/>
+        <a href="mailto:${SITE_CONFIG.contact.email}" style="color:${PALETTE.bone};text-decoration:none;">${SITE_CONFIG.contact.email}</a>
+        &nbsp;&middot;&nbsp;
+        <a href="tel:${SITE_CONFIG.contact.phone}" style="color:${PALETTE.bone};text-decoration:none;">${SITE_CONFIG.contact.phoneDisplay}</a>
+      </p>
+    </td>
+  </tr>`
+}
+
+function sectionLabel(label: string): string {
+  return `<p style="margin:0 0 8px;font-family:Arial,sans-serif;font-size:10px;color:${PALETTE.stone};letter-spacing:0.18em;text-transform:uppercase;">${label}</p>`
+}
+
+function ctaButton(href: string, label: string): string {
+  return `
+  <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0;">
+    <tr>
+      <td style="background:${PALETTE.ink};padding:16px 40px;">
+        <a href="${href}" style="font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.bone};text-decoration:none;letter-spacing:0.18em;text-transform:uppercase;display:inline-block;">
+          ${label}
+        </a>
+      </td>
+    </tr>
+  </table>`
+}
+
 function itemRows(items: OrderItem[], currency: string): string {
   return items
     .map(
-      (item) => `
+      (item, i) => `
     <tr>
-      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;color:#1A1612;font-size:14px;">
-        ${item.name}${item.variantLabel ? ` · ${item.variantLabel}` : ''}
-      </td>
-      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:center;color:#6B6459;font-size:14px;">
-        ${item.qty}
-      </td>
-      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:right;color:#1A1612;font-size:14px;">
-        ${formatPrice(item.unitPriceKobo * item.qty, currency)}
+      <td style="padding:18px 0 ${i === items.length - 1 ? '18px' : '18px'} 0;${i === items.length - 1 ? '' : `border-bottom:1px solid ${PALETTE.border};`}">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="font-family:Georgia,'Times New Roman',serif;font-size:16px;color:${PALETTE.ink};line-height:1.3;">
+              ${item.name}
+              ${
+                item.variantLabel
+                  ? `<div style="margin-top:4px;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};letter-spacing:0.04em;">${item.variantLabel}${item.qty > 1 ? ` &middot; Qty ${item.qty}` : ''}</div>`
+                  : item.qty > 1
+                    ? `<div style="margin-top:4px;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};letter-spacing:0.04em;">Qty ${item.qty}</div>`
+                    : ''
+              }
+            </td>
+            <td style="text-align:right;font-family:Arial,sans-serif;font-size:15px;color:${PALETTE.ink};white-space:nowrap;padding-left:20px;vertical-align:top;">
+              ${formatPrice(item.unitPriceKobo * item.qty, currency)}
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>`
     )
     .join('')
 }
 
-function baseTemplate(title: string, body: string): string {
+/* ----------------------------------------------------------------------------
+ * Base template
+ * ------------------------------------------------------------------------- */
+
+function baseTemplate(title: string, body: string, preheader?: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="light"/>
+<meta name="supported-color-schemes" content="light"/>
 <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background:#F5F1EB;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F1EB;padding:40px 20px;">
+<body style="margin:0;padding:0;background:${PALETTE.outerBg};font-family:Arial,sans-serif;">
+  ${
+    preheader
+      ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">${preheader}</div>`
+      : ''
+  }
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${PALETTE.outerBg};padding:32px 16px;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#FAFAF7;max-width:600px;width:100%;">
-        <!-- Header -->
-        <tr>
-          <td style="background:#1A1612;padding:28px 40px;text-align:center;">
-            <span style="font-family:Georgia,serif;font-style:italic;font-size:22px;color:#F5F1EB;letter-spacing:-0.01em;">
-              ${SITE_CONFIG.shortName}
-            </span>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr><td style="padding:40px;">${body}</td></tr>
-        <!-- Footer -->
-        <tr>
-          <td style="background:#1A1612;padding:24px 40px;text-align:center;">
-            <p style="margin:0 0 8px;font-size:12px;color:#9B9289;letter-spacing:0.08em;text-transform:uppercase;">
-              ${SITE_CONFIG.name}
-            </p>
-            <p style="margin:0;font-size:11px;color:#6B6459;">
-              ${SITE_CONFIG.contact.address.line1}, ${SITE_CONFIG.contact.address.line2}<br/>
-              <a href="mailto:${SITE_CONFIG.contact.email}" style="color:#6B6459;">${SITE_CONFIG.contact.email}</a>
-              &nbsp;·&nbsp;
-              <a href="tel:${SITE_CONFIG.contact.phone}" style="color:#6B6459;">${SITE_CONFIG.contact.phoneDisplay}</a>
-            </p>
-          </td>
-        </tr>
+      <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="background:${PALETTE.cream};max-width:600px;width:100%;border:1px solid ${PALETTE.border};">
+        ${header()}
+        <tr><td style="padding:44px 40px 40px;">${body}</td></tr>
+        ${footer()}
       </table>
     </td></tr>
   </table>
@@ -87,36 +174,51 @@ function baseTemplate(title: string, body: string): string {
 </html>`
 }
 
+/* ----------------------------------------------------------------------------
+ * Customer order confirmation
+ * ------------------------------------------------------------------------- */
+
 export function buildCustomerEmail(data: OrderEmailData): { subject: string; html: string } {
-  const subject = `Order Confirmed. Ref: ${data.reference}`
-  const html = baseTemplate(
-    subject,
-    `
-    <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:28px;font-weight:400;color:#1A1612;">
-      Order Confirmed.
+  const firstName = data.customerName?.trim().split(' ')[0] ?? ''
+  const currency = data.currency ?? 'NGN'
+  const subject = `Order confirmed · ${data.reference}`
+  const preheader = `${firstName ? `Thank you, ${firstName}.` : 'Thank you.'} Your order ${data.reference} has been received.`
+
+  const body = `
+    ${sectionLabel('Order Confirmed')}
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;color:${PALETTE.ink};line-height:1.2;letter-spacing:-0.005em;">
+      ${firstName ? `Thank you, ${firstName}.` : 'Thank you.'}
     </h1>
-    <p style="margin:0 0 24px;font-size:14px;color:#6B6459;line-height:1.6;">
-      Thank you${data.customerName ? `, ${data.customerName.split(' ')[0]}` : ''}. Your payment was received and your order is being prepared.
+    <p style="margin:0 0 32px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      Your payment has been received and your order is being prepared.
+      We'll be in touch shortly with tracking details.
     </p>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E8E3DC;margin-bottom:24px;">
-      <tr style="background:#F5F1EB;">
-        <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Item</th>
-        <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Qty</th>
-        <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Total</th>
-      </tr>
-      ${itemRows(data.items, data.currency ?? 'NGN')}
+    <div style="height:1px;background:${PALETTE.gold};margin:0 0 28px;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel('Your Order')}
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 0 0;border-top:1px solid ${PALETTE.border};">
+      ${itemRows(data.items, currency)}
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;border-top:2px solid ${PALETTE.ink};">
       <tr>
-        <td colspan="2" style="padding:14px 0;text-align:right;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;padding-right:12px;">Total Paid</td>
-        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatPrice(data.totalKobo, data.currency ?? 'NGN')}</td>
+        <td style="padding:18px 0 0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};letter-spacing:0.18em;text-transform:uppercase;">
+          Total paid
+        </td>
+        <td style="padding:18px 0 0;text-align:right;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:${PALETTE.ink};">
+          ${formatPrice(data.totalKobo, currency)}
+        </td>
       </tr>
     </table>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+    <div style="height:36px;line-height:36px;font-size:1px;">&nbsp;</div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
-        <td width="48%" style="vertical-align:top;">
-          <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;">Delivery to</p>
-          <p style="margin:0;font-size:13px;color:#1A1612;line-height:1.6;">
+        <td width="48%" valign="top">
+          ${sectionLabel('Delivery to')}
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
             ${data.customerName}<br/>
             ${data.shippingAddress.address1}${data.shippingAddress.address2 ? ', ' + data.shippingAddress.address2 : ''}<br/>
             ${data.shippingAddress.city}, ${data.shippingAddress.state}<br/>
@@ -124,69 +226,92 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
           </p>
         </td>
         <td width="4%"></td>
-        <td width="48%" style="vertical-align:top;">
-          <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;">Reference</p>
-          <p style="margin:0;font-size:13px;font-family:monospace;color:#1A1612;">${data.reference}</p>
-          <p style="margin:8px 0 0;font-size:12px;color:#6B6459;">We'll contact you on<br/>${data.customerPhone} with tracking info.</p>
-        </td>
-      </tr>
-    </table>
-
-    <a href="${SITE_CONFIG.url}/no-series" style="display:inline-block;background:#1A1612;color:#F5F1EB;padding:14px 32px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;">
-      Continue Shopping
-    </a>
-    `
-  )
-  return { subject, html }
-}
-
-export function buildBusinessEmail(data: OrderEmailData): { subject: string; html: string } {
-  const subject = `New Order · ${data.reference} · ${formatPrice(data.totalKobo, data.currency ?? 'NGN')}`
-  const html = baseTemplate(
-    subject,
-    `
-    <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:24px;font-weight:400;color:#1A1612;">
-      New Order Received
-    </h1>
-    <p style="margin:0 0 24px;font-size:13px;color:#6B6459;">
-      Reference: <strong style="font-family:monospace;">${data.reference}</strong>
-    </p>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E8E3DC;margin-bottom:24px;">
-      <tr style="background:#F5F1EB;">
-        <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Item</th>
-        <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Qty</th>
-        <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Total</th>
-      </tr>
-      ${itemRows(data.items, data.currency ?? 'NGN')}
-      <tr>
-        <td colspan="2" style="padding:14px 0;text-align:right;font-size:13px;font-weight:700;color:#1A1612;padding-right:12px;">TOTAL</td>
-        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatPrice(data.totalKobo, data.currency ?? 'NGN')}</td>
-      </tr>
-    </table>
-
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E8E3DC;margin-bottom:24px;">
-      <tr>
-        <td style="padding:16px;">
-          <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;">Customer</p>
-          <p style="margin:0;font-size:14px;color:#1A1612;font-weight:600;">${data.customerName}</p>
-          <p style="margin:4px 0 0;font-size:13px;color:#6B6459;">${data.customerEmail} · ${data.customerPhone}</p>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:16px;border-top:1px solid #E8E3DC;">
-          <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;">Delivery Address</p>
-          <p style="margin:0;font-size:13px;color:#1A1612;line-height:1.6;">
-            ${data.shippingAddress.address1}${data.shippingAddress.address2 ? ', ' + data.shippingAddress.address2 : ''}<br/>
-            ${data.shippingAddress.city}, ${data.shippingAddress.state}, ${data.shippingAddress.country}
+        <td width="48%" valign="top">
+          ${sectionLabel('Reference')}
+          <p style="margin:0 0 14px;font-family:'Courier New',monospace;font-size:13px;color:${PALETTE.ink};letter-spacing:0.04em;">
+            ${data.reference}
+          </p>
+          ${sectionLabel('Contact')}
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:13px;color:${PALETTE.slate};line-height:1.7;">
+            ${data.customerPhone || data.customerEmail}
           </p>
         </td>
       </tr>
     </table>
-    `
-  )
-  return { subject, html }
+
+    <div style="height:40px;line-height:40px;font-size:1px;">&nbsp;</div>
+
+    ${ctaButton(`${SITE_CONFIG.url}/order-confirmed?ref=${encodeURIComponent(data.reference)}`, 'View order details')}
+
+    <p style="margin:32px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.7;">
+      Questions? Reply to this email or reach us at
+      <a href="mailto:${SITE_CONFIG.contact.email}" style="color:${PALETTE.slate};">${SITE_CONFIG.contact.email}</a>.
+    </p>
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader) }
 }
+
+/* ----------------------------------------------------------------------------
+ * Business / owner notification
+ * ------------------------------------------------------------------------- */
+
+export function buildBusinessEmail(data: OrderEmailData): { subject: string; html: string } {
+  const currency = data.currency ?? 'NGN'
+  const totalDisplay = formatPrice(data.totalKobo, currency)
+  const subject = `New order · ${totalDisplay} · ${data.reference}`
+  const preheader = `${data.customerName} · ${data.items.length} item${data.items.length === 1 ? '' : 's'} · ${totalDisplay}`
+
+  const body = `
+    ${sectionLabel('New Order')}
+    <h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:400;color:${PALETTE.ink};line-height:1.2;">
+      ${totalDisplay}
+    </h1>
+    <p style="margin:0 0 28px;font-family:'Courier New',monospace;font-size:12px;color:${PALETTE.slate};letter-spacing:0.04em;">
+      ${data.reference}
+    </p>
+
+    <div style="height:1px;background:${PALETTE.gold};margin:0 0 24px;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel('Customer')}
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
+      <tr>
+        <td style="font-family:Georgia,'Times New Roman',serif;font-size:18px;color:${PALETTE.ink};padding-bottom:6px;">
+          ${data.customerName}
+        </td>
+      </tr>
+      <tr>
+        <td style="font-family:Arial,sans-serif;font-size:13px;color:${PALETTE.slate};line-height:1.7;">
+          <a href="mailto:${data.customerEmail}" style="color:${PALETTE.slate};text-decoration:none;">${data.customerEmail}</a><br/>
+          <a href="tel:${data.customerPhone}" style="color:${PALETTE.slate};text-decoration:none;">${data.customerPhone}</a>
+        </td>
+      </tr>
+    </table>
+
+    ${sectionLabel('Items')}
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${PALETTE.border};margin-bottom:24px;">
+      ${itemRows(data.items, currency)}
+    </table>
+
+    ${sectionLabel('Ship to')}
+    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
+      ${data.customerName}<br/>
+      ${data.shippingAddress.address1}${data.shippingAddress.address2 ? ', ' + data.shippingAddress.address2 : ''}<br/>
+      ${data.shippingAddress.city}, ${data.shippingAddress.state}<br/>
+      ${data.shippingAddress.country}
+    </p>
+
+    <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};line-height:1.7;">
+      Manage this order in the Medusa admin. Payment has been verified and captured.
+    </p>
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader) }
+}
+
+/* ----------------------------------------------------------------------------
+ * Abandoned cart
+ * ------------------------------------------------------------------------- */
 
 interface AbandonedCartItem {
   name: string
@@ -203,60 +328,63 @@ interface AbandonedCartData {
 }
 
 function abandonedItemRows(items: AbandonedCartItem[], currency: string): string {
-  return items
-    .map(
-      (item) => `
-    <tr>
-      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;color:#1A1612;font-size:14px;">
-        ${item.name}${item.variantLabel ? ` · ${item.variantLabel}` : ''}
-      </td>
-      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:center;color:#6B6459;font-size:14px;">
-        ${item.qty}
-      </td>
-      <td style="padding:12px 0;border-bottom:1px solid #E8E3DC;text-align:right;color:#1A1612;font-size:14px;">
-        ${formatPrice(item.unitPriceMinor * item.qty, currency)}
-      </td>
-    </tr>`
-    )
-    .join('')
+  // Map to the same shape as the order item rows so the visual treatment matches.
+  const mapped: OrderItem[] = items.map((i) => ({
+    name: i.name,
+    variantLabel: i.variantLabel,
+    qty: i.qty,
+    unitPriceKobo: i.unitPriceMinor,
+  }))
+  return itemRows(mapped, currency)
 }
 
 export function buildAbandonedCartEmail(data: AbandonedCartData): { subject: string; html: string } {
-  const subject = `Still thinking it over?`
-  const html = baseTemplate(
-    subject,
-    `
-    <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:28px;font-weight:400;color:#1A1612;">
+  const subject = 'Your scent is waiting.'
+  const preheader = `Pick up where you left off. ${data.items.length} item${data.items.length === 1 ? '' : 's'} in your cart.`
+
+  const body = `
+    ${sectionLabel('Saved for you')}
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;color:${PALETTE.ink};line-height:1.2;letter-spacing:-0.005em;">
       Your scent is waiting.
     </h1>
-    <p style="margin:0 0 24px;font-size:14px;color:#6B6459;line-height:1.6;">
-      You left a few pieces in your bag. We've kept them safe — pick up where you left off whenever you're ready.
+    <p style="margin:0 0 32px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      We've kept your selections safe. Return whenever you're ready —
+      they'll be here.
     </p>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E8E3DC;margin-bottom:24px;">
-      <tr style="background:#F5F1EB;">
-        <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Item</th>
-        <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Qty</th>
-        <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;font-weight:normal;">Total</th>
-      </tr>
+    <div style="height:1px;background:${PALETTE.gold};margin:0 0 28px;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel('In your cart')}
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${PALETTE.border};">
       ${abandonedItemRows(data.items, data.currency)}
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;border-top:2px solid ${PALETTE.ink};">
       <tr>
-        <td colspan="2" style="padding:14px 0;text-align:right;font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6459;padding-right:12px;">Cart total</td>
-        <td style="padding:14px 0 14px 12px;text-align:right;font-size:16px;font-weight:700;color:#1A1612;">${formatPrice(data.totalMinor, data.currency)}</td>
+        <td style="padding:18px 0 0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};letter-spacing:0.18em;text-transform:uppercase;">
+          Cart total
+        </td>
+        <td style="padding:18px 0 0;text-align:right;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:${PALETTE.ink};">
+          ${formatPrice(data.totalMinor, data.currency)}
+        </td>
       </tr>
     </table>
 
-    <a href="${SITE_CONFIG.url}/checkout" style="display:inline-block;background:#1A1612;color:#F5F1EB;padding:14px 32px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;">
-      Return to your cart
-    </a>
+    <div style="height:40px;line-height:40px;font-size:1px;">&nbsp;</div>
 
-    <p style="margin:32px 0 0;font-size:11px;color:#9B9289;line-height:1.6;">
-      Not interested? You can ignore this email — we won't send another reminder for this cart.
+    ${ctaButton(`${SITE_CONFIG.url}/checkout`, 'Return to your cart')}
+
+    <p style="margin:32px 0 0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};line-height:1.7;">
+      Not interested anymore? You can ignore this — we won't send another reminder for this cart.
     </p>
-    `
-  )
-  return { subject, html }
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader) }
 }
+
+/* ----------------------------------------------------------------------------
+ * Resend transport
+ * ------------------------------------------------------------------------- */
 
 export async function sendEmail({
   to,
