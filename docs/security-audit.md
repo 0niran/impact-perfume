@@ -5,11 +5,12 @@
 auth, secret handling, input validation, headers, and dependency CVEs.
 Excludes the Medusa backend repo (separate audit) and Sanity Studio.
 
-**Status: Remediated in this pass.** Of the 14 numbered findings,
-**11 are fixed**, **3 are documented as accepted risk** pending upstream
-support (Medusa v2 scoped API keys, Sanity per-doctype roles, the
-intentional Sanity-lock fail-open). See "Remediation status" at the foot
-of each finding for what shipped.
+**Status: Remediated in this pass.** Of the 15 numbered findings,
+**12 are fixed** (including H-4 added after the original audit pass),
+**3 are documented as accepted risk** pending upstream support (Medusa
+v2 scoped API keys, Sanity per-doctype roles, the intentional Sanity-
+lock fail-open). See the status column in the summary table and the
+per-finding sections below for what shipped.
 
 ---
 
@@ -32,6 +33,7 @@ of each finding for what shipped.
 | H-1 | **High** | Order total + line prices accepted from client without server-side re-pricing | **FIXED** |
 | H-2 | **High** | Fail-open auth pattern on cron / revalidate / Medusa-webhook routes | **FIXED** |
 | H-3 | **High** | No rate limiting on any public POST endpoint | **FIXED** |
+| H-4 | **High** | No server-side input validation on customer-data endpoints (XSS, oversized payloads, malformed addresses) | **FIXED** |
 | M-1 | Medium | No HTTP security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy) | **FIXED** |
 | M-2 | Medium | Stripe webhook deduplicates on payment reference, not Stripe `event.id` | **FIXED** |
 | M-3 | Medium | Stripe `create-intent` returns raw Stripe error messages to the client | **FIXED** |
@@ -126,6 +128,47 @@ if (auth !== `Bearer ${secret}`) {
 The local-dev convenience that fail-open was meant to preserve can be
 recovered with a `NODE_ENV !== 'production'` guard or by always setting
 the env var locally.
+
+---
+
+## H-4 · No server-side input validation on customer-data endpoints
+
+**Severity:** High (defence-in-depth; XSS, oversized payload, header injection)
+**Files (fixed):**
+- `src/lib/validation.ts` (new) — Zod schemas
+- `src/app/api/verify-payment/route.ts`
+- `src/app/api/stripe/create-intent/route.ts`
+- `src/app/api/cart/save/route.ts`
+- `src/app/api/newsletter/route.ts`
+- `src/lib/email.ts` (HTML escape on all interpolated user fields)
+
+**Impact (before fix):** Routes accepted free-form strings for customer
+name, address, phone, email, and variant ids. The HTML email templates
+interpolated these strings directly without escaping — letting an
+attacker stuff `<script>` or large payloads into the business
+notification inbox. Variant ids weren't pattern-checked, opening
+path-traversal/GROQ-injection style surfaces against Sanity and Medusa.
+
+**Fix:** Every PII endpoint now runs the request body through a Zod
+schema before doing anything else:
+- Name / address / city / state: 1–200 chars, no ASCII control chars,
+  no HTML tag substrings, Unicode allowed (diacritics work).
+- Email: RFC shape + 254-char cap + auto-lowercase/trim.
+- Phone: digits + space + `+ - ( )` only, 5–30 chars.
+- CA postal code: regex-validated to `^[A-Z]\d[A-Z][ -]?\d[A-Z]\d$`.
+- variantId: `^[a-zA-Z0-9_-]+$` (no path-traversal characters).
+- qty: integer 1–99. Lines array: capped at 50 entries.
+
+Email templates additionally HTML-escape every interpolated user field
+as defence-in-depth, URL-encode the values in mailto/tel hrefs, and
+strip newlines from references in subject lines to prevent Resend
+header-injection.
+
+38 dedicated validation tests in `src/lib/__tests__/validation.test.ts`.
+
+**Verification:** Live production tests confirmed every malicious
+payload returns 400 with a field-level error message; legitimate
+payloads still succeed.
 
 ---
 
