@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rateLimit'
+import { newsletterBodySchema, formatZodError } from '@/lib/validation'
 
 export async function POST(req: NextRequest) {
   const limit = await rateLimit(req, 'newsletter', { limit: 5, window: '1 m' })
@@ -10,18 +11,19 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let body: Record<string, unknown>
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ ok: false, message: 'Invalid request.' }, { status: 400 })
   }
 
-  const { email } = body
-
-  if (!email || typeof email !== 'string' || !email.includes('@')) {
-    return NextResponse.json({ ok: false, message: 'Valid email required.' }, { status: 400 })
+  const parsed = newsletterBodySchema.safeParse(rawBody)
+  if (!parsed.success) {
+    const { message, field } = formatZodError(parsed.error)
+    return NextResponse.json({ ok: false, message, field }, { status: 400 })
   }
+  const { email } = parsed.data
 
   // TODO: integrate with Mailchimp / Klaviyo / Brevo when ready.
   // Until then this is a deferred-signup placeholder — the storefront

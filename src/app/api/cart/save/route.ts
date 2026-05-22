@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
 import { rateLimit } from '@/lib/rateLimit'
+import { cartSaveBodySchema, formatZodError } from '@/lib/validation'
 
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -9,32 +10,6 @@ const writeClient = createClient({
   token: process.env.SANITY_API_WRITE_TOKEN,
   useCdn: false,
 })
-
-interface IncomingLine {
-  variantId: string
-  productId?: string
-  handle?: string
-  name: string
-  variantLabel?: string
-  qty: number
-  unitPriceMinor?: number
-  unitPriceKobo?: number // legacy / cart-store alias
-  thumbnail?: string
-}
-
-interface SavePayload {
-  email: string
-  region: 'NG' | 'CA'
-  currency: string
-  subtotalMinor: number
-  lines: IncomingLine[]
-  /** Whether the customer ticked "send me a reminder" on the save form. */
-  consentToContact?: boolean
-}
-
-function isValidEmail(value: unknown): value is string {
-  return typeof value === 'string' && /^\S+@\S+\.\S+$/.test(value)
-}
 
 export async function POST(req: NextRequest) {
   const limit = await rateLimit(req, 'cart-save', { limit: 5, window: '1 m' })
@@ -49,24 +24,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, message: 'Cart save not configured.' }, { status: 500 })
   }
 
-  let body: Partial<SavePayload>
-  try { body = await req.json() } catch {
+  let rawBody: unknown
+  try { rawBody = await req.json() } catch {
     return NextResponse.json({ ok: false, message: 'Invalid body.' }, { status: 400 })
   }
 
-  if (!isValidEmail(body.email)) {
-    return NextResponse.json({ ok: false, message: 'A valid email is required.' }, { status: 400 })
+  const parsed = cartSaveBodySchema.safeParse(rawBody)
+  if (!parsed.success) {
+    const { message, field } = formatZodError(parsed.error)
+    return NextResponse.json({ ok: false, message, field }, { status: 400 })
   }
-  if (!Array.isArray(body.lines) || body.lines.length === 0) {
-    return NextResponse.json({ ok: false, message: 'Cart is empty.' }, { status: 400 })
-  }
-  // Explicit opt-in required for follow-up email (audit L-2 / GDPR / PIPEDA).
-  if (body.consentToContact !== true) {
-    return NextResponse.json(
-      { ok: false, message: 'Please confirm consent to be contacted about your cart.' },
-      { status: 400 }
-    )
-  }
+  const body = parsed.data
 
   const normalisedLines = body.lines.map((l) => ({
     variantId: l.variantId,
@@ -90,9 +58,9 @@ export async function POST(req: NextRequest) {
     const doc = {
       _type: 'pendingCart',
       email: body.email,
-      region: body.region ?? 'NG',
-      currency: (body.currency ?? 'NGN').toUpperCase(),
-      subtotalMinor: body.subtotalMinor ?? 0,
+      region: body.region,
+      currency: body.currency,
+      subtotalMinor: body.subtotalMinor,
       lines: normalisedLines,
       createdAt: new Date().toISOString(),
       remindersSent: 0,

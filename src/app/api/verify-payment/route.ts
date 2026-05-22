@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fulfillOrder, type ShippingAddress, type CartLine } from '@/lib/orderFulfillment'
+import { fulfillOrder, type CartLine } from '@/lib/orderFulfillment'
 import { validateLinePricing } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
+import { verifyPaymentBodySchema, formatZodError } from '@/lib/validation'
 
 interface PaystackVerifyResponse {
   status: boolean
@@ -31,27 +32,27 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let body: Record<string, unknown>
+  let rawBody: unknown
   try {
-    body = await req.json()
+    rawBody = await req.json()
   } catch {
     return NextResponse.json({ ok: false, message: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { reference, amountKobo, customerName, customerEmail, customerPhone, shippingAddress, lines } = body
-
-  if (!reference || typeof reference !== 'string') {
-    return NextResponse.json({ ok: false, message: 'Missing payment reference.' }, { status: 400 })
+  const parsed = verifyPaymentBodySchema.safeParse(rawBody)
+  if (!parsed.success) {
+    const { message, field } = formatZodError(parsed.error)
+    return NextResponse.json({ ok: false, message, field }, { status: 400 })
   }
-  if (!amountKobo || typeof amountKobo !== 'number' || amountKobo <= 0) {
-    return NextResponse.json({ ok: false, message: 'Invalid order amount.' }, { status: 400 })
-  }
-  if (!customerEmail || typeof customerEmail !== 'string') {
-    return NextResponse.json({ ok: false, message: 'Missing customer email.' }, { status: 400 })
-  }
-  if (!Array.isArray(lines) || lines.length === 0) {
-    return NextResponse.json({ ok: false, message: 'Order must contain items.' }, { status: 400 })
-  }
+  const {
+    reference,
+    amountKobo,
+    customerName,
+    customerEmail,
+    customerPhone,
+    shippingAddress,
+    lines,
+  } = parsed.data
 
   // 1. Verify with Paystack
   let tx
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, message: `Payment status: ${tx.status}.` })
     }
 
-    if (Math.abs(tx.amount - (amountKobo as number)) > 1) {
+    if (Math.abs(tx.amount - amountKobo) > 1) {
       return NextResponse.json({ ok: false, message: 'Payment amount mismatch.' })
     }
   } catch {
@@ -83,9 +84,8 @@ export async function POST(req: NextRequest) {
   //    Medusa's canonical prices. Refuse fulfilment if they don't, since
   //    accepting the order would let the client choose the line totals
   //    written to Medusa (audit H-1).
-  const clientLines = lines as CartLine[]
   const validation = await validateLinePricing(
-    clientLines.map((l) => ({
+    lines.map((l) => ({
       variantId: l.variantId,
       qty: l.qty,
       unitPriceKobo: l.unitPriceKobo,
@@ -125,8 +125,11 @@ export async function POST(req: NextRequest) {
 
   // 3. Fulfill order with SERVER-derived line prices so an attacker
   //    can't seed cheap line items via the client.
-  const safeLines: CartLine[] = clientLines.map((l, i) => ({
-    ...l,
+  const safeLines: CartLine[] = lines.map((l, i) => ({
+    variantId: l.variantId,
+    name: l.name,
+    variantLabel: l.variantLabel,
+    qty: l.qty,
     unitPriceKobo: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
   }))
 
@@ -135,10 +138,17 @@ export async function POST(req: NextRequest) {
     regionId: 'NG',
     totalKobo: validation.totalMinor,
     currency: 'NGN',
-    customerName: (customerName as string) ?? '',
-    customerEmail: customerEmail as string,
-    customerPhone: (customerPhone as string) ?? '',
-    shippingAddress: shippingAddress as ShippingAddress,
+    customerName,
+    customerEmail,
+    customerPhone,
+    shippingAddress: {
+      address1: shippingAddress.address1,
+      address2: shippingAddress.address2,
+      city: shippingAddress.city,
+      state: shippingAddress.state,
+      postalCode: shippingAddress.postalCode,
+      country: shippingAddress.country,
+    },
     lines: safeLines,
     paymentProvider: 'paystack',
     paymentRef: tx.reference,

@@ -2,6 +2,23 @@ import { SITE_CONFIG } from '@/lib/config'
 import { formatPrice } from '@/lib/format'
 
 /**
+ * HTML-escape user-supplied strings before interpolating into the email
+ * body. Defence-in-depth — input validation at the API layer already
+ * rejects raw HTML, but if a string ever slips through (e.g., the
+ * business email shows a customer's submitted name in the inbox preview),
+ * escaping here guarantees the email client still treats it as text.
+ */
+function esc(value: string | undefined | null): string {
+  if (value == null) return ''
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
  * Email templates for transactional messaging. Inline styles only — many
  * clients (Outlook especially) strip <style> blocks and don't support web
  * fonts. We stick to Georgia (universally available) for the brand voice
@@ -121,10 +138,10 @@ function itemRows(items: OrderItem[], currency: string): string {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="font-family:Georgia,'Times New Roman',serif;font-size:16px;color:${PALETTE.ink};line-height:1.3;">
-              ${item.name}
+              ${esc(item.name)}
               ${
                 item.variantLabel
-                  ? `<div style="margin-top:4px;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};letter-spacing:0.04em;">${item.variantLabel}${item.qty > 1 ? ` &middot; Qty ${item.qty}` : ''}</div>`
+                  ? `<div style="margin-top:4px;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};letter-spacing:0.04em;">${esc(item.variantLabel)}${item.qty > 1 ? ` &middot; Qty ${item.qty}` : ''}</div>`
                   : item.qty > 1
                     ? `<div style="margin-top:4px;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};letter-spacing:0.04em;">Qty ${item.qty}</div>`
                     : ''
@@ -187,7 +204,7 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
   const body = `
     ${sectionLabel('Order Confirmed')}
     <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;color:${PALETTE.ink};line-height:1.2;letter-spacing:-0.005em;">
-      ${firstName ? `Thank you, ${firstName}.` : 'Thank you.'}
+      ${firstName ? `Thank you, ${esc(firstName)}.` : 'Thank you.'}
     </h1>
     <p style="margin:0 0 32px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
       Your payment has been received and your order is being prepared.
@@ -219,21 +236,21 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
         <td width="48%" valign="top">
           ${sectionLabel('Delivery to')}
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
-            ${data.customerName}<br/>
-            ${data.shippingAddress.address1}${data.shippingAddress.address2 ? ', ' + data.shippingAddress.address2 : ''}<br/>
-            ${data.shippingAddress.city}, ${data.shippingAddress.state}<br/>
-            ${data.shippingAddress.country}
+            ${esc(data.customerName)}<br/>
+            ${esc(data.shippingAddress.address1)}${data.shippingAddress.address2 ? ', ' + esc(data.shippingAddress.address2) : ''}<br/>
+            ${esc(data.shippingAddress.city)}, ${esc(data.shippingAddress.state)}<br/>
+            ${esc(data.shippingAddress.country)}
           </p>
         </td>
         <td width="4%"></td>
         <td width="48%" valign="top">
           ${sectionLabel('Reference')}
           <p style="margin:0 0 14px;font-family:'Courier New',monospace;font-size:13px;color:${PALETTE.ink};letter-spacing:0.04em;">
-            ${data.reference}
+            ${esc(data.reference)}
           </p>
           ${sectionLabel('Contact')}
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:13px;color:${PALETTE.slate};line-height:1.7;">
-            ${data.customerPhone || data.customerEmail}
+            ${esc(data.customerPhone || data.customerEmail)}
           </p>
         </td>
       </tr>
@@ -259,8 +276,11 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
 export function buildBusinessEmail(data: OrderEmailData): { subject: string; html: string } {
   const currency = data.currency ?? 'NGN'
   const totalDisplay = formatPrice(data.totalKobo, currency)
-  const subject = `New order · ${totalDisplay} · ${data.reference}`
-  const preheader = `${data.customerName} · ${data.items.length} item${data.items.length === 1 ? '' : 's'} · ${totalDisplay}`
+  // Subject lines aren't HTML-rendered so they don't need escaping, but
+  // strip newlines to prevent header-injection style attacks via Resend.
+  const safeRef = data.reference.replace(/[\r\n]/g, '')
+  const subject = `New order · ${totalDisplay} · ${safeRef}`
+  const preheader = `${esc(data.customerName)} · ${data.items.length} item${data.items.length === 1 ? '' : 's'} · ${totalDisplay}`
 
   const body = `
     ${sectionLabel('New Order')}
@@ -268,7 +288,7 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
       ${totalDisplay}
     </h1>
     <p style="margin:0 0 28px;font-family:'Courier New',monospace;font-size:12px;color:${PALETTE.slate};letter-spacing:0.04em;">
-      ${data.reference}
+      ${esc(data.reference)}
     </p>
 
     <div style="height:1px;background:${PALETTE.gold};margin:0 0 24px;line-height:1px;font-size:1px;">&nbsp;</div>
@@ -277,13 +297,13 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
       <tr>
         <td style="font-family:Georgia,'Times New Roman',serif;font-size:18px;color:${PALETTE.ink};padding-bottom:6px;">
-          ${data.customerName}
+          ${esc(data.customerName)}
         </td>
       </tr>
       <tr>
         <td style="font-family:Arial,sans-serif;font-size:13px;color:${PALETTE.slate};line-height:1.7;">
-          <a href="mailto:${data.customerEmail}" style="color:${PALETTE.slate};text-decoration:none;">${data.customerEmail}</a><br/>
-          <a href="tel:${data.customerPhone}" style="color:${PALETTE.slate};text-decoration:none;">${data.customerPhone}</a>
+          <a href="mailto:${encodeURIComponent(data.customerEmail)}" style="color:${PALETTE.slate};text-decoration:none;">${esc(data.customerEmail)}</a><br/>
+          <a href="tel:${encodeURIComponent(data.customerPhone)}" style="color:${PALETTE.slate};text-decoration:none;">${esc(data.customerPhone)}</a>
         </td>
       </tr>
     </table>
@@ -295,10 +315,10 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
 
     ${sectionLabel('Ship to')}
     <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
-      ${data.customerName}<br/>
-      ${data.shippingAddress.address1}${data.shippingAddress.address2 ? ', ' + data.shippingAddress.address2 : ''}<br/>
-      ${data.shippingAddress.city}, ${data.shippingAddress.state}<br/>
-      ${data.shippingAddress.country}
+      ${esc(data.customerName)}<br/>
+      ${esc(data.shippingAddress.address1)}${data.shippingAddress.address2 ? ', ' + esc(data.shippingAddress.address2) : ''}<br/>
+      ${esc(data.shippingAddress.city)}, ${esc(data.shippingAddress.state)}<br/>
+      ${esc(data.shippingAddress.country)}
     </p>
 
     <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};line-height:1.7;">
