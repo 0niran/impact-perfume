@@ -5,6 +5,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRecentlyViewed, type RecentlyViewedItem } from '@/hooks/useRecentlyViewed'
 
+const DEFAULT_THUMBNAIL = '/images/no_series.png'
+
 interface TrackerProps extends RecentlyViewedItem {}
 
 /**
@@ -56,15 +58,13 @@ export function RecentlyViewedRail({
                       : '#1D1B16',
                   }}
                 >
-                  {item.imageUrl && (
                     <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      fill
-                      sizes="64px"
-                      className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                    />
-                  )}
+                    src={item.imageUrl || DEFAULT_THUMBNAIL}
+                    alt={item.title}
+                    fill
+                    sizes="64px"
+                    className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
                 <p className="mt-1 text-label text-stone truncate">{item.title}</p>
               </Link>
@@ -95,19 +95,17 @@ export function RecentlyViewedRail({
                   }}
                   aria-hidden="true"
                 />
-                {item.imageUrl && (
-                  <div className="absolute inset-0 flex items-center justify-center p-6">
-                    <div className="relative h-[88%] w-[80%]">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.title}
-                        fill
-                        sizes="(min-width: 640px) 25vw, 50vw"
-                        className="object-contain transition-transform duration-500 group-hover:scale-[1.04]"
-                      />
-                    </div>
+                <div className="absolute inset-0 flex items-center justify-center p-6">
+                  <div className="relative h-[88%] w-[80%]">
+                    <Image
+                      src={item.imageUrl || DEFAULT_THUMBNAIL}
+                      alt={item.title}
+                      fill
+                      sizes="(min-width: 640px) 25vw, 50vw"
+                      className="object-contain transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
                   </div>
-                )}
+                </div>
               </div>
               <div className="border-t border-stone/15 bg-ink px-4 py-3">
                 <p className="text-body font-medium text-bone truncate">{item.title}</p>

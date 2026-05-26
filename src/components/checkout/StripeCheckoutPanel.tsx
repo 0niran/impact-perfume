@@ -107,6 +107,7 @@ export default function StripeCheckoutPanel() {
           },
           lines: lines.map((l) => ({
             variantId: l.variantId,
+            productId: l.productId,
             name: l.name,
             variantLabel: l.variantLabel,
             qty: l.qty,

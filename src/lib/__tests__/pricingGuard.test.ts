@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_MEDUSA_BACKEND_URL', 'https://medusa.test')
-  vi.stubEnv('MEDUSA_ADMIN_EMAIL', 'admin@example.com')
-  vi.stubEnv('MEDUSA_ADMIN_PASSWORD', 'secret')
+  vi.stubEnv('NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY', 'pk_test')
   vi.stubEnv('NEXT_PUBLIC_MEDUSA_REGION_ID', 'reg_ng')
   vi.stubEnv('NEXT_PUBLIC_MEDUSA_REGION_ID_CA', 'reg_ca')
   vi.resetModules()
@@ -28,8 +27,7 @@ async function loadModule() {
 describe('validateLinePricing — happy path', () => {
   it('passes when client prices match Medusa exactly', async () => {
     stubFetch((url) => {
-      if (url.includes('/auth/user/emailpass')) return { token: 't' }
-      if (url.includes('/admin/products')) {
+      if (url.includes('/store/products')) {
         return {
           products: [
             {
@@ -37,10 +35,10 @@ describe('validateLinePricing — happy path', () => {
               variants: [
                 {
                   id: 'v1',
-                  prices: [
-                    { amount: 50_000, currency_code: 'ngn' },
-                    { amount: 65, currency_code: 'cad' },
-                  ],
+                  calculated_price: {
+                    calculated_amount: 50_000,
+                    currency_code: 'ngn',
+                  },
                 },
               ],
             },
@@ -53,7 +51,7 @@ describe('validateLinePricing — happy path', () => {
     // Client claims 5,000,000 kobo (₦50,000 × 100). Medusa has 50,000 major
     // units. 50,000 × 100 = 5,000,000 → matches.
     const result = await validateLinePricing(
-      [{ variantId: 'v1', qty: 2, unitPriceKobo: 5_000_000 }],
+      [{ variantId: 'v1', productId: 'p1', qty: 2, unitPriceKobo: 5_000_000 }],
       'NG'
     )
     expect(result.ok).toBe(true)
@@ -65,61 +63,88 @@ describe('validateLinePricing — happy path', () => {
 
 describe('validateLinePricing — rejects', () => {
   it('rejects when client unitPriceKobo differs from Medusa', async () => {
-    stubFetch((url) => {
-      if (url.includes('/auth/user/emailpass')) return { token: 't' }
-      return {
-        products: [
-          {
-            id: 'p1',
-            variants: [
-              { id: 'v1', prices: [{ amount: 50_000, currency_code: 'ngn' }] },
-            ],
-          },
-        ],
-      }
-    })
+    stubFetch(() => ({
+      products: [
+        {
+          id: 'p1',
+          variants: [
+            {
+              id: 'v1',
+              calculated_price: { calculated_amount: 50_000, currency_code: 'ngn' },
+            },
+          ],
+        },
+      ],
+    }))
     const { validateLinePricing } = await loadModule()
     // Attacker sends ₦1 (100 kobo) instead of ₦50,000
     const result = await validateLinePricing(
-      [{ variantId: 'v1', qty: 1, unitPriceKobo: 100 }],
+      [{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 100 }],
       'NG'
     )
     expect(result.ok).toBe(false)
     expect(result.message).toMatch(/price has changed/i)
   })
 
-  it('rejects when variant has no price in the active currency', async () => {
-    stubFetch((url) => {
-      if (url.includes('/auth/user/emailpass')) return { token: 't' }
-      return {
-        products: [
-          {
-            id: 'p1',
-            variants: [
-              { id: 'v1', prices: [{ amount: 50_000, currency_code: 'ngn' }] },
-            ],
-          },
-        ],
-      }
-    })
+  it('rejects when variant has no calculated price', async () => {
+    stubFetch(() => ({
+      products: [
+        {
+          id: 'p1',
+          variants: [{ id: 'v1', calculated_price: undefined }],
+        },
+      ],
+    }))
     const { validateLinePricing } = await loadModule()
-    // Asking for CAD on a variant that only has NGN price
     const result = await validateLinePricing(
-      [{ variantId: 'v1', qty: 1, unitPriceKobo: 5_000_000 }],
-      'CA'
+      [{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }],
+      'NG'
     )
     expect(result.ok).toBe(false)
     expect(result.message).toMatch(/not available/i)
   })
 
-  it('rejects when variant cannot be found', async () => {
-    stubFetch((url) => {
-      if (url.includes('/auth/user/emailpass')) return { token: 't' }
-      return { products: [] }
-    })
+  it('rejects when calculated price currency does not match region', async () => {
+    stubFetch(() => ({
+      products: [
+        {
+          id: 'p1',
+          variants: [
+            {
+              id: 'v1',
+              calculated_price: { calculated_amount: 65, currency_code: 'cad' },
+            },
+          ],
+        },
+      ],
+    }))
+    const { validateLinePricing } = await loadModule()
+    // Asking NG region against a CAD-priced variant
+    const result = await validateLinePricing(
+      [{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 6_500 }],
+      'NG'
+    )
+    expect(result.ok).toBe(false)
+    expect(result.message).toMatch(/not available/i)
+  })
+
+  it('rejects when variant cannot be found on the named product', async () => {
+    stubFetch(() => ({
+      products: [
+        {
+          id: 'p1',
+          variants: [
+            {
+              id: 'v-other',
+              calculated_price: { calculated_amount: 50_000, currency_code: 'ngn' },
+            },
+          ],
+        },
+      ],
+    }))
     const { validateLinePricing } = await loadModule()
     const result = await validateLinePricing(
-      [{ variantId: 'v-missing', qty: 1, unitPriceKobo: 5_000_000 }],
+      [{ variantId: 'v-missing', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }],
       'NG'
     )
     expect(result.ok).toBe(false)
@@ -130,7 +155,7 @@ describe('validateLinePricing — rejects', () => {
     vi.stubEnv('NEXT_PUBLIC_MEDUSA_BACKEND_URL', '')
     const { validateLinePricing } = await loadModule()
     const result = await validateLinePricing(
-      [{ variantId: 'v1', qty: 1, unitPriceKobo: 5_000_000 }],
+      [{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }],
       'NG'
     )
     expect(result.ok).toBe(false)
@@ -143,22 +168,30 @@ describe('validateLinePricing — rejects', () => {
   })
 
   it('rejects invalid quantities', async () => {
-    stubFetch(() => ({ token: 't' }))
     const { validateLinePricing } = await loadModule()
     const result = await validateLinePricing(
-      [{ variantId: 'v1', qty: 0, unitPriceKobo: 5_000_000 }],
+      [{ variantId: 'v1', productId: 'p1', qty: 0, unitPriceKobo: 5_000_000 }],
       'NG'
     )
     expect(result.ok).toBe(false)
   })
 
   it('rejects oversized quantities (cap of 99)', async () => {
-    stubFetch(() => ({ token: 't' }))
     const { validateLinePricing } = await loadModule()
     const result = await validateLinePricing(
-      [{ variantId: 'v1', qty: 100, unitPriceKobo: 5_000_000 }],
+      [{ variantId: 'v1', productId: 'p1', qty: 100, unitPriceKobo: 5_000_000 }],
       'NG'
     )
     expect(result.ok).toBe(false)
+  })
+
+  it('rejects when productId is missing on a line', async () => {
+    const { validateLinePricing } = await loadModule()
+    const result = await validateLinePricing(
+      [{ variantId: 'v1', qty: 1, unitPriceKobo: 5_000_000 }],
+      'NG'
+    )
+    expect(result.ok).toBe(false)
+    expect(result.message).toMatch(/out of date/i)
   })
 })

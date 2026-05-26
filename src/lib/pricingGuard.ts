@@ -4,10 +4,17 @@
  * The browser cart sends each line's `unitPriceKobo` along with the
  * checkout request — but the browser is not a trusted source of price.
  * Before charging the customer or recording the order in Medusa, we
- * fetch each variant from Medusa using the admin API and compute the
- * canonical price in the active region's currency. If the client-sent
- * amounts don't match (after small rounding tolerance), we refuse the
- * request.
+ * fetch each variant from Medusa using the store API (with region_id)
+ * and read the same `calculated_price` value the storefront uses. If
+ * the client-sent amounts don't match (after a tiny rounding tolerance)
+ * we refuse the request.
+ *
+ * Why store API rather than admin: Medusa v2's pricing module is
+ * decoupled from products, so `variant.prices` is no longer reliable
+ * on admin reads. The store endpoint returns `calculated_price` already
+ * resolved for the active region's currency — exactly what
+ * lib/medusa.ts::getPrice() reads on the storefront. Using the same
+ * source guarantees server and client see identical numbers.
  *
  * Used by both /api/stripe/create-intent (pre-payment) and
  * /api/verify-payment (post-payment).
@@ -17,23 +24,25 @@ import { REGIONS, type RegionId } from '@/lib/region'
 
 interface ClientLine {
   variantId: string
+  /** Required so we can look the variant up via /store/products?id[]= */
+  productId?: string
   qty: number
   unitPriceKobo: number
 }
 
-interface AdminPrice {
-  amount: number
-  currency_code: string
+interface CalculatedPrice {
+  calculated_amount?: number
+  currency_code?: string
 }
 
-interface AdminVariant {
+interface StoreVariant {
   id: string
-  prices?: AdminPrice[]
+  calculated_price?: CalculatedPrice
 }
 
-interface AdminProduct {
+interface StoreProduct {
   id: string
-  variants?: AdminVariant[]
+  variants?: StoreVariant[]
 }
 
 export interface ServerLine extends ClientLine {
@@ -51,61 +60,58 @@ export interface PriceValidationResult {
   message?: string
 }
 
-let _adminToken: string | null = null
-async function getAdminToken(): Promise<string | null> {
-  if (_adminToken) return _adminToken
-  const url = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const email = process.env.MEDUSA_ADMIN_EMAIL
-  const password = process.env.MEDUSA_ADMIN_PASSWORD
-  if (!url || !email || !password) return null
-  try {
-    const res = await fetch(`${url}/auth/user/emailpass`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) return null
-    const { token } = await res.json()
-    _adminToken = token ?? null
-    return _adminToken
-  } catch {
-    return null
-  }
-}
+/**
+ * Fetch every product in `productIds` from Medusa store API with the
+ * region context attached, so `calculated_price` is populated.
+ */
+async function fetchProducts(
+  productIds: string[],
+  medusaRegionId: string
+): Promise<StoreProduct[]> {
+  const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  const publishable = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  if (!backend || !publishable) return []
 
-async function fetchVariant(
-  variantId: string,
-  token: string
-): Promise<AdminVariant | null> {
-  const url = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  if (!url) return null
+  // Medusa v2 store API populates `variants.calculated_price` automatically
+  // when `region_id` is passed — no explicit `fields` selector needed.
+  const params = new URLSearchParams()
+  for (const id of productIds) params.append('id[]', id)
+  params.set('region_id', medusaRegionId)
+  params.set('limit', String(productIds.length))
+
   try {
-    // Medusa v2 admin variants endpoint with prices field
-    const res = await fetch(
-      `${url}/admin/products?variants_id[]=${variantId}&fields=*variants,*variants.prices&limit=1`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    if (!res.ok) return null
-    const data = (await res.json()) as { products?: AdminProduct[] }
-    const product = data.products?.[0]
-    return product?.variants?.find((v) => v.id === variantId) ?? null
-  } catch {
-    return null
+    const res = await fetch(`${backend}/store/products?${params.toString()}`, {
+      headers: {
+        'x-publishable-api-key': publishable,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    })
+    if (!res.ok) {
+      console.error('[pricingGuard] store API returned', res.status)
+      return []
+    }
+    const data = (await res.json()) as { products?: StoreProduct[] }
+    return data.products ?? []
+  } catch (err) {
+    console.error('[pricingGuard] store API fetch failed', err)
+    return []
   }
 }
 
 /**
- * Re-derive each line's price from Medusa and compare to what the client
- * sent. Tolerates a 1-unit-in-MINOR difference for rounding.
+ * Re-derive each line's price from Medusa and compare to what the
+ * client sent. Tolerates a 1-unit-in-MINOR difference for rounding.
  *
  * Returns { ok: true, totalMinor, lines } on success — caller should
  * use `serverUnitPriceMinor` for any downstream charge / order line.
  *
  * Returns { ok: false, message } when:
- *   - Medusa is unreachable / unconfigured (defaults to fail-closed so
- *     no charge happens when we can't verify)
- *   - A variant doesn't exist
- *   - A variant has no price in the region's currency
+ *   - Medusa is unreachable / unconfigured (fails closed so no charge
+ *     happens when we can't verify)
+ *   - A line is missing productId (legacy cart state)
+ *   - A variant doesn't exist on the named product
+ *   - A variant has no calculated price in the region's currency
  *   - A line's client-sent amount differs from the server-derived one
  */
 export async function validateLinePricing(
@@ -126,15 +132,6 @@ export async function validateLinePricing(
     return { ...empty, message: 'Cart is empty.' }
   }
 
-  const token = await getAdminToken()
-  if (!token) {
-    console.error('[pricingGuard] cannot reach Medusa to verify prices')
-    return { ...empty, message: 'Could not verify pricing. Please try again.' }
-  }
-
-  const serverLines: ServerLine[] = []
-  let totalMinor = 0
-
   for (const line of lines) {
     if (!line.variantId || typeof line.variantId !== 'string') {
       return { ...empty, message: 'Invalid line item.' }
@@ -142,16 +139,56 @@ export async function validateLinePricing(
     if (!Number.isInteger(line.qty) || line.qty < 1 || line.qty > 99) {
       return { ...empty, message: 'Invalid quantity.' }
     }
+    if (!line.productId) {
+      return {
+        ...empty,
+        message: 'Cart is out of date. Please refresh and try again.',
+      }
+    }
+  }
 
-    const variant = await fetchVariant(line.variantId, token)
+  const medusaRegionId = region.medusaRegionId
+  if (!medusaRegionId) {
+    console.error('[pricingGuard] no Medusa region id configured for', regionId)
+    return { ...empty, message: 'Could not verify pricing. Please try again.' }
+  }
+
+  const productIds = Array.from(
+    new Set(lines.map((l) => l.productId).filter(Boolean) as string[])
+  )
+  const products = await fetchProducts(productIds, medusaRegionId)
+  if (products.length === 0) {
+    return { ...empty, message: 'Could not verify pricing. Please try again.' }
+  }
+
+  const variantIndex = new Map<string, StoreVariant>()
+  for (const p of products) {
+    for (const v of p.variants ?? []) {
+      variantIndex.set(v.id, v)
+    }
+  }
+
+  const serverLines: ServerLine[] = []
+  let totalMinor = 0
+
+  for (const line of lines) {
+    const variant = variantIndex.get(line.variantId)
     if (!variant) {
-      return { ...empty, message: `Product ${line.variantId} is no longer available.` }
+      return {
+        ...empty,
+        message: `Product ${line.variantId} is no longer available.`,
+      }
     }
 
-    const regionalPrice = variant.prices?.find(
-      (p) => p.currency_code === targetCurrency
-    )
-    if (!regionalPrice) {
+    const calc = variant.calculated_price
+    const amountMajor = calc?.calculated_amount
+    if (typeof amountMajor !== 'number') {
+      return {
+        ...empty,
+        message: `Product ${line.variantId} is not available in ${targetCurrency.toUpperCase()}.`,
+      }
+    }
+    if (calc?.currency_code && calc.currency_code.toLowerCase() !== targetCurrency) {
       return {
         ...empty,
         message: `Product ${line.variantId} is not available in ${targetCurrency.toUpperCase()}.`,
@@ -159,11 +196,9 @@ export async function validateLinePricing(
     }
 
     // Medusa stores MAJOR units; the storefront contract is MINOR units.
-    const serverUnitPriceMinor = regionalPrice.amount * 100
+    const serverUnitPriceMinor = amountMajor * 100
 
-    // Allow a 1-MINOR-unit tolerance for rounding (mostly defensive — the
-    // storefront's lib/medusa.ts uses the same ×100 conversion so values
-    // should match exactly).
+    // Allow a 1-MINOR-unit tolerance for rounding.
     if (Math.abs(serverUnitPriceMinor - line.unitPriceKobo) > 1) {
       console.warn('[pricingGuard] client price mismatch', {
         variantId: line.variantId,

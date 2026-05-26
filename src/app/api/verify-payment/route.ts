@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
   const validation = await validateLinePricing(
     lines.map((l) => ({
       variantId: l.variantId,
+      productId: l.productId,
       qty: l.qty,
       unitPriceKobo: l.unitPriceKobo,
     })),

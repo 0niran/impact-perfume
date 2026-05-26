@@ -72,8 +72,10 @@ describe('CartLineItem', () => {
     expect(img).toBeInTheDocument()
   })
 
-  it('renders the initial letter fallback when no thumbnail', () => {
+  it('renders the default thumbnail when none provided', () => {
     render(<CartLineItem line={line({ thumbnail: undefined })} />)
-    expect(screen.getByText('I')).toBeInTheDocument() // first letter of "Impact"
+    const img = screen.getByAltText('Impact No. 5') as HTMLImageElement
+    expect(img).toBeInTheDocument()
+    expect(img.src).toMatch(/no_series\.png/)
   })
 })

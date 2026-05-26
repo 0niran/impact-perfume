@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import { useCartStore, type CartLine } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
-import { FALLBACK_SWATCH_COLOR } from '@/lib/constants'
+
+const DEFAULT_THUMBNAIL = '/images/no_series.png'
 
 interface CartLineItemProps {
   line: CartLine
@@ -11,28 +12,22 @@ interface CartLineItemProps {
 
 export default function CartLineItem({ line }: CartLineItemProps) {
   const { remove, setQty } = useCartStore()
+  const thumbnail = line.thumbnail || DEFAULT_THUMBNAIL
 
   return (
     <div className="flex gap-4">
       {/* Thumbnail */}
       <div
-        className="relative h-24 w-[68px] shrink-0 overflow-hidden"
-        style={{ backgroundColor: line.thumbnail ? '#1D1B16' : (line.color ?? FALLBACK_SWATCH_COLOR) }}
+        className="relative h-24 w-[68px] shrink-0 overflow-hidden bg-ink"
         aria-hidden="true"
       >
-        {line.thumbnail ? (
-          <Image
-            src={line.thumbnail}
-            alt={line.name}
-            fill
-            sizes="68px"
-            className="object-cover"
-          />
-        ) : (
-          <span className="absolute inset-0 flex items-center justify-center font-brand text-[32px] leading-none text-white/20 select-none">
-            {line.name.charAt(0)}
-          </span>
-        )}
+        <Image
+          src={thumbnail}
+          alt={line.name}
+          fill
+          sizes="68px"
+          className="object-contain p-1"
+        />
       </div>
 
       {/* Details */}
