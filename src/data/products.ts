@@ -48,22 +48,63 @@ export const GIFTS: GiftProduct[] = [
   {
     id: 'discovery-numbers',
     label: 'Discovery Set',
-    title: 'Number Series Discovery',
-    subtitle: '12 × 5ml',
-    description: 'Twelve handpicked 5ml miniatures from across the Number Series. The simplest way to find your Number, or gift the journey.',
+    title: 'Number Series Discovery Set',
+    subtitle: '12 × 2ml',
+    description: 'Twelve handpicked 2ml miniatures from across the Number Series. The simplest way to find your Number, or gift the journey.',
     imageUrl: '/images/No Series Discovery Set.jpeg',
     cta: { label: 'Shop the set', href: '/no-series' },
     featured: true,
   },
   {
     id: 'discovery-signature',
-    label: 'Discovery Set',
-    title: 'Signature Discovery',
-    subtitle: '5 × 5ml',
-    description: 'Five 5ml miniatures from the Signature Collection. Named, not numbered. Bolder compositions.',
+    label: 'Signature Discovery Set',
+    title: 'Signature Discovery Set',
+    subtitle: '5 × 10ml',
+    description: 'Five 10ml bottles from Signature Scents. Named, not numbered. Bolder compositions.',
     imageUrl: '/images/Signature Discovery Set 2.png',
     cta: { label: 'Shop the set', href: '/signature' },
     featured: false,
+  },
+]
+
+/**
+ * Static placeholders for Signature Scents that haven't been added to Medusa
+ * yet. The shop page renders these alongside any Medusa-backed signature
+ * products so the catalogue feels complete during onboarding. Once a product
+ * appears in Medusa with the same handle, the live entry takes over.
+ */
+export interface SignaturePlaceholder {
+  handle: string
+  title: string
+  subtitle?: string
+  descriptor?: string
+  imageUrl?: string
+  signatureColor?: string
+}
+
+export const SIGNATURE_PLACEHOLDERS: SignaturePlaceholder[] = [
+  {
+    handle: 'lavure',
+    title: 'Lavure',
+    subtitle: '100ml · Eau de Parfum',
+    descriptor: 'Powder · Iris · Musk',
+    signatureColor: '#A88E70',
+  },
+  {
+    handle: 'oud-osmosis',
+    title: 'OUD Osmosis',
+    subtitle: '100ml · Eau de Parfum',
+    descriptor: 'Oud · Resin · Amber',
+    imageUrl: '/images/OUD Osmosis Unlimited.png',
+    signatureColor: '#3A2418',
+  },
+  {
+    handle: 'solid-oud-intense',
+    title: 'Solid OUD Intense',
+    subtitle: '100ml · Eau de Parfum',
+    descriptor: 'Oud · Smoke · Leather',
+    imageUrl: '/images/Solid Oud.png',
+    signatureColor: '#1F1410',
   },
 ]
 
