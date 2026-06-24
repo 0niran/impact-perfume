@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fulfillOrder, type CartLine } from '@/lib/orderFulfillment'
-import { validateLinePricing } from '@/lib/pricingGuard'
+import { fulfillOrder } from '@/lib/orderFulfillment'
+import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
 import { verifyPaymentBodySchema, formatZodError } from '@/lib/validation'
 
@@ -76,68 +76,43 @@ export async function POST(req: NextRequest) {
     if (Math.abs(tx.amount - amountKobo) > 1) {
       return NextResponse.json({ ok: false, message: 'Payment amount mismatch.' })
     }
+
+    // Paystack settles in NGN; reject anything else rather than fulfil against
+    // a currency the re-pricing guard assumes is NGN.
+    if ((tx.currency ?? 'NGN').toUpperCase() !== 'NGN') {
+      return NextResponse.json({ ok: false, message: 'Unexpected payment currency.' })
+    }
   } catch {
     return NextResponse.json({ ok: false, message: 'Verification request failed.' }, { status: 500 })
   }
 
-  // 2. Server-side re-pricing — confirm the client-sent line items match
-  //    Medusa's canonical prices. Refuse fulfilment if they don't, since
-  //    accepting the order would let the client choose the line totals
-  //    written to Medusa (audit H-1).
-  const validation = await validateLinePricing(
-    lines.map((l) => ({
-      variantId: l.variantId,
-      productId: l.productId,
-      qty: l.qty,
-      unitPriceKobo: l.unitPriceKobo,
-    })),
-    'NG'
-  )
-  if (!validation.ok) {
-    console.error('[verify-payment] pricing mismatch — refusing to fulfil', {
+  // 2. Server-side re-pricing + amount assertion. Confirm the client-sent
+  //    lines match Medusa's canonical prices AND that the amount Paystack
+  //    captured equals the server total. Shared with the Paystack webhook so
+  //    both fulfilment triggers enforce the same checks (audit H-1).
+  const verified = await verifyPaidOrder(lines, 'NG', tx.amount)
+  if (!verified.ok) {
+    console.error('[verify-payment] re-pricing/amount check failed — refusing to fulfil', {
       reference: tx.reference,
-      message: validation.message,
+      paystackAmount: tx.amount,
+      message: verified.message,
     })
     return NextResponse.json(
       {
         ok: false,
         message:
-          'We received your payment but the prices in your cart no longer match. Please contact support with reference ' +
+          'We received your payment but the order could not be verified. Please contact support with reference ' +
           tx.reference,
       },
       { status: 400 }
     )
   }
-  if (Math.abs(validation.totalMinor - tx.amount) > 1) {
-    console.error('[verify-payment] paystack amount disagrees with server total', {
-      reference: tx.reference,
-      paystackAmount: tx.amount,
-      serverTotal: validation.totalMinor,
-    })
-    return NextResponse.json(
-      {
-        ok: false,
-        message:
-          'Order total mismatch. Please contact support with reference ' + tx.reference,
-      },
-      { status: 400 }
-    )
-  }
 
-  // 3. Fulfill order with SERVER-derived line prices so an attacker
-  //    can't seed cheap line items via the client.
-  const safeLines: CartLine[] = lines.map((l, i) => ({
-    variantId: l.variantId,
-    name: l.name,
-    variantLabel: l.variantLabel,
-    qty: l.qty,
-    unitPriceKobo: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
-  }))
-
+  // 3. Fulfill with SERVER-derived line prices and total.
   await fulfillOrder({
     reference: tx.reference,
     regionId: 'NG',
-    totalKobo: validation.totalMinor,
+    totalKobo: verified.totalMinor,
     currency: 'NGN',
     customerName,
     customerEmail,
@@ -150,7 +125,7 @@ export async function POST(req: NextRequest) {
       postalCode: shippingAddress.postalCode,
       country: shippingAddress.country,
     },
-    lines: safeLines,
+    lines: verified.lines,
     paymentProvider: 'paystack',
     paymentRef: tx.reference,
   })

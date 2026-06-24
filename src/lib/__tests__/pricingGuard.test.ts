@@ -195,3 +195,58 @@ describe('validateLinePricing — rejects', () => {
     expect(result.message).toMatch(/out of date/i)
   })
 })
+
+describe('verifyPaidOrder — fulfilment gate (audit H-1)', () => {
+  const ngVariant = {
+    products: [
+      {
+        id: 'p1',
+        variants: [
+          {
+            id: 'v1',
+            calculated_price: { calculated_amount: 50_000, currency_code: 'ngn' },
+          },
+        ],
+      },
+    ],
+  }
+
+  it('passes and returns server-priced lines when prices and amount match', async () => {
+    stubFetch(() => ngVariant)
+    const { verifyPaidOrder } = await loadModule()
+    const result = await verifyPaidOrder(
+      [{ variantId: 'v1', productId: 'p1', name: 'Impact No. 1', qty: 1, unitPriceKobo: 5_000_000 }],
+      'NG',
+      5_000_000 // amount actually paid
+    )
+    expect(result.ok).toBe(true)
+    expect(result.totalMinor).toBe(5_000_000)
+    expect(result.lines[0]).toMatchObject({ name: 'Impact No. 1', unitPriceKobo: 5_000_000 })
+  })
+
+  it('rejects underpayment even when line prices match Medusa', async () => {
+    stubFetch(() => ngVariant)
+    const { verifyPaidOrder } = await loadModule()
+    // Correct line prices, but the customer only paid ₦1 (Paystack amount is
+    // client-controlled). Must be refused.
+    const result = await verifyPaidOrder(
+      [{ variantId: 'v1', productId: 'p1', name: 'Impact No. 1', qty: 1, unitPriceKobo: 5_000_000 }],
+      'NG',
+      100
+    )
+    expect(result.ok).toBe(false)
+    expect(result.message).toMatch(/amount paid/i)
+  })
+
+  it('rejects tampered line prices via the re-pricing check', async () => {
+    stubFetch(() => ngVariant)
+    const { verifyPaidOrder } = await loadModule()
+    const result = await verifyPaidOrder(
+      [{ variantId: 'v1', productId: 'p1', name: 'Impact No. 1', qty: 1, unitPriceKobo: 100 }],
+      'NG',
+      100
+    )
+    expect(result.ok).toBe(false)
+    expect(result.message).toMatch(/price has changed/i)
+  })
+})

@@ -21,6 +21,7 @@
  */
 
 import { REGIONS, type RegionId } from '@/lib/region'
+import type { CartLine } from '@/lib/orderFulfillment'
 
 interface ClientLine {
   variantId: string
@@ -221,4 +222,68 @@ export async function validateLinePricing(
     totalMinor,
     currency: targetCurrency.toUpperCase(),
   }
+}
+
+export interface VerifiedOrder {
+  ok: boolean
+  message?: string
+  /** Server-derived total in MINOR units. */
+  totalMinor: number
+  /** Server-priced lines, shaped for fulfillOrder. */
+  lines: CartLine[]
+}
+
+/**
+ * Gate for fulfilling a *paid* order from any trigger (browser redirect OR
+ * provider webhook). Runs two checks that must both pass:
+ *
+ *   1. Re-price every line against Medusa (rejects client-tampered prices).
+ *   2. Assert the amount actually paid equals the server-derived total.
+ *
+ * Check 2 matters because the Paystack inline `amount` is set client-side, so
+ * without it a customer could pay ₦1 for a full cart and still be fulfilled by
+ * the webhook. Returns server-priced lines so the order record never trusts
+ * client-sent prices.
+ */
+export async function verifyPaidOrder(
+  rawLines: Array<{
+    variantId: string
+    productId?: string
+    name: string
+    variantLabel?: string
+    qty: number
+    unitPriceKobo: number
+  }>,
+  regionId: RegionId,
+  paidAmountMinor: number
+): Promise<VerifiedOrder> {
+  const validation = await validateLinePricing(
+    rawLines.map((l) => ({
+      variantId: l.variantId,
+      productId: l.productId,
+      qty: l.qty,
+      unitPriceKobo: l.unitPriceKobo,
+    })),
+    regionId
+  )
+  if (!validation.ok) {
+    return { ok: false, message: validation.message, totalMinor: 0, lines: [] }
+  }
+  // Allow a 1-MINOR-unit tolerance for rounding between provider and Medusa.
+  if (Math.abs(validation.totalMinor - paidAmountMinor) > 1) {
+    return {
+      ok: false,
+      message: 'Amount paid does not match the order total.',
+      totalMinor: validation.totalMinor,
+      lines: [],
+    }
+  }
+  const lines: CartLine[] = rawLines.map((l, i) => ({
+    variantId: l.variantId,
+    name: l.name,
+    variantLabel: l.variantLabel,
+    qty: l.qty,
+    unitPriceKobo: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
+  }))
+  return { ok: true, totalMinor: validation.totalMinor, lines }
 }

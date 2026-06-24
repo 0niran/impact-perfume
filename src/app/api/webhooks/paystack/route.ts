@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
+import { verifyPaidOrder } from '@/lib/pricingGuard'
 
 /**
  * Paystack server-to-server webhook. Signed with HMAC-SHA512 of the raw body
@@ -27,12 +28,17 @@ interface PaystackCustomer {
   last_name?: string
 }
 
+/** Client-sent cart line; carries productId so the server can re-price it. */
+interface PaystackLine extends CartLine {
+  productId?: string
+}
+
 interface PaystackMetadata {
   customerName?: string
   customerEmail?: string
   customerPhone?: string
   shippingAddress?: ShippingAddress
-  lines?: CartLine[]
+  lines?: PaystackLine[]
 }
 
 interface PaystackChargeData {
@@ -110,17 +116,40 @@ export async function POST(req: NextRequest) {
       md.customerName ??
       `${d.customer?.first_name ?? ''} ${d.customer?.last_name ?? ''}`.trim()
 
+    // Paystack's inline `amount` is set client-side, and this webhook is an
+    // independent fulfilment trigger. Re-price against Medusa AND assert the
+    // captured amount matches the server total before fulfilling, so a
+    // tampered client can't underpay and still get an order (audit H-1).
+    if ((d.currency ?? 'NGN').toUpperCase() !== 'NGN') {
+      console.error('[paystack-webhook] unexpected currency — refusing to fulfil', {
+        reference: d.reference,
+        currency: d.currency,
+      })
+      return NextResponse.json({ ok: true, skipped: 'currency-mismatch' })
+    }
+
+    const verified = await verifyPaidOrder(md.lines, 'NG', d.amount)
+    if (!verified.ok) {
+      console.error('[paystack-webhook] re-pricing/amount check failed — refusing to fulfil', {
+        reference: d.reference,
+        paidAmount: d.amount,
+        message: verified.message,
+      })
+      // Retrying won't fix a pricing/amount mismatch, so ack to stop retries.
+      return NextResponse.json({ ok: true, skipped: 'pricing-mismatch' })
+    }
+
     try {
       await fulfillOrder({
         reference: d.reference,
         regionId: 'NG',
-        totalKobo: d.amount,
-        currency: (d.currency ?? 'NGN').toUpperCase(),
+        totalKobo: verified.totalMinor,
+        currency: 'NGN',
         customerName: fullName,
         customerEmail: md.customerEmail ?? d.customer?.email ?? '',
         customerPhone: md.customerPhone ?? '',
         shippingAddress: md.shippingAddress,
-        lines: md.lines,
+        lines: verified.lines,
         paymentProvider: 'paystack',
         paymentRef: d.reference,
         source: 'webhook',
