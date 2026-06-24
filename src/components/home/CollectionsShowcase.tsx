@@ -13,21 +13,21 @@ const COLLECTIONS = [
     large: true,
   },
   {
-    label: 'Signature',
+    label: 'Signature Scents',
     eyebrow: 'Named Perfumes',
     description:
       'Beyond numbers. Fragrances with a name, a narrative, and a soul of their own.',
-    cta: 'Explore Signature',
+    cta: 'Explore Signature Scents',
     href: '/signature',
     accent: 'rgba(60,50,80,0.15)',
     large: false,
   },
   {
-    label: 'Fragrance Oils',
+    label: 'Perfume Oils',
     eyebrow: 'Concentrated Oils',
     description:
       'Long-lasting, alcohol-free. A drop on the wrist carries all day.',
-    cta: 'Shop Oils',
+    cta: 'Shop Perfume Oils',
     href: '/oils',
     accent: 'rgba(30,60,40,0.15)',
     large: false,

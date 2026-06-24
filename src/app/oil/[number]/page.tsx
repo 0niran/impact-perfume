@@ -115,7 +115,7 @@ export default async function OilPDPPage({
           currency={price.currency}
           imageUrl={imageUrl ?? '/images/Oil_perfume.png'}
           shippingCopy={shippingCopyFor(region)}
-          collectionLabel="Impact Oils"
+          collectionLabel="Perfume Oils"
           collectionHref="/oils"
           titlePrefix="Impact Oil No."
           variantLabel="12ml · Concentrated Oil"

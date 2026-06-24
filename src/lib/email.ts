@@ -100,7 +100,7 @@ function footer(): string {
         ${SITE_CONFIG.name}
       </p>
       <p style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:13px;color:${PALETTE.stone};">
-        Crafted in Lagos. Worn around the world.
+        Composed for character. Worn the world over.
       </p>
       <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:${PALETTE.stone};">
         ${SITE_CONFIG.contact.address.line1}, ${SITE_CONFIG.contact.address.line2}<br/>

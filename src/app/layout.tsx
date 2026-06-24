@@ -36,11 +36,11 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: {
-    default: `${SITE_CONFIG.name} | Crafted in Lagos. Composed for character.`,
+    default: `${SITE_CONFIG.name} | Composed for character.`,
     template: `%s · ${SITE_CONFIG.name}`,
   },
   description:
-    "A Lagos house of fragrance composing scents that leave impact. Oud, oriental, and bespoke creations.",
+    "A luxury house of fragrance composing scents that leave impact. Oud, oriental, and bespoke creations.",
   metadataBase: new URL(SITE_CONFIG.url),
   openGraph: {
     type: "website",

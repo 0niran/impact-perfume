@@ -10,12 +10,12 @@ import CategoryProductTile from '@/components/shop/CategoryProductTile'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Gifts & Discovery',
+  title: 'Gifts & Discovery Sets',
   description:
     'Give the gift of scent. Discovery sets to find your Number, curated gift boxes for every occasion.',
   openGraph: {
-    title: 'Gifts & Discovery · Impact Perfumes',
-    description: 'Curated fragrance gifts and discovery sets from Impact Perfumes, Lagos.',
+    title: 'Gifts & Discovery Sets · Impact Perfumes',
+    description: 'Curated fragrance gifts and discovery sets.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
@@ -58,7 +58,7 @@ export default async function GiftsPage() {
   const showGiftSets = giftsLive.length > 0
 
   const subnav = [
-    { id: 'discovery-sets', label: 'Discovery' },
+    { id: 'discovery-sets', label: 'Discovery Set' },
     ...(showGiftSets ? [{ id: 'gift-sets', label: 'Gift Sets' }] : []),
     { id: 'occasions', label: 'By Occasion' },
   ]
@@ -68,7 +68,7 @@ export default async function GiftsPage() {
       {/* Hero */}
       <section className="border-b border-stone/20 bg-ink text-bone py-16 md:py-24">
         <Container>
-          <p className="text-label uppercase tracking-[0.12em] text-accent">Gifts & Discovery</p>
+          <p className="text-label uppercase tracking-[0.12em] text-accent">Gifts & Discovery Sets</p>
           <h1 className="mt-3 max-w-2xl font-display text-display-l leading-none">
             Give a Scent.
             <br />
@@ -102,7 +102,7 @@ export default async function GiftsPage() {
       <Section id="discovery-sets" className="bg-ink">
         <Container>
           <div className="mb-10 max-w-2xl">
-            <p className="text-label uppercase tracking-[0.1em] text-accent">Discovery</p>
+            <p className="text-label uppercase tracking-[0.1em] text-accent">Discovery Set</p>
             <h2 className="mt-2 font-display text-h1 text-bone">Find your Number</h2>
           </div>
 

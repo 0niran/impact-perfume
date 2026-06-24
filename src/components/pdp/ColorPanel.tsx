@@ -9,6 +9,7 @@ interface ColorPanelProps {
   number: number
   descriptor: string
   signatureColor: string
+  /** Retained for backwards compatibility with callers; no longer rendered. */
   signatureColorName?: string
   imageUrl?: string | null
   /** Override the default Number Series bottle fallback (e.g. for Oils) */
@@ -21,7 +22,6 @@ export default function ColorPanel({
   number,
   descriptor,
   signatureColor,
-  signatureColorName,
   imageUrl,
   fallbackImage = DEFAULT_FALLBACK,
   titlePrefix = 'No.',
@@ -58,16 +58,6 @@ export default function ColorPanel({
           {titlePrefix} {number}
         </p>
         <p className="font-display text-h3 text-bone">{descriptor}</p>
-        {signatureColorName && (
-          <p className="flex items-center gap-2 text-small text-stone">
-            <span
-              className="inline-block h-2 w-2 rounded-full"
-              style={{ backgroundColor: signatureColor }}
-              aria-hidden="true"
-            />
-            {signatureColorName}
-          </p>
-        )}
       </div>
     </div>
   )

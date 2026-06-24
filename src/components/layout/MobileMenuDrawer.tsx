@@ -14,22 +14,22 @@ interface MobileMenuDrawerProps {
 
 const sections = [
   {
-    title: 'Number Collection',
+    title: 'Number Series',
     links: [
       { label: 'Shop All', href: '/no-series' },
       { label: 'By Scent Family', href: '/no-series' },
     ],
   },
   {
-    title: 'Signature',
+    title: 'Signature Scents',
     links: [
-      { label: 'Signature Collection', href: '/signature' },
+      { label: 'Shop Signature Scents', href: '/signature' },
     ],
   },
   {
-    title: 'Oils',
+    title: 'Perfume Oils',
     links: [
-      { label: 'Impact Oils', href: '/oils' },
+      { label: 'Shop Perfume Oils', href: '/oils' },
     ],
   },
   {
@@ -49,10 +49,10 @@ const sections = [
     ],
   },
   {
-    title: 'Discovery',
+    title: 'Discovery Set',
     links: [
-      { label: 'Number Series Discovery', href: '/gifts#discovery-sets' },
-      { label: 'Signature Discovery', href: '/gifts#discovery-sets' },
+      { label: 'Number Series Discovery Set', href: '/gifts#discovery-sets' },
+      { label: 'Signature Discovery Set', href: '/gifts#discovery-sets' },
       { label: 'Take the Scent Quiz', href: '/quiz' },
     ],
   },

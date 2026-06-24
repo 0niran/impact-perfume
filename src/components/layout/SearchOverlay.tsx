@@ -200,7 +200,7 @@ export default function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             <div className="px-5 py-6">
               <p className="text-small text-stone mb-4 uppercase tracking-[0.08em]">Quick links</p>
               <div className="flex flex-wrap gap-2">
-                {['No. 1', 'No. 7', 'Oud', 'Fruity', 'Woody', 'Oils', 'Discovery Set'].map((term) => (
+                {['No. 1', 'No. 7', 'Oud', 'Fruity', 'Woody', 'Perfume Oils', 'Discovery Set'].map((term) => (
                   <button
                     key={term}
                     onClick={() => { setQuery(term); search(term) }}

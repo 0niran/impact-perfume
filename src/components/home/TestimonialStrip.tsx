@@ -3,18 +3,15 @@ import Container from '@/components/layout/Container'
 const TESTIMONIALS = [
   {
     quote: "I've never had so many compliments in my life. No. 7 is something else.",
-    author: 'Adaeze O.',
-    location: 'Lagos',
+    author: 'A. Okoye',
   },
   {
     quote: "The longevity is insane. One spray in the morning and I'm still getting noticed at 10pm.",
-    author: 'Emeka T.',
-    location: 'Abuja',
+    author: 'E. Thomas',
   },
   {
     quote: 'This is what luxury should smell like. Impact No. 3 is my signature now.',
-    author: 'Chisom A.',
-    location: 'Port Harcourt',
+    author: 'C. Adams',
   },
 ]
 
@@ -25,7 +22,7 @@ export default function TestimonialStrip() {
         <div className="mb-14 flex items-center gap-4">
           <div className="h-px flex-1 bg-stone/20" />
           <p className="text-label uppercase tracking-[0.16em] text-stone shrink-0">
-            Worn across Nigeria
+            Worn the world over
           </p>
           <div className="h-px flex-1 bg-stone/20" />
         </div>
@@ -42,7 +39,7 @@ export default function TestimonialStrip() {
               <div className="flex items-center gap-3 mt-1">
                 <div className="h-px w-6 bg-accent/50" />
                 <p className="text-small text-stone">
-                  {t.author} &nbsp;·&nbsp; {t.location}
+                  {t.author}
                 </p>
               </div>
             </div>

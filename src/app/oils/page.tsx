@@ -8,12 +8,12 @@ import type { TileEnrichment } from '@/types'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Impact Oils',
+  title: 'Perfume Oils',
   description:
     '50 alcohol-free perfume oils. Concentrated. 12ml roll-on.',
   openGraph: {
-    title: 'Impact Oils · Impact Perfumes',
-    description: '50 concentrated perfume oils crafted in Lagos.',
+    title: 'Perfume Oils · Impact Perfumes',
+    description: '50 concentrated perfume oils.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
@@ -31,7 +31,7 @@ export default async function OilsPage() {
       {/* Hero, minimal */}
       <section className="border-b border-stone/20 bg-ink py-14 md:py-20">
         <Container>
-          <p className="text-label uppercase tracking-[0.12em] text-accent">Impact Oils</p>
+          <p className="text-label uppercase tracking-[0.12em] text-accent">Perfume Oils</p>
           <h1 className="mt-3 font-display text-display-l leading-none text-bone">
             Pure Scent.
           </h1>
@@ -52,7 +52,7 @@ export default async function OilsPage() {
             <div
               className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
               role="list"
-              aria-label="Impact Oils collection"
+              aria-label="Perfume Oils collection"
             >
               {tiles.map((tile) => (
                 <div key={tile.productHandle} role="listitem">

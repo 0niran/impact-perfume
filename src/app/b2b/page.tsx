@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const OFFERINGS = [
   {
     title: 'Bespoke Bottles',
-    body: 'Custom fragrances for your brand, hotel, or event, built on the Impact Number Series foundation with your own label and scent profile.',
+    body: 'Custom fragrances for your brand, hotel, or event, built on the Number Series foundation with your own label and scent profile.',
   },
   {
     title: 'Hotel & Spa Scenting',
@@ -86,12 +86,6 @@ export default function B2BPage() {
                   >
                     hello@impactperfumes.com
                   </a>
-                </div>
-                <div>
-                  <p className="text-label uppercase tracking-[0.08em] text-stone">
-                    Based in
-                  </p>
-                  <p className="mt-1 text-body">Lagos, Nigeria</p>
                 </div>
               </div>
             </div>

@@ -37,14 +37,14 @@ interface PDPAccordionProps {
 }
 
 const DEFAULT_NG_SHIPPING =
-  'Free delivery on orders over ₦50,000. Standard delivery 3–5 business days within Lagos; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.'
+  'Free delivery on orders over ₦200,000. Standard delivery 3–5 business days within the city; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.'
 
 export default function PDPAccordion({ descriptor, tagline, shippingCopy }: PDPAccordionProps) {
   return (
     <div className="border-b border-stone/30">
       <AccordionItem title="About this fragrance">
         <p>
-          A {descriptor.toLowerCase()} composition from the Impact Number Series.
+          A {descriptor.toLowerCase()} composition from the Number Series.
           {tagline ? ` ${tagline}.` : ''} Each bottle in the series is crafted
           to the same standard. The same heavy-glass flacon, the same black
           cap, a different world inside.

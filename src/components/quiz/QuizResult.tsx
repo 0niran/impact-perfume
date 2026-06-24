@@ -60,7 +60,7 @@ export default function QuizResult({ result, alsoTry, onRetake, compact = false 
       {/* Result hero */}
       <div className={`relative ${compact ? 'flex flex-col items-center px-6 py-16 text-center' : 'flex min-h-[70vh] flex-col items-center justify-center px-6 py-20 text-center'}`}>
         <p className="text-label uppercase tracking-[0.16em] text-stone">
-          Your Number is
+          The recommended Number Series for you is
         </p>
 
         <div className="mt-6 font-display leading-none text-bone" style={{ fontSize: 'clamp(80px, 20vw, 180px)' }}>

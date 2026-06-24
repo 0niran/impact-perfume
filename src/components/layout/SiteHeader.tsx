@@ -82,7 +82,7 @@ export default function SiteHeader() {
           {/* Left nav, desktop (3 items max to give logo breathing room) */}
           <nav className="hidden lg:flex items-center gap-6" aria-label="Primary navigation">
             <NavItem
-              label="Number Collection"
+              label="Number Series"
               href="/no-series"
               hasMenu
               isActive={activeMenu === 'series'}
@@ -93,13 +93,13 @@ export default function SiteHeader() {
               href="/signature"
               className="text-label uppercase tracking-[0.08em] text-bone hover:text-accent transition-colors duration-150"
             >
-              Signature
+              Signature Scents
             </Link>
             <Link
               href="/oils"
               className="text-label uppercase tracking-[0.08em] text-bone hover:text-accent transition-colors duration-150"
             >
-              Oils
+              Perfume Oils
             </Link>
           </nav>
 

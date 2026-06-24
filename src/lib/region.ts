@@ -41,7 +41,7 @@ export const REGIONS: Record<RegionId, Region> = {
     medusaRegionId: process.env.NEXT_PUBLIC_MEDUSA_REGION_ID,
     paymentProvider: 'paystack',
     checkoutEnabled: true,
-    freeDeliveryThresholdMinor: 5_000_000, // 50,000 NGN
+    freeDeliveryThresholdMinor: 20_000_000, // ₦200,000
   },
   CA: {
     id: 'CA',
@@ -53,7 +53,7 @@ export const REGIONS: Record<RegionId, Region> = {
     medusaRegionId: process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_CA,
     paymentProvider: 'stripe',
     checkoutEnabled: true,
-    freeDeliveryThresholdMinor: 15_000, // 150 CAD
+    freeDeliveryThresholdMinor: 15_000, // CA$150
   },
 }
 

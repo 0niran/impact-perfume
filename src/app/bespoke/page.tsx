@@ -12,7 +12,7 @@ const BespokeConfigurator = dynamic(
 export const metadata: Metadata = {
   title: 'Bespoke',
   description:
-    'Design your own Impact fragrance. Choose the bottle, the scent, the engraving. Composed in Lagos, made for you.',
+    'Design your own Impact fragrance. Choose the bottle, the scent, the engraving. Made for you.',
   openGraph: {
     title: 'Bespoke · Impact Perfumes',
     description: 'Design your own Impact fragrance bottle. Bespoke composition, signature presentation.',

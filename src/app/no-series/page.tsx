@@ -7,11 +7,11 @@ import ShopClient from '@/components/shop/ShopClient'
 import DiscoveryNudge from '@/components/shop/DiscoveryNudge'
 
 export const metadata: Metadata = {
-  title: 'The Number Series',
+  title: 'Number Series',
   description:
-    '50 numbered EDPs. Each fragrance in the Impact Number Series tells a different story, find yours.',
+    '50 numbered EDPs. Each fragrance in the Number Series tells a different story. Find yours.',
   openGraph: {
-    title: 'The Number Series · Impact Perfumes',
+    title: 'Number Series · Impact Perfumes',
     description: '50 unique fragrances. One house.',
     images: [{ url: '/og-shop.jpg', width: 1200, height: 630 }],
   },
