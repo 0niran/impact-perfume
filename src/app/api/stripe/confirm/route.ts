@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { SITE_CONFIG } from '@/lib/config'
+import { unpackStripeLines } from '@/lib/stripeMetadata'
 
 /**
  * Stripe return_url lands here after the customer confirms a payment.
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
   let lines: CartLine[]
   try {
     shippingAddress = JSON.parse(md.shippingAddress || '{}') as ShippingAddress
-    const rawLines = JSON.parse(md.lines || '[]') as {
+    const rawLines = JSON.parse(unpackStripeLines(md) || '[]') as {
       v: string; n: string; l?: string; q: number; p: number
     }[]
     lines = rawLines.map((l) => ({

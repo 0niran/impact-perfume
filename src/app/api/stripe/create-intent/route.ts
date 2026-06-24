@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { validateLinePricing } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
 import { stripeCreateIntentBodySchema, formatZodError } from '@/lib/validation'
+import { packStripeLines } from '@/lib/stripeMetadata'
 
 export async function POST(req: NextRequest) {
   const limit = await rateLimit(req, 'stripe-create-intent', { limit: 10, window: '1 m' })
@@ -78,15 +79,19 @@ export async function POST(req: NextRequest) {
         // Stripe limits metadata to 50 keys, 500 chars each — well under our typical payload.
         shippingAddress: JSON.stringify(shippingAddress),
         // Persist SERVER-derived prices in metadata so the webhook /
-        // confirm route uses verified amounts at fulfilment time.
-        lines: JSON.stringify(
-          lines.map((l, i) => ({
-            v: l.variantId,
-            n: l.name,
-            l: l.variantLabel,
-            q: l.qty,
-            p: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
-          }))
+        // confirm route uses verified amounts at fulfilment time. The line
+        // array is chunked across numbered keys to stay under Stripe's
+        // 500-char-per-value metadata limit on larger carts.
+        ...packStripeLines(
+          JSON.stringify(
+            lines.map((l, i) => ({
+              v: l.variantId,
+              n: l.name,
+              l: l.variantLabel,
+              q: l.qty,
+              p: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
+            }))
+          )
         ),
       },
     })
