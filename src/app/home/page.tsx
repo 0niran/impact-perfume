@@ -147,7 +147,7 @@ export default async function HomeAndCarPage() {
           </h1>
           <p className="mt-5 max-w-lg text-body text-stone">
             Long-lasting diffusers, hand-poured candles, and professional scenting
-            machines. Composed in Lagos, designed to fill a space, not overpower it.
+            machines. Designed to fill a space, not overpower it.
           </p>
         </Container>
       </section>

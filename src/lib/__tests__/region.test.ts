@@ -62,7 +62,7 @@ describe('formatPriceFromCurrency', () => {
 
 describe('getShippingThreshold', () => {
   it('returns the NGN threshold', () => {
-    expect(getShippingThreshold('NGN')).toBe(5_000_000)
+    expect(getShippingThreshold('NGN')).toBe(20_000_000)
   })
 
   it('returns the CAD threshold', () => {
@@ -70,7 +70,7 @@ describe('getShippingThreshold', () => {
   })
 
   it('is case-insensitive', () => {
-    expect(getShippingThreshold('ngn')).toBe(5_000_000)
+    expect(getShippingThreshold('ngn')).toBe(20_000_000)
     expect(getShippingThreshold('cad')).toBe(15_000)
   })
 

@@ -9,7 +9,7 @@ export interface SearchResult {
   title: string
   descriptor: string
   signatureColor: string
-  category: 'Number Series' | 'Oils' | 'Car Diffusers' | 'Home Diffusers'
+  category: 'Number Series' | 'Perfume Oils' | 'Car Diffusers' | 'Home Diffusers'
   href: string
   number?: number
 }
@@ -41,7 +41,7 @@ function staticResults(): SearchResult[] {
     title: o.title,
     descriptor: o.descriptor,
     signatureColor: o.signatureColor,
-    category: 'Oils',
+    category: 'Perfume Oils',
     href: '/oils',
   }))
 

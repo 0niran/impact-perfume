@@ -32,7 +32,7 @@ export async function generateMetadata({
     title: `Impact No. ${num} | ${enrichment.descriptor}`,
     description:
       enrichment.tagline ??
-      `No. ${num} from the Impact Number Series. A ${enrichment.descriptor.toLowerCase()} Eau de Parfum, crafted in Lagos.`,
+      `No. ${num} from the Impact Number Series. A ${enrichment.descriptor.toLowerCase()} Eau de Parfum.`,
     openGraph: {
       title: `Impact No. ${num} | ${enrichment.descriptor}`,
       description: enrichment.tagline ?? `No. ${num} · Impact Perfumes`,

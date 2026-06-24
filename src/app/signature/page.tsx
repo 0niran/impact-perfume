@@ -6,24 +6,80 @@ import { getSignatureProducts, getPrice, getProductImage } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
+import { SIGNATURE_PLACEHOLDERS, type SignaturePlaceholder } from '@/data/products'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Signature Collection',
+  title: 'Signature Scents',
   description:
-    'Named, not numbered. Our Signature fragrances are composed for those who know exactly who they are.',
+    'Named, not numbered. Our Signature Scents are composed for those who know exactly who they are.',
   openGraph: {
-    title: 'Signature Collection · Impact Perfumes',
+    title: 'Signature Scents · Impact Perfumes',
     description: 'Named, not numbered. Composed for character.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 
+function PlaceholderCard({ item }: { item: SignaturePlaceholder }) {
+  return (
+    <div className="group relative flex flex-col overflow-hidden border border-stone/15 bg-ink">
+      <div
+        className="relative overflow-hidden bg-ink"
+        style={{ aspectRatio: '3/4' }}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            background: item.signatureColor
+              ? `radial-gradient(ellipse at center, ${item.signatureColor}33 0%, transparent 65%)`
+              : undefined,
+          }}
+          aria-hidden="true"
+        />
+        {item.imageUrl ? (
+          <Image
+            src={item.imageUrl}
+            alt={item.title}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-contain p-6 transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <p className="font-brand text-[64px] leading-none text-stone/40">
+              {item.title.charAt(0)}
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col p-6 border-t border-stone/20">
+        {item.subtitle && (
+          <p className="text-label uppercase tracking-[0.1em] text-stone">
+            {item.subtitle}
+          </p>
+        )}
+        <h3 className="mt-1 font-brand text-[22px] leading-snug text-bone">
+          {item.title}
+        </h3>
+        {item.descriptor && (
+          <p className="mt-2 text-small text-stone">{item.descriptor}</p>
+        )}
+        <p className="mt-auto pt-5 text-label uppercase tracking-[0.1em] text-accent">
+          Arriving soon
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default async function SignaturePage() {
   const region = getServerRegion()
   const products = await getSignatureProducts(region.medusaRegionId)
+  const liveHandles = new Set(products.map((p) => p.handle))
+  const placeholders = SIGNATURE_PLACEHOLDERS.filter((p) => !liveHandles.has(p.handle))
+  const showcaseCount = products.length + placeholders.length
 
   return (
     <>
@@ -31,7 +87,7 @@ export default async function SignaturePage() {
       <section className="border-b border-stone/20 bg-ink py-16 md:py-24">
         <Container>
           <p className="text-label uppercase tracking-[0.12em] text-accent">
-            Signature Collection
+            Signature Scents
           </p>
           <h1 className="mt-3 max-w-2xl font-display text-display-l leading-none">
             Named, Not
@@ -48,7 +104,7 @@ export default async function SignaturePage() {
       {/* Product grid */}
       <Section id="collection" className="bg-ink">
         <Container>
-          {products.length === 0 ? (
+          {showcaseCount === 0 ? (
             <div className="py-24 text-center">
               <p className="font-display text-h2 text-stone">Coming soon.</p>
               <p className="mt-3 text-body text-stone/70">
@@ -128,6 +184,9 @@ export default async function SignaturePage() {
                   </div>
                 )
               })}
+              {placeholders.map((item) => (
+                <PlaceholderCard key={item.handle} item={item} />
+              ))}
             </div>
           )}
         </Container>

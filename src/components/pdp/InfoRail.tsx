@@ -49,7 +49,7 @@ export default function InfoRail({
   priceKobo,
   currency = 'NGN',
   imageUrl,
-  collectionLabel = 'The Number Series',
+  collectionLabel = 'Number Series',
   collectionHref = '/no-series',
   titlePrefix = 'Impact No.',
   variantLabel,

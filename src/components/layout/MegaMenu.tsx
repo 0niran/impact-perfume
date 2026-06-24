@@ -4,7 +4,7 @@ const MENUS = {
   series: {
     columns: [
       {
-        heading: 'Number Collection',
+        heading: 'Number Series',
         links: [
           { label: 'Shop All', href: '/no-series' },
           { label: 'Fruity', href: '/no-series?family=Fruity' },
@@ -36,10 +36,10 @@ const MENUS = {
         ],
       },
       {
-        heading: 'Discovery',
+        heading: 'Discovery Set',
         links: [
-          { label: 'Number Series Discovery', href: '/gifts#discovery-sets' },
-          { label: 'Signature Discovery', href: '/gifts#discovery-sets' },
+          { label: 'Number Series Discovery Set', href: '/gifts#discovery-sets' },
+          { label: 'Signature Discovery Set', href: '/gifts#discovery-sets' },
           { label: 'Take the Scent Quiz', href: '/quiz' },
         ],
       },

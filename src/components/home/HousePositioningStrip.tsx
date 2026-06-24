@@ -4,12 +4,12 @@ const PILLARS = [
   {
     numeral: 'I',
     label: 'A House of Fragrance',
-    body: 'Born in Lagos. From the Number Series to our Signature line, every creation is a statement. Never a trend. Always an impression.',
+    body: 'From the Number Series to Signature Scents, every creation is a statement. Never a trend. Always an impression.',
   },
   {
     numeral: 'II',
-    label: 'Built for African Heat',
-    body: 'A few drops of our concentrated oils last up to 48 hours. Every formula is tuned for humidity, warmth, and skin that radiates.',
+    label: 'Built to Last',
+    body: 'A few drops of our concentrated oils last up to 48 hours. Every formula is tuned for warmth, longevity, and skin that radiates.',
   },
   {
     numeral: 'III',

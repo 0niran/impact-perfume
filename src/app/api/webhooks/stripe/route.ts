@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { claimPayment } from '@/lib/processedPayment'
+import { unpackStripeLines } from '@/lib/stripeMetadata'
 
 /**
  * Stripe webhook receiver. Verifies the request signature using
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
     let lines: CartLine[]
     try {
       shippingAddress = JSON.parse(md.shippingAddress || '{}') as ShippingAddress
-      const rawLines = JSON.parse(md.lines || '[]') as Array<{
+      const rawLines = JSON.parse(unpackStripeLines(md) || '[]') as Array<{
         v: string; n: string; l?: string; q: number; p: number
       }>
       lines = rawLines.map((l) => ({

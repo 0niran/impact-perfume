@@ -7,13 +7,13 @@ import HomepageQuizSection from '@/components/home/HomepageQuizSection'
 import TestimonialStrip from '@/components/home/TestimonialStrip'
 
 export const metadata: Metadata = {
-  title: 'Impact Perfumes | Crafted in Lagos. Composed for character.',
+  title: 'Impact Perfumes | Composed for character.',
   description:
-    'A Lagos house of fragrance. EDPs, Signature perfumes, concentrated oils, and home scents, built for those who make an impression.',
+    'A luxury house of fragrance. EDPs, Signature Scents, concentrated oils, and home scents, built for those who make an impression.',
   openGraph: {
-    title: 'Impact Perfumes | Crafted in Lagos. Composed for character.',
+    title: 'Impact Perfumes | Composed for character.',
     description:
-      'A Lagos house of fragrance. EDPs, Signature perfumes, concentrated oils, and home scents, built for those who make an impression.',
+      'A luxury house of fragrance. EDPs, Signature Scents, concentrated oils, and home scents, built for those who make an impression.',
     images: [
       {
         url: '/og-default.jpg',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Impact Perfumes | Crafted in Lagos.',
+    title: 'Impact Perfumes',
     description: 'Fragrances that leave a mark. A house built for those who make an impression.',
     images: ['/og-default.jpg'],
   },

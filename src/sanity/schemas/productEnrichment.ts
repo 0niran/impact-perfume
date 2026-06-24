@@ -70,7 +70,7 @@ export default defineType({
       options: {
         list: [
           { title: 'Number Series', value: 'number-series' },
-          { title: 'Impact Oils', value: 'oils' },
+          { title: 'Perfume Oils', value: 'oils' },
           { title: 'Car Diffusers', value: 'car-diffusers' },
           { title: 'Reed Diffusers', value: 'reed-diffusers' },
           { title: 'Discovery Set', value: 'discovery-set' }

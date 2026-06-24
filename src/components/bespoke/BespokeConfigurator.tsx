@@ -496,7 +496,7 @@ export default function BespokeConfigurator() {
                   maxLength={30}
                   value={engravingLine2}
                   onChange={(e) => setEngravingLine2(e.target.value)}
-                  placeholder="e.g. Lagos 2026"
+                  placeholder="e.g. 2026"
                   className="mt-2 w-full border border-stone/40 bg-white/5 px-4 py-3 text-body text-bone placeholder:text-stone/60 focus:border-accent focus:outline-none transition-colors"
                 />
                 <p className="mt-1 text-label text-stone">{engravingLine2.length}/30</p>
@@ -635,7 +635,7 @@ export default function BespokeConfigurator() {
                   autoComplete="address-level2"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="Lagos"
+                  placeholder="City"
                   className="mt-2 w-full border border-stone/40 bg-white/5 px-4 py-3 text-body text-bone placeholder:text-stone/60 focus:border-accent focus:outline-none transition-colors"
                 />
               </div>

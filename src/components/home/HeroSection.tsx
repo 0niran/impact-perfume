@@ -19,12 +19,10 @@ export default function HeroSection() {
         <div className="mb-6 w-10 border-t border-accent" />
 
         <p className="text-label uppercase tracking-[0.14em] text-accent">
-          Est. Lagos · The Number Series
+          The Number Series
         </p>
 
         <h1 className="mt-4 max-w-2xl font-display text-[40px] leading-[1.05] sm:text-display-l text-balance">
-          Crafted in Lagos.
-          <br />
           Composed for character.
         </h1>
 

@@ -2,14 +2,15 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { useCartStore, type CartLine } from '@/store/cartStore'
 
-// Mock the region context so we don't need a provider
+// Mock the region context so we don't need a provider.
+// Free-delivery threshold mirrors the real NG region (see lib/region.ts).
 vi.mock('@/lib/regionContext', () => ({
   useRegion: () => ({
     region: {
       id: 'NG',
       name: 'Nigeria',
       currency: 'NGN',
-      freeDeliveryThresholdMinor: 5_000_000,
+      freeDeliveryThresholdMinor: 20_000_000,
     },
     regionId: 'NG',
     setRegion: vi.fn(),
@@ -60,8 +61,10 @@ describe('CartDrawer', () => {
       isOpen: true,
     })
     render(<CartDrawer />)
-    // 5,000,000 + (2,500,000 × 2) = 10,000,000 kobo = ₦100,000
-    expect(screen.getByText('₦100,000')).toBeInTheDocument()
+    // 5,000,000 + (2,500,000 × 2) = 10,000,000 kobo = ₦100,000.
+    // The free-shipping progress strip also shows a remaining-to-threshold
+    // amount, so the subtotal text can appear more than once.
+    expect(screen.getAllByText('₦100,000').length).toBeGreaterThan(0)
   })
 
   it('shows the oil cross-sell when no oils are in the cart', () => {
@@ -70,7 +73,7 @@ describe('CartDrawer', () => {
       isOpen: true,
     })
     render(<CartDrawer />)
-    expect(screen.getByText(/shop impact oils/i)).toBeInTheDocument()
+    expect(screen.getByText(/shop perfume oils/i)).toBeInTheDocument()
     expect(screen.queryByText(/shop the number series/i)).not.toBeInTheDocument()
   })
 
@@ -83,7 +86,7 @@ describe('CartDrawer', () => {
     })
     render(<CartDrawer />)
     expect(screen.getByText(/shop the number series/i)).toBeInTheDocument()
-    expect(screen.queryByText(/shop impact oils/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/shop perfume oils/i)).not.toBeInTheDocument()
   })
 
   it('detects oils by variant label even when handle is missing (back-compat)', () => {
@@ -120,7 +123,7 @@ describe('CartDrawer', () => {
 
   it('shows "free delivery unlocked" when at or above threshold', () => {
     useCartStore.setState({
-      lines: [line({ unitPriceKobo: 5_000_000, qty: 1 })], // exactly threshold
+      lines: [line({ unitPriceKobo: 20_000_000, qty: 1 })], // exactly threshold (₦200,000)
       isOpen: true,
     })
     render(<CartDrawer />)

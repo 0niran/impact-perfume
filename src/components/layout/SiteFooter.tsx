@@ -11,8 +11,9 @@ const linkColumns: { heading: string; links: FooterLink[] }[] = [
   {
     heading: 'Shop',
     links: [
-      { label: 'Number Collection', href: '/no-series' },
-      { label: 'Impact Oils', href: '/oils' },
+      { label: 'Number Series', href: '/no-series' },
+      { label: 'Signature Scents', href: '/signature' },
+      { label: 'Perfume Oils', href: '/oils' },
       { label: 'Home Diffusers', href: '/home' },
       { label: 'Gift Sets', href: '/gifts' },
     ],
@@ -91,14 +92,8 @@ export default function SiteFooter() {
               className="h-12 w-auto"
             />
             <p className="mt-4 text-small text-stone leading-relaxed">
-              Fragrances, oils &amp; home scents crafted in Lagos.
+              Fragrances, oils &amp; home scents.
               Composed for character.
-            </p>
-
-            {/* Crafted in Lagos badge */}
-            <p className="mt-4 inline-flex items-center gap-1.5 text-label text-stone/50 uppercase tracking-[0.08em]">
-              <span aria-hidden="true">🇳🇬</span>
-              Crafted in Lagos
             </p>
 
             <PaymentIcons />
@@ -184,11 +179,7 @@ export default function SiteFooter() {
             className="h-11 w-auto"
           />
           <p className="mt-4 text-small text-stone leading-relaxed max-w-[260px]">
-            Fragrances, oils &amp; home scents crafted in Lagos. Composed for character.
-          </p>
-          <p className="mt-3 inline-flex items-center gap-1.5 text-label text-stone/50 uppercase tracking-[0.08em]">
-            <span aria-hidden="true">🇳🇬</span>
-            Crafted in Lagos
+            Fragrances, oils &amp; home scents. Composed for character.
           </p>
 
           {/* WhatsApp CTA mobile */}

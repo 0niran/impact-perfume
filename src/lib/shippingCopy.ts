@@ -9,7 +9,7 @@ import { type Region } from './region'
 export function shippingCopyFor(region: Region): string {
   const threshold = formatPrice(region.freeDeliveryThresholdMinor, region.currency)
   if (region.id === 'NG') {
-    return `Free delivery on orders over ${threshold}. Standard delivery 3–5 business days within Lagos; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.`
+    return `Free delivery on orders over ${threshold}. Standard delivery 3–5 business days within the city; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.`
   }
   if (region.id === 'CA') {
     return `Free delivery across Canada on orders over ${threshold}. Standard shipping 5–10 business days. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.`

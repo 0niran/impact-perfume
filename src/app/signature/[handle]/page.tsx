@@ -31,7 +31,7 @@ export async function generateMetadata({
     title: `${product.title} | Impact Perfumes`,
     description:
       (product.metadata?.tagline as string) ??
-      `${product.title}, a luxury Eau de Parfum from the Impact Signature Collection.`,
+      `${product.title}, a luxury Eau de Parfum from the Impact Signature Scents.`,
   }
 }
 
@@ -68,7 +68,7 @@ export default async function SignaturePDPPage({
             <ol className="flex items-center gap-2 text-small text-stone">
               <li>
                 <Link href="/signature" className="hover:text-bone transition-colors">
-                  Signature Collection
+                  Signature Scents
                 </Link>
               </li>
               <li aria-hidden="true">·</li>
@@ -112,7 +112,7 @@ export default async function SignaturePDPPage({
           {/* Bottom label */}
           <div className="absolute bottom-8 text-center z-10">
             <p className="text-label uppercase tracking-[0.12em] text-stone">
-              Signature Collection
+              Signature Scents
             </p>
             <p className="mt-1 font-display text-h3 text-bone">{product.title}</p>
           </div>
@@ -191,7 +191,7 @@ export default async function SignaturePDPPage({
               <div className="pb-5 text-body text-stone">
                 <p>
                   {tagline ? `${tagline} ` : ''}
-                  A luxury Eau de Parfum from the Impact Signature Collection, named,
+                  A luxury Eau de Parfum from the Impact Signature Scents, named,
                   not numbered. Composed for those who already know who they are.
                 </p>
               </div>
@@ -215,7 +215,7 @@ export default async function SignaturePDPPage({
                 href="/signature"
                 className="text-small text-stone hover:text-bone transition-colors"
               >
-                ← Back to Signature Collection
+                ← Back to Signature Scents
               </Link>
             </div>
 

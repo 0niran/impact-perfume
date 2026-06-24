@@ -5,19 +5,19 @@ import { useEffect, useState, useCallback } from 'react'
 const SLIDES = [
   {
     category: 'The Number Series',
-    tagline: 'Crafted in Lagos. Composed for character.',
+    tagline: 'Composed for character.',
     image: '/hero/no-series.png',
     gradient: 'radial-gradient(ellipse 70% 70% at 65% 35%, rgba(107,68,35,0.22) 0%, rgba(40,20,10,0.10) 50%, transparent 80%)',
   },
   {
-    category: 'Signature Collection',
+    category: 'Signature Scents',
     tagline: 'Beyond numbers. A name, a narrative, a soul.',
     image: '/hero/signature.png',
     gradient: 'radial-gradient(ellipse 70% 70% at 35% 50%, rgba(60,50,80,0.22) 0%, rgba(20,15,30,0.10) 50%, transparent 80%)',
   },
   {
-    category: 'Fragrance Oils',
-    tagline: 'One drop. All day. Built for the heat.',
+    category: 'Perfume Oils',
+    tagline: 'One drop. All day.',
     image: '/hero/Oil.png',
     gradient: 'radial-gradient(ellipse 70% 70% at 60% 40%, rgba(30,60,40,0.22) 0%, rgba(10,25,15,0.10) 50%, transparent 80%)',
   },

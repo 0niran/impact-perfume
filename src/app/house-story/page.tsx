@@ -6,10 +6,10 @@ import { SITE_CONFIG } from '@/lib/config'
 export const metadata: Metadata = {
   title: 'House Story | Impact Perfumes',
   description:
-    'The story behind Impact Perfumes, a Lagos-based luxury fragrance house crafting scents that leave a mark.',
+    'The story behind Impact Perfumes, a luxury fragrance house crafting scents that leave a mark.',
   openGraph: {
     title: 'House Story | Impact Perfumes',
-    description: 'Crafted in Lagos. Composed for character.',
+    description: 'Composed for character.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
@@ -25,8 +25,6 @@ export default function HouseStoryPage() {
             The House of Impact
           </p>
           <h1 className="mt-5 max-w-3xl font-display text-display-l md:text-display-xl leading-none text-balance">
-            Crafted in Lagos.
-            <br />
             Composed for character.
           </h1>
         </Container>
@@ -60,7 +58,7 @@ export default function HouseStoryPage() {
                 Every fragrance we compose is built to linger, on skin, in memory,
                 in the room long after you have left it. That is the standard we hold
                 ourselves to with every number in the series and every named
-                composition in the Signature Collection.
+                composition in the Signature Scents.
               </p>
             </div>
           </div>
@@ -145,7 +143,7 @@ export default function HouseStoryPage() {
               </h3>
               <p className="text-body text-stone flex-1">
                 We work with retailers, hotels, spas, and lifestyle brands across
-                Nigeria. Whether you want to stock Impact fragrances or co-create
+                the world. Whether you want to stock Impact fragrances or co-create
                 something entirely new, we are open to building the right relationship.
               </p>
               <Link
