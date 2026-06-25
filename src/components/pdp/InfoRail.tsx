@@ -31,6 +31,7 @@ interface InfoRailProps {
   shippingCopy?: string
   handle?: string
   href?: string
+  inStock?: boolean
 }
 
 export default function InfoRail({
@@ -59,6 +60,7 @@ export default function InfoRail({
   shippingCopy,
   handle,
   href,
+  inStock = true,
 }: InfoRailProps) {
   return (
     <div className="lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto bg-ink text-bone">
@@ -116,6 +118,7 @@ export default function InfoRail({
           variantLabel={variantLabel}
           handle={handle}
           href={href}
+          inStock={inStock}
         />
 
         {/* Divider before notes */}

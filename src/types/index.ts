@@ -9,6 +9,10 @@ export interface MedusaVariant {
   calculated_price?: MedusaCalculatedPrice
   /** @deprecated Use calculated_price when region_id is passed */
   prices?: Array<{ amount: number; currency_code: string }>
+  /** Inventory fields (requested additively); used to derive availability */
+  inventory_quantity?: number
+  manage_inventory?: boolean
+  allow_backorder?: boolean
 }
 
 export interface MedusaProductMetadata {
@@ -78,4 +82,6 @@ export interface TileEnrichment {
   currency?: string
   /** @deprecated retained while call sites migrate */
   priceKobo?: number
+  /** Whether the variant can be purchased (in stock / backorder / untracked) */
+  inStock?: boolean
 }
