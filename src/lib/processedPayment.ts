@@ -70,6 +70,20 @@ export async function claimPayment(
   }
 }
 
+/**
+ * Release a previously-claimed lock so a later retry can re-attempt
+ * fulfilment. Used when order creation fails after the lock was claimed —
+ * otherwise the poisoned lock would block every retry and lose a paid order.
+ */
+export async function releasePayment(reference: string): Promise<void> {
+  if (!sanity) return
+  try {
+    await sanity.delete(lockId(reference))
+  } catch (err) {
+    console.error('[processedPayment] failed to release lock', err)
+  }
+}
+
 /** Annotate the lock with the resulting Medusa order id. Best-effort. */
 export async function recordMedusaOrderId(
   reference: string,

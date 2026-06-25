@@ -20,7 +20,7 @@
 import { buildCustomerEmail, buildBusinessEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { REGIONS, type RegionId } from '@/lib/region'
-import { claimPayment, recordMedusaOrderId, type PaymentSource } from '@/lib/processedPayment'
+import { claimPayment, releasePayment, recordMedusaOrderId, type PaymentSource } from '@/lib/processedPayment'
 
 export interface ShippingAddress {
   address1: string
@@ -267,7 +267,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
   return orderId
 }
 
-export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
+export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boolean }> {
   // Idempotency: webhook and redirect-verify can fire for the same payment.
   // First caller to claim the lock proceeds; later callers no-op.
   const won = await claimPayment(
@@ -280,8 +280,24 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
       reference: input.reference,
       source: input.source ?? 'verify',
     })
-    return
+    return { ok: true }
   }
+
+  // Create the Medusa order FIRST. If it fails, release the lock so a retry
+  // (provider webhook) can re-attempt, and do NOT send a confirmation for an
+  // order that doesn't exist. This is the fix for paid-but-missing orders:
+  // previously the lock was claimed up front and a failed create poisoned it.
+  const orderId = await createMedusaOrder(input)
+  if (!orderId) {
+    await releasePayment(input.reference)
+    console.error('[orderFulfillment] order creation failed; released lock for retry', {
+      reference: input.reference,
+      regionId: input.regionId,
+      paymentProvider: input.paymentProvider,
+    })
+    return { ok: false }
+  }
+  recordMedusaOrderId(input.reference, orderId).catch(() => undefined)
 
   const orderEmailData = {
     reference: input.reference,
@@ -299,29 +315,20 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<void> {
     currency: input.currency,
   }
 
+  // Emails are best-effort — a send failure must not fail an order that the
+  // customer already paid for and that now exists in Medusa.
   const results = await Promise.allSettled([
-    createMedusaOrder(input).then((orderId) => {
-      if (orderId) recordMedusaOrderId(input.reference, orderId).catch(() => undefined)
-      return orderId
-    }),
-    sendEmail({
-      to: input.customerEmail,
-      ...buildCustomerEmail(orderEmailData),
-    }),
-    sendEmail({
-      to: SITE_CONFIG.contact.email,
-      ...buildBusinessEmail(orderEmailData),
-    }),
+    sendEmail({ to: input.customerEmail, ...buildCustomerEmail(orderEmailData) }),
+    sendEmail({ to: SITE_CONFIG.contact.email, ...buildBusinessEmail(orderEmailData) }),
   ])
-
-  // Surface rejections too — Promise.allSettled hides them otherwise.
   results.forEach((r, i) => {
     if (r.status === 'rejected') {
-      const label = ['createMedusaOrder', 'customerEmail', 'businessEmail'][i] ?? 'unknown'
+      const label = ['customerEmail', 'businessEmail'][i] ?? 'unknown'
       console.error(`[orderFulfillment] ${label} rejected`, {
         reason: r.reason instanceof Error ? r.reason.message : r.reason,
         reference: input.reference,
       })
     }
   })
+  return { ok: true }
 }

@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await fulfillOrder({
+      const result = await fulfillOrder({
         reference: d.reference,
         regionId: 'NG',
         totalKobo: verified.totalMinor,
@@ -154,6 +154,10 @@ export async function POST(req: NextRequest) {
         paymentRef: d.reference,
         source: 'webhook',
       })
+      if (!result.ok) {
+        // Order creation failed and the lock was released — 500 so Paystack retries.
+        return NextResponse.json({ ok: false }, { status: 500 })
+      }
     } catch (err) {
       console.error('[paystack-webhook] fulfilOrder threw', err)
       // Return 500 so Paystack retries

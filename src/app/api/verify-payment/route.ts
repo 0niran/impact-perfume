@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 3. Fulfill with SERVER-derived line prices and total.
-  await fulfillOrder({
+  const fulfilment = await fulfillOrder({
     reference: tx.reference,
     regionId: 'NG',
     totalKobo: verified.totalMinor,
@@ -129,6 +129,20 @@ export async function POST(req: NextRequest) {
     paymentProvider: 'paystack',
     paymentRef: tx.reference,
   })
+
+  if (!fulfilment.ok) {
+    // Payment captured but order creation failed; the lock was released so the
+    // Paystack webhook can retry. Tell the customer it's being finalised.
+    return NextResponse.json(
+      {
+        ok: false,
+        message:
+          'Your payment went through, but we hit a snag finalising your order. No need to pay again — our team has been notified. Please contact support with reference ' +
+          tx.reference,
+      },
+      { status: 500 }
+    )
+  }
 
   return NextResponse.json({ ok: true, reference: tx.reference })
 }

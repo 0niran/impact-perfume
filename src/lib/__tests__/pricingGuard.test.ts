@@ -196,6 +196,66 @@ describe('validateLinePricing — rejects', () => {
   })
 })
 
+describe('validateLinePricing — availability', () => {
+  function variant(extra: Record<string, unknown>) {
+    return {
+      products: [
+        {
+          id: 'p1',
+          variants: [
+            {
+              id: 'v1',
+              calculated_price: { calculated_amount: 50_000, currency_code: 'ngn' },
+              ...extra,
+            },
+          ],
+        },
+      ],
+    }
+  }
+
+  it('rejects an out-of-stock managed variant', async () => {
+    stubFetch(() => variant({ manage_inventory: true, allow_backorder: false, inventory_quantity: 0 }))
+    const { validateLinePricing } = await loadModule()
+    const r = await validateLinePricing(
+      [{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }],
+      'NG'
+    )
+    expect(r.ok).toBe(false)
+    expect(r.message).toMatch(/out of stock/i)
+  })
+
+  it('rejects when requested qty exceeds available stock', async () => {
+    stubFetch(() => variant({ manage_inventory: true, allow_backorder: false, inventory_quantity: 2 }))
+    const { validateLinePricing } = await loadModule()
+    const r = await validateLinePricing(
+      [{ variantId: 'v1', productId: 'p1', qty: 3, unitPriceKobo: 5_000_000 }],
+      'NG'
+    )
+    expect(r.ok).toBe(false)
+  })
+
+  it('allows an in-stock managed variant', async () => {
+    stubFetch(() => variant({ manage_inventory: true, allow_backorder: false, inventory_quantity: 5 }))
+    const { validateLinePricing } = await loadModule()
+    const r = await validateLinePricing(
+      [{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }],
+      'NG'
+    )
+    expect(r.ok).toBe(true)
+  })
+
+  it('allows backorder-enabled and untracked variants even at 0', async () => {
+    const { validateLinePricing } = await loadModule()
+    stubFetch(() => variant({ manage_inventory: true, allow_backorder: true, inventory_quantity: 0 }))
+    let r = await validateLinePricing([{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }], 'NG')
+    expect(r.ok).toBe(true)
+    stubFetch(() => variant({ manage_inventory: false, inventory_quantity: 0 }))
+    r = await validateLinePricing([{ variantId: 'v1', productId: 'p1', qty: 1, unitPriceKobo: 5_000_000 }], 'NG')
+    expect(r.ok).toBe(true)
+  })
+})
+
 describe('verifyPaidOrder — fulfilment gate (audit H-1)', () => {
   const ngVariant = {
     products: [

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock orderFulfillment so we can assert calls without hitting Medusa
-const fulfillOrderMock = vi.fn().mockResolvedValue(undefined)
+const fulfillOrderMock = vi.fn().mockResolvedValue({ ok: true })
 vi.mock('@/lib/orderFulfillment', () => ({
   fulfillOrder: fulfillOrderMock,
 }))
@@ -103,6 +103,17 @@ describe('POST /api/webhooks/stripe — event handling', () => {
     expect(call.regionId).toBe('CA')
     expect(call.lines).toHaveLength(1)
     expect(call.lines[0].variantId).toBe('v1')
+  })
+
+  it('returns 500 when fulfilment reports failure (order not created)', async () => {
+    constructEventMock.mockReturnValueOnce({
+      type: 'payment_intent.succeeded',
+      id: 'evt_1',
+      data: { object: validIntent },
+    })
+    fulfillOrderMock.mockResolvedValueOnce({ ok: false })
+    const res = await callRoute(request())
+    expect(res.status).toBe(500)
   })
 
   it('skips fulfilment when metadata.lines is empty', async () => {
