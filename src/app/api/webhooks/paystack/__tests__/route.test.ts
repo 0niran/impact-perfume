@@ -7,11 +7,25 @@ vi.mock('@/lib/orderFulfillment', () => ({
   fulfillOrder: fulfillOrderMock,
 }))
 
+// Mock the re-pricing gate; its own logic is covered in pricingGuard.test.ts.
+const verifyPaidOrderMock = vi.fn()
+vi.mock('@/lib/pricingGuard', () => ({
+  verifyPaidOrder: (...args: unknown[]) => verifyPaidOrderMock(...args),
+}))
+
 const SECRET = 'test_paystack_secret'
 
 beforeEach(() => {
   vi.stubEnv('PAYSTACK_SECRET_KEY', SECRET)
   fulfillOrderMock.mockClear()
+  verifyPaidOrderMock.mockReset()
+  verifyPaidOrderMock.mockResolvedValue({
+    ok: true,
+    totalMinor: 5_000_000,
+    lines: [
+      { variantId: 'v1', name: 'Impact No. 1', variantLabel: '100ml EDP', qty: 1, unitPriceKobo: 5_000_000 },
+    ],
+  })
 })
 
 function signedRequest(body: object, secret = SECRET, badSig = false): Request {
@@ -124,6 +138,27 @@ describe('POST /api/webhooks/paystack — event handling', () => {
     const res = await callRoute(signedRequest(evt))
     expect(res.status).toBe(200)
     expect(fulfillOrderMock).not.toHaveBeenCalled()
+  })
+
+  it('refuses fulfilment when re-pricing/amount check fails (underpayment)', async () => {
+    verifyPaidOrderMock.mockResolvedValueOnce({
+      ok: false,
+      message: 'Amount paid does not match the order total.',
+      totalMinor: 5_000_000,
+      lines: [],
+    })
+    const res = await callRoute(signedRequest(baseSuccess))
+    expect(res.status).toBe(200) // ack so Paystack stops retrying
+    expect(fulfillOrderMock).not.toHaveBeenCalled()
+  })
+
+  it('passes the captured amount to the re-pricing gate', async () => {
+    await callRoute(signedRequest(baseSuccess))
+    expect(verifyPaidOrderMock).toHaveBeenCalledWith(
+      expect.any(Array),
+      'NG',
+      5_000_000
+    )
   })
 
   it('skips fulfilment when shippingAddress metadata is missing', async () => {

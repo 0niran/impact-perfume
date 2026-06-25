@@ -25,9 +25,9 @@ export const SITE_CONFIG = {
   },
 
   commerce: {
-    /** Free delivery threshold in kobo (₦50,000 = 5,000,000 kobo) */
-    freeDeliveryThresholdKobo: 5_000_000,
-    freeDeliveryDisplay: '₦50,000',
+    // Free-delivery thresholds are per-region and live in lib/region.ts
+    // (freeDeliveryThresholdMinor). Do not duplicate them here — a second copy
+    // drifts (it was left at ₦50,000 after the NG threshold moved to ₦200,000).
     currency: 'NGN' as const,
     currencyLocale: 'en-NG' as const,
   },

@@ -36,12 +36,10 @@ export function middleware(request: NextRequest) {
     ''
   ).toUpperCase()
 
-  // No country info available (local dev, anonymizing proxy). Leave any
-  // existing cookie alone; otherwise default to NG.
-  if (!country) {
-    if (existing) return NextResponse.next()
-    return NextResponse.next()
-  }
+  // No country info (local dev, anonymizing proxy): leave any existing cookie
+  // alone. With no cookie at all, getServerRegion already defaults to NG, so
+  // there's nothing to set here.
+  if (!country) return NextResponse.next()
 
   const regionId = country === 'NG' ? 'NG' : 'CA'
 

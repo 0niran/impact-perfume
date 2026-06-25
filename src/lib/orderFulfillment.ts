@@ -137,6 +137,10 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
       payment_provider: input.paymentProvider,
       customer_phone: input.customerPhone,
       reference: input.reference,
+      // The structured country_code stays the region default (the CAD region
+      // may only allow Canada), so record the real destination here for the
+      // CAD/international rail. The confirmation emails also show it.
+      shipping_country: input.shippingAddress.country,
     },
   }
 

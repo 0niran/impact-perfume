@@ -96,18 +96,24 @@ export const ngShippingAddressSchema = z.object({
   country: z.literal('Nigeria'),
 })
 
-export const caShippingAddressSchema = z.object({
+// International shipping address for the CAD / Stripe rail. Every visitor
+// outside Nigeria checks out here, so the country is selectable and the postal
+// code is validated generically — formats vary too much worldwide to pin to a
+// single regex.
+export const intlShippingAddressSchema = z.object({
   address1: safeText(200),
   address2: optionalSafeText(200).optional(),
   city: safeText(100),
-  // Province code (eg. 'ON', 'BC') OR full name — accept either.
+  // State / province / region — free text (varies by country).
   state: safeText(100),
   postalCode: z
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z]\d[A-Z][ -]?\d[A-Z]\d$/, 'Invalid Canadian postal code'),
-  country: z.literal('Canada'),
+    .min(2, 'Postal / ZIP code is required')
+    .max(12, 'Postal / ZIP code is too long')
+    .regex(/^[A-Z0-9][A-Z0-9 -]*$/, 'Invalid postal / ZIP code'),
+  country: safeText(100),
 })
 
 // --- Endpoint payloads ---
@@ -127,7 +133,7 @@ export const stripeCreateIntentBodySchema = z.object({
   customerName: customerNameSchema,
   customerEmail: emailSchema,
   customerPhone: phoneSchema.optional().or(z.literal('')),
-  shippingAddress: caShippingAddressSchema,
+  shippingAddress: intlShippingAddressSchema,
   lines: z.array(cartLineInputSchema).min(1).max(50),
 })
 

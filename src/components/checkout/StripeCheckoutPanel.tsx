@@ -11,7 +11,7 @@ import {
 } from '@stripe/react-stripe-js'
 import { useCartStore, cartSelectors, type CartLine } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
-import { CANADIAN_PROVINCES } from '@/lib/constants'
+import { countryOptions } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
 import { SITE_CONFIG } from '@/lib/config'
 import CartLineItem from '@/components/cart/CartLineItem'
@@ -30,17 +30,19 @@ interface ShippingDraft {
   name: string
   email: string
   phone: string
+  country: string // ISO alpha-2 code
   address1: string
   address2: string
   city: string
-  province: string
+  state: string
   postalCode: string
 }
 
 function emptyDraft(): ShippingDraft {
   return {
     name: '', email: '', phone: '',
-    address1: '', address2: '', city: '', province: '', postalCode: '',
+    country: 'CA', // CAD rail defaults to Canada; visitor can change it
+    address1: '', address2: '', city: '', state: '', postalCode: '',
   }
 }
 
@@ -54,6 +56,8 @@ export default function StripeCheckoutPanel() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const countries = useMemo(() => countryOptions(), [])
 
   if (!PUBLISHABLE_KEY) {
     return (
@@ -75,10 +79,11 @@ export default function StripeCheckoutPanel() {
     const required: [keyof ShippingDraft, string][] = [
       ['name', 'Full name'],
       ['email', 'Email'],
+      ['country', 'Country'],
       ['address1', 'Street address'],
       ['city', 'City'],
-      ['province', 'Province'],
-      ['postalCode', 'Postal code'],
+      ['state', 'State / province'],
+      ['postalCode', 'Postal / ZIP code'],
     ]
     for (const [key, label] of required) {
       if (!draft[key].trim()) {
@@ -86,6 +91,10 @@ export default function StripeCheckoutPanel() {
         return
       }
     }
+
+    // Persist the human-readable country name (matches the NG rail, which
+    // sends 'Nigeria') so emails and the order record read cleanly.
+    const countryName = countries.find((c) => c.code === draft.country)?.name ?? draft.country
 
     setLoading(true)
     try {
@@ -101,9 +110,9 @@ export default function StripeCheckoutPanel() {
             address1: draft.address1,
             address2: draft.address2,
             city: draft.city,
-            state: draft.province,
+            state: draft.state,
             postalCode: draft.postalCode,
-            country: 'Canada',
+            country: countryName,
           },
           lines: lines.map((l) => ({
             variantId: l.variantId,
@@ -137,6 +146,7 @@ export default function StripeCheckoutPanel() {
           <DetailsForm
             draft={draft}
             setDraft={setDraft}
+            countries={countries}
             onSubmit={handleContinue}
             loading={loading}
             error={error}
@@ -172,12 +182,13 @@ export default function StripeCheckoutPanel() {
 interface DetailsFormProps {
   draft: ShippingDraft
   setDraft: (d: ShippingDraft) => void
+  countries: { code: string; name: string }[]
   onSubmit: (e: React.FormEvent) => void
   loading: boolean
   error: string | null
 }
 
-function DetailsForm({ draft, setDraft, onSubmit, loading, error }: DetailsFormProps) {
+function DetailsForm({ draft, setDraft, countries, onSubmit, loading, error }: DetailsFormProps) {
   function set<K extends keyof ShippingDraft>(key: K, value: ShippingDraft[K]) {
     setDraft({ ...draft, [key]: value })
   }
@@ -219,6 +230,15 @@ function DetailsForm({ draft, setDraft, onSubmit, loading, error }: DetailsFormP
               <input id="address2" type="text" autoComplete="address-line2" value={draft.address2}
                 onChange={(e) => set('address2', e.target.value)} className={FORM_STYLES.input} placeholder="Apt 4B" />
             </div>
+            <div>
+              <label htmlFor="country" className={FORM_STYLES.label}>Country *</label>
+              <select id="country" required autoComplete="country" value={draft.country}
+                onChange={(e) => set('country', e.target.value)} className={`${FORM_STYLES.input} cursor-pointer`}>
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="city" className={FORM_STYLES.label}>City *</label>
@@ -226,27 +246,16 @@ function DetailsForm({ draft, setDraft, onSubmit, loading, error }: DetailsFormP
                   onChange={(e) => set('city', e.target.value)} className={FORM_STYLES.input} placeholder="Toronto" />
               </div>
               <div>
-                <label htmlFor="province" className={FORM_STYLES.label}>Province *</label>
-                <select id="province" required value={draft.province}
-                  onChange={(e) => set('province', e.target.value)} className={`${FORM_STYLES.input} cursor-pointer`}>
-                  <option value="">Select province</option>
-                  {CANADIAN_PROVINCES.map((p) => (
-                    <option key={p.code} value={p.code}>{p.name}</option>
-                  ))}
-                </select>
+                <label htmlFor="state" className={FORM_STYLES.label}>State / Province *</label>
+                <input id="state" type="text" autoComplete="address-level1" required value={draft.state}
+                  onChange={(e) => set('state', e.target.value)} className={FORM_STYLES.input} placeholder="Ontario" />
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="postal" className={FORM_STYLES.label}>Postal code *</label>
-                <input id="postal" type="text" autoComplete="postal-code" required value={draft.postalCode}
-                  onChange={(e) => set('postalCode', e.target.value.toUpperCase())}
-                  className={FORM_STYLES.input} placeholder="M5H 1A1" maxLength={7} />
-              </div>
-              <div>
-                <label className={FORM_STYLES.label}>Country</label>
-                <p className="px-4 py-3 border border-stone/30 text-body text-bone/70 bg-white/5">Canada</p>
-              </div>
+            <div>
+              <label htmlFor="postal" className={FORM_STYLES.label}>Postal / ZIP code *</label>
+              <input id="postal" type="text" autoComplete="postal-code" required value={draft.postalCode}
+                onChange={(e) => set('postalCode', e.target.value.toUpperCase())}
+                className={FORM_STYLES.input} placeholder="M5H 1A1" maxLength={12} />
             </div>
           </div>
         </div>

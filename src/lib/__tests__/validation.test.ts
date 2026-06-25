@@ -5,7 +5,7 @@ import {
   customerNameSchema,
   cartLineInputSchema,
   ngShippingAddressSchema,
-  caShippingAddressSchema,
+  intlShippingAddressSchema,
   verifyPaymentBodySchema,
   stripeCreateIntentBodySchema,
   cartSaveBodySchema,
@@ -162,38 +162,44 @@ describe('ngShippingAddressSchema', () => {
   })
 })
 
-describe('caShippingAddressSchema', () => {
+describe('intlShippingAddressSchema', () => {
   const valid = {
     address1: '123 King St W',
     address2: 'Apt 4B',
     city: 'Toronto',
-    state: 'ON',
+    state: 'Ontario',
     postalCode: 'M5H 1A1',
     country: 'Canada',
   }
 
-  it('accepts a well-formed CA address', () => {
-    expect(caShippingAddressSchema.safeParse(valid).success).toBe(true)
+  it('accepts a well-formed Canadian address', () => {
+    expect(intlShippingAddressSchema.safeParse(valid).success).toBe(true)
   })
 
-  it('rejects invalid Canadian postal codes', () => {
-    expect(
-      caShippingAddressSchema.safeParse({ ...valid, postalCode: '12345' }).success
-    ).toBe(false)
-    expect(
-      caShippingAddressSchema.safeParse({ ...valid, postalCode: 'AAAAA' }).success
-    ).toBe(false)
+  it('accepts postal/ZIP formats from other countries', () => {
+    expect(intlShippingAddressSchema.safeParse({ ...valid, country: 'United States', postalCode: '10001' }).success).toBe(true)
+    expect(intlShippingAddressSchema.safeParse({ ...valid, country: 'United Kingdom', postalCode: 'SW1A 1AA' }).success).toBe(true)
+    expect(intlShippingAddressSchema.safeParse({ ...valid, country: 'Germany', postalCode: '10115' }).success).toBe(true)
+  })
+
+  it('accepts any country (no longer Canada-only)', () => {
+    expect(intlShippingAddressSchema.safeParse({ ...valid, country: 'Ghana' }).success).toBe(true)
   })
 
   it('uppercases and trims postal codes', () => {
-    const r = caShippingAddressSchema.safeParse({ ...valid, postalCode: ' m5h 1a1 ' })
+    const r = intlShippingAddressSchema.safeParse({ ...valid, postalCode: ' m5h 1a1 ' })
     expect(r.success).toBe(true)
     if (r.success) expect(r.data.postalCode).toBe('M5H 1A1')
   })
 
+  it('rejects empty or malformed postal codes', () => {
+    expect(intlShippingAddressSchema.safeParse({ ...valid, postalCode: '' }).success).toBe(false)
+    expect(intlShippingAddressSchema.safeParse({ ...valid, postalCode: '!!@@' }).success).toBe(false)
+  })
+
   it('requires postalCode (unlike NG)', () => {
     const { postalCode: _omit, ...without } = valid
-    expect(caShippingAddressSchema.safeParse(without).success).toBe(false)
+    expect(intlShippingAddressSchema.safeParse(without).success).toBe(false)
   })
 })
 
