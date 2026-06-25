@@ -6,7 +6,6 @@ import {
   formatPrice,
   formatPriceFromCurrency,
   getShippingThreshold,
-  isSupportedShippingCountry,
 } from '../region'
 
 describe('getRegion', () => {
@@ -78,26 +77,6 @@ describe('getShippingThreshold', () => {
   it('returns 0 for unknown currencies', () => {
     expect(getShippingThreshold('USD')).toBe(0)
     expect(getShippingThreshold('')).toBe(0)
-  })
-})
-
-describe('isSupportedShippingCountry', () => {
-  it('accepts the supported countries (case-insensitive)', () => {
-    expect(isSupportedShippingCountry('NG')).toBe(true)
-    expect(isSupportedShippingCountry('CA')).toBe(true)
-    expect(isSupportedShippingCountry('ng')).toBe(true)
-  })
-
-  it('rejects countries we do not ship to', () => {
-    expect(isSupportedShippingCountry('US')).toBe(false)
-    expect(isSupportedShippingCountry('GB')).toBe(false)
-    expect(isSupportedShippingCountry('GH')).toBe(false)
-  })
-
-  it('rejects empty / missing values (used to fail open elsewhere)', () => {
-    expect(isSupportedShippingCountry('')).toBe(false)
-    expect(isSupportedShippingCountry(null)).toBe(false)
-    expect(isSupportedShippingCountry(undefined)).toBe(false)
   })
 })
 

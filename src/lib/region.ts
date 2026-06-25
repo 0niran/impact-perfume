@@ -59,19 +59,6 @@ export const REGIONS: Record<RegionId, Region> = {
 
 export const DEFAULT_REGION_ID: RegionId = 'NG'
 
-/**
- * Countries we actually fulfil orders to today. A visitor physically outside
- * these is bucketed into the CA region for browsing, but their checkout would
- * demand a Canadian address they can't satisfy — so checkout is gated for them
- * (see the unsupported-region panel on the checkout page).
- */
-export const SUPPORTED_SHIPPING_COUNTRIES: readonly string[] = ['NG', 'CA']
-
-export function isSupportedShippingCountry(code: string | null | undefined): boolean {
-  if (!code) return false
-  return SUPPORTED_SHIPPING_COUNTRIES.includes(code.toUpperCase())
-}
-
 export function getRegion(id: RegionId | string | null | undefined): Region {
   if (id && id in REGIONS) return REGIONS[id as RegionId]
   return REGIONS[DEFAULT_REGION_ID]

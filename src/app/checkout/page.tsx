@@ -6,16 +6,6 @@ import { Container } from '@/components/layout'
 import Link from 'next/link'
 import CheckoutForm from '@/components/checkout/CheckoutForm'
 import { useRegion } from '@/lib/regionContext'
-import { SITE_CONFIG } from '@/lib/config'
-
-function countryName(code: string | null): string {
-  if (!code) return 'your region'
-  try {
-    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code
-  } catch {
-    return code
-  }
-}
 
 // Lazy-load the Stripe panel so the @stripe/* bundles don't ship to NG visitors.
 const StripeCheckoutPanel = dynamic(
@@ -25,55 +15,7 @@ const StripeCheckoutPanel = dynamic(
 
 export default function CheckoutPage() {
   const lines = useCartStore((s) => s.lines)
-  const { region, setRegion, checkoutSupported, detectedCountry } = useRegion()
-
-  // Visitor is physically in a country we don't ship to yet. Rather than drop
-  // them into a Canadian checkout they can't complete, offer a waitlist /
-  // WhatsApp path — and an escape hatch if our geo guess is wrong.
-  if (!checkoutSupported) {
-    return (
-      <div className="bg-ink min-h-screen">
-        <Container className="flex flex-col items-start gap-6 py-24 max-w-2xl">
-          <p className="text-label uppercase tracking-[0.12em] text-accent">
-            {countryName(detectedCountry)}
-          </p>
-          <h1 className="font-display text-display-l leading-none text-bone">
-            We don&apos;t ship here yet.
-          </h1>
-          <p className="text-body text-stone">
-            We currently deliver within Nigeria and Canada. Message us on WhatsApp
-            and we&apos;ll arrange your order or let you know the moment we reach
-            {' '}{countryName(detectedCountry)}.
-          </p>
-          <div className="mt-2 flex flex-wrap gap-3">
-            <Link
-              href={SITE_CONFIG.social.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
-              style={{ height: 48 }}
-            >
-              Order via WhatsApp
-            </Link>
-            <button
-              onClick={() => setRegion('CA')}
-              className="inline-flex items-center border border-stone/40 px-8 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
-              style={{ height: 48 }}
-            >
-              I have a Canada address
-            </button>
-            <button
-              onClick={() => setRegion('NG')}
-              className="inline-flex items-center border border-stone/40 px-8 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
-              style={{ height: 48 }}
-            >
-              I have a Nigeria address
-            </button>
-          </div>
-        </Container>
-      </div>
-    )
-  }
+  const { region, setRegion } = useRegion()
 
   if (!region.checkoutEnabled) {
     return (

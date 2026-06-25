@@ -25,8 +25,10 @@ import { NextResponse, type NextRequest } from 'next/server'
  */
 export function middleware(request: NextRequest) {
   const manual = request.cookies.get('impact_region_manual')?.value === '1'
-  const existingRegion = request.cookies.get('impact_region')?.value
-  const existingCountry = request.cookies.get('impact_country')?.value
+  const existing = request.cookies.get('impact_region')?.value
+
+  // Honour an explicit manual choice — don't second-guess the visitor.
+  if (manual) return NextResponse.next()
 
   const country = (
     request.headers.get('x-vercel-ip-country') ??
@@ -34,32 +36,22 @@ export function middleware(request: NextRequest) {
     ''
   ).toUpperCase()
 
-  const response = NextResponse.next()
-  const cookieOpts = {
-    maxAge: 60 * 60 * 24 * 180, // 180 days
-    path: '/',
-    sameSite: 'lax' as const,
-  }
-
-  // Always record the visitor's physical country. The checkout page uses it to
-  // gate geographies we don't ship to (NG/CA only). Kept independent of the
-  // manual region lock, since the lock changes the *currency* the visitor
-  // browses in, not where they physically are.
-  if (country && existingCountry !== country) {
-    response.cookies.set('impact_country', country, cookieOpts)
-  }
-
-  // Honour an explicit manual region choice — don't second-guess the visitor.
-  if (manual) return response
-
-  // No country info (local dev, anonymizing proxy): leave the region cookie
-  // alone. With no cookie at all, getServerRegion already defaults to NG.
-  if (!country) return response
+  // No country info (local dev, anonymizing proxy): leave any existing cookie
+  // alone. With no cookie at all, getServerRegion already defaults to NG, so
+  // there's nothing to set here.
+  if (!country) return NextResponse.next()
 
   const regionId = country === 'NG' ? 'NG' : 'CA'
-  if (existingRegion !== regionId) {
-    response.cookies.set('impact_region', regionId, cookieOpts)
-  }
+
+  // If the cookie already matches the geo result, no-op to avoid churn.
+  if (existing === regionId) return NextResponse.next()
+
+  const response = NextResponse.next()
+  response.cookies.set('impact_region', regionId, {
+    maxAge: 60 * 60 * 24 * 180, // 180 days
+    path: '/',
+    sameSite: 'lax',
+  })
   return response
 }
 
