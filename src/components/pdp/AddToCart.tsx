@@ -15,6 +15,7 @@ interface AddToCartProps {
   variantLabel?: string
   handle?: string
   href?: string
+  inStock?: boolean
 }
 
 export default function AddToCart({
@@ -28,6 +29,7 @@ export default function AddToCart({
   variantLabel = '100ml EDP',
   handle,
   href,
+  inStock = true,
 }: AddToCartProps) {
   const [added, setAdded] = useState(false)
   const [stickyVisible, setStickyVisible] = useState(false)
@@ -46,6 +48,7 @@ export default function AddToCart({
   }, [])
 
   function handleAdd() {
+    if (!inStock) return
     add({
       variantId,
       productId,
@@ -77,10 +80,15 @@ export default function AddToCart({
 
         <button
           onClick={handleAdd}
-          className="inline-flex w-full sm:w-fit items-center justify-center bg-accent px-10 text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 hover:opacity-90 hover:-translate-y-px"
+          disabled={!inStock}
+          className={`inline-flex w-full sm:w-fit items-center justify-center px-10 text-label uppercase tracking-[0.1em] transition-all duration-300 ${
+            inStock
+              ? 'bg-accent text-ink hover:opacity-90 hover:-translate-y-px'
+              : 'cursor-not-allowed border border-stone/30 bg-transparent text-stone'
+          }`}
           style={{ height: 52 }}
         >
-          {added ? 'Added to cart' : 'Add to Cart'}
+          {!inStock ? 'Out of stock' : added ? 'Added to cart' : 'Add to Cart'}
         </button>
       </div>
 
@@ -98,10 +106,15 @@ export default function AddToCart({
         </div>
         <button
           onClick={handleAdd}
-          className="shrink-0 flex items-center justify-center bg-accent px-6 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
+          disabled={!inStock}
+          className={`shrink-0 flex items-center justify-center px-6 text-label uppercase tracking-[0.1em] transition-opacity ${
+            inStock
+              ? 'bg-accent text-ink hover:opacity-90'
+              : 'cursor-not-allowed border border-stone/30 text-stone'
+          }`}
           style={{ height: 48 }}
         >
-          {added ? 'Added' : 'Add to Cart'}
+          {!inStock ? 'Out of stock' : added ? 'Added' : 'Add to Cart'}
         </button>
       </div>
     </>

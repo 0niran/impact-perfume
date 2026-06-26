@@ -1,4 +1,4 @@
-import type { MedusaProduct, MedusaProductMetadata, TileEnrichment, Enrichment } from '@/types'
+import type { MedusaProduct, MedusaVariant, MedusaProductMetadata, TileEnrichment, Enrichment } from '@/types'
 import { FALLBACK_COLOR } from '@/lib/constants'
 
 const BACKEND_URL =
@@ -19,9 +19,24 @@ function storeHeaders(): Record<string, string> {
 function withRegion(params: URLSearchParams, regionId?: string): string {
   const id = regionId ?? DEFAULT_REGION_ID
   if (id) params.set('region_id', id)
-  // Medusa v2 store API omits product.metadata from the default field set.
-  if (!params.has('fields')) params.set('fields', '+metadata')
+  // Medusa v2 store API omits product.metadata from the default field set, and
+  // we also want inventory so the storefront can show out-of-stock. The `+`
+  // keeps the default fields (incl. calculated_price) and adds these.
+  if (!params.has('fields')) {
+    params.set(
+      'fields',
+      '+metadata,+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder'
+    )
+  }
   return params.toString()
+}
+
+/** A variant is in stock when inventory isn't tracked, backorder is on, or qty > 0. */
+export function variantInStock(variant: MedusaVariant | undefined): boolean {
+  if (!variant) return false
+  if (variant.manage_inventory !== true) return true
+  if (variant.allow_backorder === true) return true
+  return (variant.inventory_quantity ?? 0) > 0
 }
 
 /**
@@ -250,6 +265,7 @@ export function toTileEnrichment(
     currency: price.currency,
     // legacy alias for any not-yet-migrated callers
     priceKobo: price.amount,
+    inStock: variantInStock(variant),
   }
 }
 
@@ -266,6 +282,8 @@ export interface CategoryProduct {
   variantId: string
   /** @deprecated retained while call sites migrate */
   priceKobo: number
+  /** Undefined is treated as in stock by consumers */
+  inStock?: boolean
 }
 
 /** Map a generic Medusa product to a display card */
@@ -288,6 +306,7 @@ export function toCategoryProduct(
     productId: p.id,
     variantId: variant?.id ?? p.handle ?? p.id,
     priceKobo: price.amount,
+    inStock: variantInStock(variant),
   }
 }
 

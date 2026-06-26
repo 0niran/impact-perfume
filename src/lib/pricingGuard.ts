@@ -39,6 +39,16 @@ interface CalculatedPrice {
 interface StoreVariant {
   id: string
   calculated_price?: CalculatedPrice
+  inventory_quantity?: number
+  manage_inventory?: boolean
+  allow_backorder?: boolean
+}
+
+/** A variant is purchasable when stock isn't tracked, backorder is on, or there's enough on hand. */
+export function isVariantPurchasable(variant: StoreVariant, qty: number): boolean {
+  if (variant.manage_inventory !== true) return true
+  if (variant.allow_backorder === true) return true
+  return (variant.inventory_quantity ?? 0) >= qty
 }
 
 interface StoreProduct {
@@ -74,11 +84,17 @@ async function fetchProducts(
   if (!backend || !publishable) return []
 
   // Medusa v2 store API populates `variants.calculated_price` automatically
-  // when `region_id` is passed — no explicit `fields` selector needed.
+  // when `region_id` is passed. Additively request the inventory fields too
+  // (the `+` keeps the default field set, including calculated_price) so we
+  // can refuse out-of-stock lines before charging.
   const params = new URLSearchParams()
   for (const id of productIds) params.append('id[]', id)
   params.set('region_id', medusaRegionId)
   params.set('limit', String(productIds.length))
+  params.set(
+    'fields',
+    '+variants.inventory_quantity,+variants.manage_inventory,+variants.allow_backorder'
+  )
 
   try {
     const res = await fetch(`${backend}/store/products?${params.toString()}`, {
@@ -178,6 +194,16 @@ export async function validateLinePricing(
       return {
         ...empty,
         message: `Product ${line.variantId} is no longer available.`,
+      }
+    }
+
+    // Refuse out-of-stock lines here, at the payment boundary. Otherwise we'd
+    // charge the customer and then Medusa would reject the order on
+    // `insufficient_inventory`, losing a paid order.
+    if (!isVariantPurchasable(variant, line.qty)) {
+      return {
+        ...empty,
+        message: 'One or more items in your cart are out of stock. Please review your cart.',
       }
     }
 

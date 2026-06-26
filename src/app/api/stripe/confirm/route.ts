@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${base}/checkout?error=metadata_parse`)
   }
 
-  await fulfillOrder({
+  const result = await fulfillOrder({
     reference,
     regionId: 'CA',
     totalKobo: intent.amount,
@@ -72,6 +72,15 @@ export async function GET(req: NextRequest) {
     paymentProvider: 'stripe',
     paymentRef: intent.id,
   })
+
+  // Payment succeeded either way. If order creation failed, the lock was
+  // released for retry (e.g. the Stripe webhook) — send the customer to a
+  // confirmation that flags it's still being finalised so they don't re-pay.
+  if (!result.ok) {
+    return NextResponse.redirect(
+      `${base}/order-confirmed?ref=${encodeURIComponent(reference)}&processing=1`
+    )
+  }
 
   return NextResponse.redirect(`${base}/order-confirmed?ref=${encodeURIComponent(reference)}`)
 }

@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await fulfillOrder({
+      const result = await fulfillOrder({
         reference: md.reference ?? intent.id,
         regionId: 'CA',
         totalKobo: intent.amount,
@@ -99,6 +99,11 @@ export async function POST(req: NextRequest) {
         paymentRef: intent.id,
         source: 'webhook',
       })
+      if (!result.ok) {
+        // Order creation failed and the lock was released — 500 so Stripe
+        // retries with backoff.
+        return NextResponse.json({ ok: false }, { status: 500 })
+      }
     } catch (err) {
       console.error('[stripe-webhook] fulfilOrder threw', err)
       // 500 so Stripe retries with backoff

@@ -30,7 +30,9 @@ export default function NumberTile({
   const { add, setOpen } = useCartStore()
   const [added, setAdded] = useState(false)
 
-  const canAdd = Boolean(productId && variantId && priceAmount && priceAmount > 0)
+  // Default to in-stock unless the catalog explicitly says otherwise.
+  const inStock = tile.inStock !== false
+  const canAdd = Boolean(productId && variantId && priceAmount && priceAmount > 0 && inStock)
   const productImage = imageUrl ?? fallbackImage
 
   function handleAdd(e: React.MouseEvent) {
@@ -78,10 +80,18 @@ export default function NumberTile({
               alt={`Impact ${titlePrefix} ${number}`}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="object-contain transition-transform duration-500 group-hover:scale-[1.04]"
+              className={`object-contain transition-transform duration-500 group-hover:scale-[1.04] ${
+                inStock ? '' : 'opacity-40'
+              }`}
             />
           </div>
         </div>
+
+        {!inStock && (
+          <span className="absolute left-3 top-3 z-10 bg-ink/80 px-2.5 py-1 text-label uppercase tracking-[0.08em] text-bone/80 backdrop-blur-sm">
+            Out of stock
+          </span>
+        )}
 
         {canAdd && (
           <button
@@ -107,9 +117,9 @@ export default function NumberTile({
           <p className="text-body font-medium text-bone">
             {titlePrefix} {number}
           </p>
-          {canAdd && (
-            <p className="text-small text-stone tabular-nums">{formatPrice(priceAmount!, lineCurrency)}</p>
-          )}
+          {priceAmount && priceAmount > 0 ? (
+            <p className="text-small text-stone tabular-nums">{formatPrice(priceAmount, lineCurrency)}</p>
+          ) : null}
         </div>
         {descriptor && (
           <p className="text-small text-stone truncate">{descriptor}</p>

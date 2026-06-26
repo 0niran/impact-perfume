@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import crypto from 'crypto'
 
 // Mock orderFulfillment so we can assert calls without hitting Medusa
-const fulfillOrderMock = vi.fn().mockResolvedValue(undefined)
+const fulfillOrderMock = vi.fn().mockResolvedValue({ ok: true })
 vi.mock('@/lib/orderFulfillment', () => ({
   fulfillOrder: fulfillOrderMock,
 }))
@@ -202,6 +202,12 @@ describe('POST /api/webhooks/paystack — event handling', () => {
 
   it('returns 500 to trigger Paystack retry when fulfillment throws', async () => {
     fulfillOrderMock.mockRejectedValueOnce(new Error('Medusa down'))
+    const res = await callRoute(signedRequest(baseSuccess))
+    expect(res.status).toBe(500)
+  })
+
+  it('returns 500 when fulfilment reports failure (order not created)', async () => {
+    fulfillOrderMock.mockResolvedValueOnce({ ok: false })
     const res = await callRoute(signedRequest(baseSuccess))
     expect(res.status).toBe(500)
   })

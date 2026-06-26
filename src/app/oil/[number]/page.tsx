@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { getMedusaProduct, getPrice, toEnrichment, getProductImage } from '@/lib/medusa'
+import { getMedusaProduct, getPrice, toEnrichment, getProductImage, variantInStock } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { shippingCopyFor } from '@/lib/shippingCopy'
 import { SITE_URL } from '@/lib/constants'
@@ -124,6 +124,7 @@ export default async function OilPDPPage({
           maxNumber={50}
           handle={`oil-no-${enrichment.number}`}
           href={`/oil/${enrichment.number}`}
+          inStock={variantInStock(variant)}
         />
       </div>
 
