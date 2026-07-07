@@ -330,6 +330,61 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
 }
 
 /* ----------------------------------------------------------------------------
+ * Owner operational alert (refunds, disputes, reconciliation gaps)
+ * ------------------------------------------------------------------------- */
+
+export interface AlertItem {
+  title: string
+  lines: string[]
+}
+
+/**
+ * A plain, branded alert to the business inbox for things that need a human:
+ * a refund, a dispute, or a captured payment with no Medusa order. Kept generic
+ * so one template serves every operational notification.
+ */
+export function buildOwnerAlertEmail(opts: {
+  heading: string
+  intro: string
+  items: AlertItem[]
+  subjectPrefix?: string
+}): { subject: string; html: string } {
+  const subject = `${opts.subjectPrefix ?? 'Action needed'} · ${opts.heading}`.replace(/[\r\n]/g, '')
+
+  const rows = opts.items
+    .map(
+      (it) => `
+      <tr>
+        <td style="padding:14px 0;border-bottom:1px solid ${PALETTE.border};">
+          <div style="font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.ink};line-height:1.3;">${esc(it.title)}</div>
+          ${it.lines
+            .map(
+              (l) =>
+                `<div style="margin-top:3px;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};line-height:1.6;">${esc(l)}</div>`
+            )
+            .join('')}
+        </td>
+      </tr>`
+    )
+    .join('')
+
+  const body = `
+    ${sectionLabel('Operational Alert')}
+    <h1 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:400;color:${PALETTE.ink};line-height:1.2;">
+      ${esc(opts.heading)}
+    </h1>
+    <p style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.slate};line-height:1.7;">
+      ${esc(opts.intro)}
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${PALETTE.border};">
+      ${rows}
+    </table>
+  `
+
+  return { subject, html: baseTemplate(subject, body) }
+}
+
+/* ----------------------------------------------------------------------------
  * Abandoned cart
  * ------------------------------------------------------------------------- */
 
