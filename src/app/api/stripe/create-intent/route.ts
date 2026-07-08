@@ -5,6 +5,7 @@ import { validateLinePricing } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
 import { stripeCreateIntentBodySchema, formatZodError } from '@/lib/validation'
 import { packStripeLines } from '@/lib/stripeMetadata'
+import { computeStripeTax } from '@/lib/tax'
 
 export async function POST(req: NextRequest) {
   const limit = await rateLimit(req, 'stripe-create-intent', { limit: 10, window: '1 m' })
@@ -54,12 +55,42 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     )
   }
-  const total = validation.totalMinor
-  if (total <= 0) {
+  const subtotal = validation.totalMinor
+  if (subtotal <= 0) {
     return NextResponse.json({ ok: false, message: 'Invalid order total.' }, { status: 400 })
   }
 
   const stripe = new Stripe(stripeKey, { apiVersion: '2026-04-22.dahlia' })
+
+  // Add Canadian tax at checkout (no-op unless STRIPE_TAX_ENABLED and ship-to CA).
+  // Fail closed: if the tax engine is on but errors, don't silently undercharge.
+  let tax
+  try {
+    tax = await computeStripeTax(stripe, {
+      subtotalMinor: subtotal,
+      currency: 'cad',
+      lines: validation.lines.map((l) => ({
+        variantId: l.variantId,
+        amountMinor: l.serverUnitPriceMinor * l.qty,
+        qty: l.qty,
+      })),
+      address: {
+        line1: shippingAddress.address1,
+        line2: shippingAddress.address2,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postalCode: shippingAddress.postalCode,
+        countryCode: shippingAddress.countryCode ?? '',
+      },
+    })
+  } catch (err) {
+    console.error('[stripe.create-intent] tax calculation failed:', err)
+    return NextResponse.json(
+      { ok: false, message: 'Could not calculate tax. Please try again.' },
+      { status: 502 }
+    )
+  }
+  const total = tax.totalMinor
 
   // Cryptographically random suffix so refs aren't predictable (audit M-4).
   const reference = `impact-ca-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`
@@ -75,7 +106,11 @@ export async function POST(req: NextRequest) {
         customerName,
         customerEmail,
         customerPhone: customerPhone ?? '',
-        // Metadata values must be strings; stringify the structured fields.
+        // Server-derived money, persisted so the fulfilment path records verified
+        // amounts. Metadata values must be strings.
+        subtotalMinor: String(subtotal),
+        taxMinor: String(tax.taxMinor),
+        taxCalculationId: tax.calculationId ?? '',
         // Stripe limits metadata to 50 keys, 500 chars each — well under our typical payload.
         shippingAddress: JSON.stringify(shippingAddress),
         // Persist SERVER-derived prices in metadata so the webhook /
@@ -100,6 +135,10 @@ export async function POST(req: NextRequest) {
       ok: true,
       clientSecret: intent.client_secret,
       reference,
+      subtotalMinor: subtotal,
+      taxMinor: tax.taxMinor,
+      totalMinor: total,
+      currency: 'CAD',
     })
   } catch (err) {
     // Log the full error server-side but return a generic message to the

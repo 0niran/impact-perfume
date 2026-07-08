@@ -54,6 +54,7 @@ export default function StripeCheckoutPanel() {
   const [draft, setDraft] = useState<ShippingDraft>(emptyDraft)
   const [step, setStep] = useState<'details' | 'payment'>('details')
   const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [totals, setTotals] = useState<{ subtotal: number; tax: number; total: number } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -113,6 +114,7 @@ export default function StripeCheckoutPanel() {
             state: draft.state,
             postalCode: draft.postalCode,
             country: countryName,
+            countryCode: draft.country,
           },
           lines: lines.map((l) => ({
             variantId: l.variantId,
@@ -131,6 +133,11 @@ export default function StripeCheckoutPanel() {
         return
       }
       setClientSecret(data.clientSecret)
+      setTotals({
+        subtotal: data.subtotalMinor ?? subtotal,
+        tax: data.taxMinor ?? 0,
+        total: data.totalMinor ?? subtotal,
+      })
       setStep('payment')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not reach payment service.')
@@ -155,7 +162,7 @@ export default function StripeCheckoutPanel() {
         {step === 'payment' && clientSecret && (
           <PaymentStep
             clientSecret={clientSecret}
-            subtotal={subtotal}
+            payAmount={totals?.total ?? subtotal}
             currency={currency}
             onBack={() => setStep('details')}
           />
@@ -174,7 +181,7 @@ export default function StripeCheckoutPanel() {
         </div>
       </div>
 
-      <SummaryRail subtotal={subtotal} currency={currency} />
+      <SummaryRail subtotal={subtotal} totals={totals} currency={currency} />
     </div>
   )
 }
@@ -276,12 +283,12 @@ function DetailsForm({ draft, setDraft, countries, onSubmit, loading, error }: D
 
 interface PaymentStepProps {
   clientSecret: string
-  subtotal: number
+  payAmount: number
   currency: string
   onBack: () => void
 }
 
-function PaymentStep({ clientSecret, subtotal, currency, onBack }: PaymentStepProps) {
+function PaymentStep({ clientSecret, payAmount, currency, onBack }: PaymentStepProps) {
   const stripe = useMemo(() => getStripe(), [])
   if (!stripe) return null
 
@@ -303,12 +310,12 @@ function PaymentStep({ clientSecret, subtotal, currency, onBack }: PaymentStepPr
         },
       }}
     >
-      <PaymentForm subtotal={subtotal} currency={currency} onBack={onBack} />
+      <PaymentForm payAmount={payAmount} currency={currency} onBack={onBack} />
     </Elements>
   )
 }
 
-function PaymentForm({ subtotal, currency, onBack }: { subtotal: number; currency: string; onBack: () => void }) {
+function PaymentForm({ payAmount, currency, onBack }: { payAmount: number; currency: string; onBack: () => void }) {
   const stripe = useStripe()
   const elements = useElements()
   const [submitting, setSubmitting] = useState(false)
@@ -357,7 +364,7 @@ function PaymentForm({ subtotal, currency, onBack }: { subtotal: number; currenc
           disabled={!stripe || submitting}
           className="flex h-[52px] w-full items-center justify-center bg-accent text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed sm:w-fit sm:px-12"
         >
-          {submitting ? 'Processing…' : `Pay ${formatPrice(subtotal, currency)}`}
+          {submitting ? 'Processing…' : `Pay ${formatPrice(payAmount, currency)}`}
         </button>
 
         <p className="text-small text-bone/40">
@@ -368,13 +375,41 @@ function PaymentForm({ subtotal, currency, onBack }: { subtotal: number; currenc
   )
 }
 
-function SummaryRail({ subtotal, currency }: { subtotal: number; currency: string }) {
+function SummaryRail({
+  subtotal,
+  totals,
+  currency,
+}: {
+  subtotal: number
+  totals: { subtotal: number; tax: number; total: number } | null
+  currency: string
+}) {
+  const hasTax = totals != null && totals.tax > 0
   return (
     <div className="flex flex-col gap-6">
       <div className="border border-stone/20 bg-white/5 p-6">
-        <p className="text-label uppercase tracking-[0.1em] text-bone/50">Total</p>
-        <p className="mt-2 font-display text-h1 text-bone">{formatPrice(subtotal, currency)}</p>
-        <p className="mt-1 text-small text-bone/40">Delivery fee calculated after order</p>
+        {hasTax ? (
+          <>
+            <div className="flex items-center justify-between text-small text-bone/70">
+              <span>Subtotal</span>
+              <span className="tabular-nums">{formatPrice(totals!.subtotal, currency)}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-small text-bone/70">
+              <span>Tax</span>
+              <span className="tabular-nums">{formatPrice(totals!.tax, currency)}</span>
+            </div>
+            <div className="mt-3 border-t border-stone/20 pt-3">
+              <p className="text-label uppercase tracking-[0.1em] text-bone/50">Total</p>
+              <p className="mt-1 font-display text-h1 text-bone">{formatPrice(totals!.total, currency)}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-label uppercase tracking-[0.1em] text-bone/50">Total</p>
+            <p className="mt-2 font-display text-h1 text-bone">{formatPrice(totals?.total ?? subtotal, currency)}</p>
+            <p className="mt-1 text-small text-bone/40">Tax calculated at payment step</p>
+          </>
+        )}
       </div>
       <Link
         href="/no-series"

@@ -114,6 +114,14 @@ export const intlShippingAddressSchema = z.object({
     .max(12, 'Postal / ZIP code is too long')
     .regex(/^[A-Z0-9][A-Z0-9 -]*$/, 'Invalid postal / ZIP code'),
   country: safeText(100),
+  // ISO 3166-1 alpha-2, used for tax calculation and the Medusa country_code.
+  // Optional for backwards compatibility with in-flight clients.
+  countryCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, 'Invalid country code')
+    .optional(),
 })
 
 // --- Endpoint payloads ---

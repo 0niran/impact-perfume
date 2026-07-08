@@ -21,6 +21,7 @@ import { buildCustomerEmail, buildBusinessEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { REGIONS, type RegionId } from '@/lib/region'
 import { claimPayment, releasePayment, recordMedusaOrderId, type PaymentSource } from '@/lib/processedPayment'
+import { ngInclusiveVat } from '@/lib/tax'
 
 export interface ShippingAddress {
   address1: string
@@ -50,6 +51,12 @@ export interface FulfillmentInput {
   customerPhone: string
   shippingAddress: ShippingAddress
   lines: CartLine[]
+  /** Pre-tax subtotal in MINOR units. Present on the CAD (add-at-checkout) rail. */
+  subtotalMinor?: number
+  /** Tax added at checkout in MINOR units. Present/> 0 on the CAD rail. */
+  taxMinor?: number
+  /** Stripe Tax calculation id, for the order record. */
+  taxCalculationId?: string
   paymentProvider: 'paystack' | 'stripe'
   paymentRef: string
   /**
@@ -110,6 +117,15 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
   const firstName = nameParts[0] || '-'
   const lastName = nameParts.slice(1).join(' ') || '-'
 
+  // Tax bookkeeping on the order record. NG prices are VAT-inclusive, so the
+  // charged total already contains 7.5% — record the embedded portion. CA adds
+  // tax at checkout, so it arrives on the input.
+  const isNg = input.regionId === 'NG'
+  const taxMinorRecord = isNg ? ngInclusiveVat(input.totalKobo) : input.taxMinor ?? 0
+  const subtotalMinorRecord = isNg
+    ? input.totalKobo - taxMinorRecord
+    : input.subtotalMinor ?? input.totalKobo - taxMinorRecord
+
   // 1) Create the draft
   const draftBody = {
     email: input.customerEmail,
@@ -137,6 +153,12 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
       payment_provider: input.paymentProvider,
       customer_phone: input.customerPhone,
       reference: input.reference,
+      // Money breakdown (MINOR units) for reconciliation and remittance.
+      subtotal_minor: String(subtotalMinorRecord),
+      tax_minor: String(taxMinorRecord),
+      total_minor: String(input.totalKobo),
+      tax_inclusive: isNg ? 'true' : 'false',
+      tax_calculation_id: input.taxCalculationId ?? '',
       // The structured country_code stays the region default (the CAD region
       // may only allow Canada), so record the real destination here for the
       // CAD/international rail. The confirmation emails also show it.
@@ -313,6 +335,9 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boole
     })),
     totalKobo: input.totalKobo,
     currency: input.currency,
+    // Present on the CAD rail so the email shows Subtotal / Tax / Total.
+    subtotalKobo: input.subtotalMinor,
+    taxKobo: input.taxMinor,
   }
 
   // Emails are best-effort — a send failure must not fail an order that the
