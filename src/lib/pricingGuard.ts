@@ -77,10 +77,13 @@ export interface PriceValidationResult {
  */
 async function fetchProducts(
   productIds: string[],
-  medusaRegionId: string
+  medusaRegionId: string,
+  publishableKey: string | undefined
 ): Promise<StoreProduct[]> {
   const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const publishable = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+  // Use the region's key so the stock check reads that market's location — the
+  // same pool the storefront showed. Falls back to the shared key.
+  const publishable = publishableKey ?? process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
   if (!backend || !publishable) return []
 
   // Medusa v2 store API populates `variants.calculated_price` automatically
@@ -173,7 +176,7 @@ export async function validateLinePricing(
   const productIds = Array.from(
     new Set(lines.map((l) => l.productId).filter(Boolean) as string[])
   )
-  const products = await fetchProducts(productIds, medusaRegionId)
+  const products = await fetchProducts(productIds, medusaRegionId, region.publishableKey)
   if (products.length === 0) {
     return { ...empty, message: 'Could not verify pricing. Please try again.' }
   }
