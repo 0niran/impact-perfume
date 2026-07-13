@@ -114,6 +114,10 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
   const draftBody = {
     email: input.customerEmail,
     region_id: region.medusaRegionId,
+    // Attribute the order to this market's sales channel so the reservation /
+    // decrement draws from that channel's stock location. Omitted (backend
+    // default channel) when unset, keeping current behaviour.
+    ...(region.salesChannelId ? { sales_channel_id: region.salesChannelId } : {}),
     shipping_address: {
       first_name: firstName,
       last_name: lastName,

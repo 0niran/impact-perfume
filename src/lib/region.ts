@@ -23,6 +23,18 @@ export interface Region {
   /** Locale used for Intl.NumberFormat output */
   locale: string
   medusaRegionId: string | undefined
+  /**
+   * Publishable API key scoped to this market's sales channel. Determines which
+   * stock location the storefront reads availability from. Falls back to the
+   * shared key until a per-market key is provisioned.
+   */
+  publishableKey: string | undefined
+  /**
+   * Sales channel id for this market. When set, orders are attributed to it so
+   * inventory reserves/decrements from that channel's location. Undefined uses
+   * the backend default channel.
+   */
+  salesChannelId: string | undefined
   paymentProvider: PaymentProvider
   /** Whether this region can complete checkout end-to-end today */
   checkoutEnabled: boolean
@@ -39,6 +51,8 @@ export const REGIONS: Record<RegionId, Region> = {
     currencyCode: 'ngn',
     locale: 'en-NG',
     medusaRegionId: process.env.NEXT_PUBLIC_MEDUSA_REGION_ID,
+    publishableKey: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+    salesChannelId: process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID,
     paymentProvider: 'paystack',
     checkoutEnabled: true,
     freeDeliveryThresholdMinor: 20_000_000, // ₦200,000
@@ -51,6 +65,13 @@ export const REGIONS: Record<RegionId, Region> = {
     currencyCode: 'cad',
     locale: 'en-CA',
     medusaRegionId: process.env.NEXT_PUBLIC_MEDUSA_REGION_ID_CA,
+    // Own key + channel so CA reads/decrements the Canada location. Falls back
+    // to the shared key until NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY_CA is set, so
+    // this deploys with no behaviour change (CA keeps reading the shared pool).
+    publishableKey:
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY_CA ??
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+    salesChannelId: process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID_CA,
     paymentProvider: 'stripe',
     checkoutEnabled: true,
     freeDeliveryThresholdMinor: 15_000, // CA$150

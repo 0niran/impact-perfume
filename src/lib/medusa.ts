@@ -1,5 +1,6 @@
 import type { MedusaProduct, MedusaVariant, MedusaProductMetadata, TileEnrichment, Enrichment } from '@/types'
 import { FALLBACK_COLOR } from '@/lib/constants'
+import { REGIONS } from '@/lib/region'
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://localhost:9000'
@@ -9,9 +10,22 @@ const PUBLISHABLE_KEY =
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
 
-function storeHeaders(): Record<string, string> {
+/**
+ * Publishable key for the market whose medusaRegionId is given, so each region
+ * reads availability from its own stock location. Falls back to the shared key
+ * (unchanged behaviour) until per-market keys are configured.
+ */
+function keyForMedusaRegion(medusaRegionId?: string): string {
+  if (medusaRegionId) {
+    const region = Object.values(REGIONS).find((r) => r.medusaRegionId === medusaRegionId)
+    if (region?.publishableKey) return region.publishableKey
+  }
+  return PUBLISHABLE_KEY
+}
+
+function storeHeaders(medusaRegionId?: string): Record<string, string> {
   return {
-    'x-publishable-api-key': PUBLISHABLE_KEY,
+    'x-publishable-api-key': keyForMedusaRegion(medusaRegionId),
     'Content-Type': 'application/json',
   }
 }
@@ -75,7 +89,7 @@ export async function getMedusaProduct(
     const params = new URLSearchParams({ handle, limit: '1' })
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return null
     const json = await res.json()
@@ -94,7 +108,7 @@ export async function getMedusaProducts(
     const params = new URLSearchParams({ limit: String(limit) })
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
     const json = await res.json()
@@ -136,7 +150,7 @@ export async function getProductsByCategory(
     params.set('category_id[]', categoryId)
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
     const json = await res.json()
@@ -162,7 +176,7 @@ export async function getAllNumberSeriesProducts(
     const params = new URLSearchParams({ limit: String(limit) })
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
     const json = await res.json()
