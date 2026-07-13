@@ -39,3 +39,53 @@ export const SITE_CONFIG = {
 } as const
 
 export type SiteConfig = typeof SITE_CONFIG
+
+/**
+ * Nigerian in-store pickup points. A customer choosing "pickup" at checkout
+ * selects one of these instead of entering a delivery address. `address` is
+ * recorded on the order (it satisfies ngShippingAddressSchema); `displayLines`
+ * are what the storefront and confirmation emails show.
+ */
+export interface PickupLocation {
+  id: string
+  name: string
+  displayLines: string[]
+  address: {
+    address1: string
+    address2?: string
+    city: string
+    state: string
+    country: 'Nigeria'
+  }
+}
+
+export const NG_PICKUP_LOCATIONS: PickupLocation[] = [
+  {
+    id: 'anthony-village',
+    name: 'Anthony Village',
+    displayLines: ['1st Floor, 18 Oseni Street', 'Anthony Village, Lagos'],
+    address: {
+      address1: '1st Floor, 18 Oseni Street',
+      city: 'Anthony Village',
+      state: 'Lagos',
+      country: 'Nigeria',
+    },
+  },
+  {
+    id: 'ikeja-city-mall',
+    name: 'Ikeja City Mall',
+    displayLines: ['Entrance 2, Ikeja City Mall', 'Opposite Nike Store', 'Ikeja, Lagos'],
+    address: {
+      address1: 'Entrance 2, Ikeja City Mall',
+      address2: 'Opposite Nike Store',
+      city: 'Ikeja',
+      state: 'Lagos',
+      country: 'Nigeria',
+    },
+  },
+]
+
+export function getPickupLocation(id: string | undefined | null): PickupLocation | undefined {
+  if (!id) return undefined
+  return NG_PICKUP_LOCATIONS.find((l) => l.id === id)
+}

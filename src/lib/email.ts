@@ -65,6 +65,24 @@ interface OrderEmailData {
   items: OrderItem[]
   totalKobo: number
   currency?: string
+  /** 'pickup' shows the store as the collection point instead of a delivery. */
+  fulfillmentMethod?: 'pickup' | 'shipping'
+  /** Store name when fulfillmentMethod is 'pickup'. */
+  pickupLocationName?: string
+}
+
+/** Label + address lines for the delivery/pickup block, shared by both emails. */
+function deliveryLabel(data: OrderEmailData): string {
+  return data.fulfillmentMethod === 'pickup' ? 'Pick up from' : 'Delivery to'
+}
+function deliveryLines(data: OrderEmailData): string {
+  const a = data.shippingAddress
+  const street = `${esc(a.address1)}${a.address2 ? ', ' + esc(a.address2) : ''}`
+  if (data.fulfillmentMethod === 'pickup') {
+    const store = data.pickupLocationName ? `${esc(data.pickupLocationName)}<br/>` : ''
+    return `${esc(data.customerName)}<br/>${store}${street}<br/>${esc(a.city)}, ${esc(a.state)}`
+  }
+  return `${esc(data.customerName)}<br/>${street}<br/>${esc(a.city)}, ${esc(a.state)}<br/>${esc(a.country)}`
 }
 
 /* ----------------------------------------------------------------------------
@@ -234,12 +252,9 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
         <td width="48%" valign="top">
-          ${sectionLabel('Delivery to')}
+          ${sectionLabel(deliveryLabel(data))}
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
-            ${esc(data.customerName)}<br/>
-            ${esc(data.shippingAddress.address1)}${data.shippingAddress.address2 ? ', ' + esc(data.shippingAddress.address2) : ''}<br/>
-            ${esc(data.shippingAddress.city)}, ${esc(data.shippingAddress.state)}<br/>
-            ${esc(data.shippingAddress.country)}
+            ${deliveryLines(data)}
           </p>
         </td>
         <td width="4%"></td>
@@ -313,12 +328,9 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
       ${itemRows(data.items, currency)}
     </table>
 
-    ${sectionLabel('Ship to')}
+    ${sectionLabel(deliveryLabel(data))}
     <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
-      ${esc(data.customerName)}<br/>
-      ${esc(data.shippingAddress.address1)}${data.shippingAddress.address2 ? ', ' + esc(data.shippingAddress.address2) : ''}<br/>
-      ${esc(data.shippingAddress.city)}, ${esc(data.shippingAddress.state)}<br/>
-      ${esc(data.shippingAddress.country)}
+      ${deliveryLines(data)}
     </p>
 
     <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};line-height:1.7;">
