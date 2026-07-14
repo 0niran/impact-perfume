@@ -1,5 +1,6 @@
 import type { MedusaProduct, MedusaVariant, MedusaProductMetadata, TileEnrichment, Enrichment } from '@/types'
 import { FALLBACK_COLOR } from '@/lib/constants'
+import { REGIONS } from '@/lib/region'
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://localhost:9000'
@@ -9,9 +10,22 @@ const PUBLISHABLE_KEY =
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
 
-function storeHeaders(): Record<string, string> {
+/**
+ * Publishable key for the market whose medusaRegionId is given, so each region
+ * reads availability from its own stock location. Falls back to the shared key
+ * (unchanged behaviour) until per-market keys are configured.
+ */
+function keyForMedusaRegion(medusaRegionId?: string): string {
+  if (medusaRegionId) {
+    const region = Object.values(REGIONS).find((r) => r.medusaRegionId === medusaRegionId)
+    if (region?.publishableKey) return region.publishableKey
+  }
+  return PUBLISHABLE_KEY
+}
+
+function storeHeaders(medusaRegionId?: string): Record<string, string> {
   return {
-    'x-publishable-api-key': PUBLISHABLE_KEY,
+    'x-publishable-api-key': keyForMedusaRegion(medusaRegionId),
     'Content-Type': 'application/json',
   }
 }
@@ -75,7 +89,7 @@ export async function getMedusaProduct(
     const params = new URLSearchParams({ handle, limit: '1' })
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return null
     const json = await res.json()
@@ -94,7 +108,7 @@ export async function getMedusaProducts(
     const params = new URLSearchParams({ limit: String(limit) })
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
     const json = await res.json()
@@ -136,7 +150,7 @@ export async function getProductsByCategory(
     params.set('category_id[]', categoryId)
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
     const json = await res.json()
@@ -162,7 +176,7 @@ export async function getAllNumberSeriesProducts(
     const params = new URLSearchParams({ limit: String(limit) })
     const res = await fetch(
       `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
+      { headers: storeHeaders(regionId), next: { revalidate: 60 } }
     )
     if (!res.ok) return []
     const json = await res.json()
@@ -267,6 +281,43 @@ export function toTileEnrichment(
     priceKobo: price.amount,
     inStock: variantInStock(variant),
   }
+}
+
+/**
+ * Map Medusa products into number tiles, logging (server-side) any product
+ * that gets dropped or looks misconfigured. A number tile is only shown when
+ * its number resolves (metadata.number, or a "no-<n>" / "oil-no-<n>" handle),
+ * so a product missing that would otherwise vanish from the grid with no
+ * trace. This surfaces the reason in the Vercel function logs instead.
+ *
+ * `context` is a short label for the grid (eg. "oils") used in the log line.
+ * Returns the surviving tiles unsorted — the caller sorts by number.
+ */
+export function buildTiles(
+  products: MedusaProduct[],
+  currency: string,
+  context: string
+): TileEnrichment[] {
+  const tiles: TileEnrichment[] = []
+  for (const p of products) {
+    const tile = toTileEnrichment(p, currency)
+    if (!tile) {
+      console.warn(
+        `[catalogue] "${p.handle ?? p.id}" is hidden from the ${context} grid: ` +
+          `no resolvable number. Set metadata.number in Medusa Admin ` +
+          `(or give it a "no-<n>" / "oil-no-<n>" handle).`
+      )
+      continue
+    }
+    if (!tile.priceMinor) {
+      console.warn(
+        `[catalogue] "${p.handle}" shows on the ${context} grid with no ` +
+          `${currency.toUpperCase()} price. Add a ${currency.toUpperCase()} price in Medusa Admin.`
+      )
+    }
+    tiles.push(tile)
+  }
+  return tiles
 }
 
 export interface CategoryProduct {

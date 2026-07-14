@@ -133,6 +133,11 @@ export const verifyPaymentBodySchema = z.object({
   customerEmail: emailSchema,
   customerPhone: phoneSchema,
   shippingAddress: ngShippingAddressSchema,
+  // How the order is fulfilled. Defaults to shipping when absent (older
+  // clients / webhook recovery). For pickup, pickupLocationId names the store
+  // and shippingAddress carries that store's address.
+  fulfillmentMethod: z.enum(['pickup', 'shipping']).optional(),
+  pickupLocationId: optionalSafeText(64).optional(),
   lines: z.array(cartLineInputSchema).min(1).max(50),
 })
 

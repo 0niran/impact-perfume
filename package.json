@@ -17,6 +17,7 @@
     "migrate-notes": "tsx scripts/migrate-notes.ts",
     "cleanup-categories": "tsx scripts/cleanup-categories.ts",
     "setup-ca": "tsx scripts/setup-ca-region.ts",
+    "audit:catalogue": "tsx scripts/audit-catalogue.ts",
     "export-prices": "tsx scripts/export-prices.ts",
     "import-cad-prices": "tsx scripts/import-cad-prices.ts",
     "migrate-prices": "tsx scripts/migrate-prices-to-major.ts",
