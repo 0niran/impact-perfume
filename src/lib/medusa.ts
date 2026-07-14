@@ -283,6 +283,43 @@ export function toTileEnrichment(
   }
 }
 
+/**
+ * Map Medusa products into number tiles, logging (server-side) any product
+ * that gets dropped or looks misconfigured. A number tile is only shown when
+ * its number resolves (metadata.number, or a "no-<n>" / "oil-no-<n>" handle),
+ * so a product missing that would otherwise vanish from the grid with no
+ * trace. This surfaces the reason in the Vercel function logs instead.
+ *
+ * `context` is a short label for the grid (eg. "oils") used in the log line.
+ * Returns the surviving tiles unsorted — the caller sorts by number.
+ */
+export function buildTiles(
+  products: MedusaProduct[],
+  currency: string,
+  context: string
+): TileEnrichment[] {
+  const tiles: TileEnrichment[] = []
+  for (const p of products) {
+    const tile = toTileEnrichment(p, currency)
+    if (!tile) {
+      console.warn(
+        `[catalogue] "${p.handle ?? p.id}" is hidden from the ${context} grid: ` +
+          `no resolvable number. Set metadata.number in Medusa Admin ` +
+          `(or give it a "no-<n>" / "oil-no-<n>" handle).`
+      )
+      continue
+    }
+    if (!tile.priceMinor) {
+      console.warn(
+        `[catalogue] "${p.handle}" shows on the ${context} grid with no ` +
+          `${currency.toUpperCase()} price. Add a ${currency.toUpperCase()} price in Medusa Admin.`
+      )
+    }
+    tiles.push(tile)
+  }
+  return tiles
+}
+
 export interface CategoryProduct {
   handle: string
   title: string

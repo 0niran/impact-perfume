@@ -1,23 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
- * Geo auto-detect with manual override.
+ * Geo auto-detect. The market is derived entirely from the visitor's location:
+ * there is no manual market switcher in the UI anymore, so geo governs.
  *
- * Two cookies coordinate this:
+ * Cookies:
  *   - impact_region        : NG | CA          (active region)
- *   - impact_region_manual : "1"              (set by the header switcher
- *                                              to lock the choice across visits)
+ *   - impact_region_manual : "1"              (honoured if ever present, but
+ *                                              nothing sets it today — kept so a
+ *                                              future explicit override still
+ *                                              wins over geo)
  *
  * On every request:
- *   - If impact_region_manual is set, do nothing — the visitor picked.
+ *   - If impact_region_manual is set, do nothing — an explicit choice wins.
  *   - Otherwise read x-vercel-ip-country. NG → NG, anything else → CA.
  *     If the geo result differs from the existing cookie, update it.
  *
  * That way:
  *   - First visit gets the geo-correct region.
  *   - A VPN switch from US to NG flips the cookie on the next request.
- *   - Clicking the header switcher locks the choice in (manual cookie set
- *     by RegionSwitcher.tsx) and geo will stop overriding.
  *
  * Vercel exposes the geo info via the `x-vercel-ip-country` request header
  * (also `request.geo` in Edge/Node middleware). Local dev has neither, so

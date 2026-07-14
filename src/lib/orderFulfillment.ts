@@ -53,6 +53,14 @@ export interface FulfillmentInput {
   paymentProvider: 'paystack' | 'stripe'
   paymentRef: string
   /**
+   * Fulfilment method. 'pickup' means the customer collects from a store, so
+   * shippingAddress holds that store's address and pickupLocationName is set.
+   * Defaults to 'shipping' when absent.
+   */
+  fulfillmentMethod?: 'pickup' | 'shipping'
+  /** Store name when fulfillmentMethod is 'pickup' (for the order + emails). */
+  pickupLocationName?: string
+  /**
    * Where this call originated. Used for the idempotency log. Defaults to
    * 'verify' (the browser-redirect path); webhook callers should pass 'webhook'.
    */
@@ -145,6 +153,10 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
       // may only allow Canada), so record the real destination here for the
       // CAD/international rail. The confirmation emails also show it.
       shipping_country: input.shippingAddress.country,
+      // Fulfilment method so the fulfilment team knows to hand over in store
+      // vs ship. pickup_location names the store the customer chose.
+      fulfillment_method: input.fulfillmentMethod ?? 'shipping',
+      ...(input.pickupLocationName ? { pickup_location: input.pickupLocationName } : {}),
     },
   }
 
@@ -317,6 +329,8 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boole
     })),
     totalKobo: input.totalKobo,
     currency: input.currency,
+    fulfillmentMethod: input.fulfillmentMethod ?? 'shipping',
+    pickupLocationName: input.pickupLocationName,
   }
 
   // Emails are best-effort — a send failure must not fail an order that the

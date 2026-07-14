@@ -6,7 +6,8 @@ import { useCartStore, cartSelectors, type CartLine } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
 import { NIGERIAN_STATES } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
-import { SITE_CONFIG } from '@/lib/config'
+import { SITE_CONFIG, NG_PICKUP_LOCATIONS, getPickupLocation } from '@/lib/config'
+import { cn } from '@/lib/cn'
 import CartLineItem from '@/components/cart/CartLineItem'
 import Link from 'next/link'
 
@@ -26,6 +27,20 @@ interface PaystackOptions {
   callback: (response: { reference: string }) => void
   onClose: () => void
   metadata?: Record<string, unknown>
+}
+
+type FulfillmentMethod = 'pickup' | 'shipping'
+
+interface Fulfilment {
+  shippingAddress: {
+    address1: string
+    address2?: string
+    city: string
+    state: string
+    country: 'Nigeria'
+  }
+  fulfillmentMethod: FulfillmentMethod
+  pickupLocationId?: string
 }
 
 function generateRef(): string {
@@ -48,6 +63,11 @@ export default function CheckoutForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+
+  // Fulfilment: pick up in store, or ship to an address.
+  const [method, setMethod] = useState<FulfillmentMethod>('pickup')
+  const [pickupId, setPickupId] = useState('')
+
   const [address1, setAddress1] = useState('')
   const [address2, setAddress2] = useState('')
   const [city, setCity] = useState('')
@@ -70,7 +90,31 @@ export default function CheckoutForm() {
     document.head.appendChild(script)
   }, [])
 
-  async function handleVerify(reference: string) {
+  /** Resolve the current selection into an order-ready fulfilment, or null if incomplete. */
+  function buildFulfilment(): Fulfilment | null {
+    if (method === 'pickup') {
+      const loc = getPickupLocation(pickupId)
+      if (!loc) return null
+      return {
+        shippingAddress: { ...loc.address },
+        fulfillmentMethod: 'pickup',
+        pickupLocationId: loc.id,
+      }
+    }
+    if (!address1.trim() || !city.trim() || !state) return null
+    return {
+      shippingAddress: {
+        address1: address1.trim(),
+        address2: address2.trim() || undefined,
+        city: city.trim(),
+        state,
+        country: 'Nigeria',
+      },
+      fulfillmentMethod: 'shipping',
+    }
+  }
+
+  async function handleVerify(reference: string, fulfilment: Fulfilment) {
     const res = await fetch('/api/verify-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -80,7 +124,9 @@ export default function CheckoutForm() {
         customerName: name,
         customerEmail: email,
         customerPhone: phone,
-        shippingAddress: { address1, address2, city, state, country: 'Nigeria' },
+        shippingAddress: fulfilment.shippingAddress,
+        fulfillmentMethod: fulfilment.fulfillmentMethod,
+        pickupLocationId: fulfilment.pickupLocationId,
         lines,
       }),
     })
@@ -101,8 +147,17 @@ export default function CheckoutForm() {
     e.preventDefault()
     setError(null)
 
-    if (!name.trim() || !email.trim() || !phone.trim() || !address1.trim() || !city.trim() || !state) {
-      setError('Please fill in all required fields.')
+    if (!name.trim() || !email.trim() || !phone.trim()) {
+      setError('Please fill in your name, email and phone.')
+      return
+    }
+    if (method === 'pickup' && !pickupId) {
+      setError('Please choose a pickup store.')
+      return
+    }
+    const fulfilment = buildFulfilment()
+    if (!fulfilment) {
+      setError('Please complete your delivery address.')
       return
     }
 
@@ -116,18 +171,13 @@ export default function CheckoutForm() {
     // Stuff order details into Paystack metadata so the server-side webhook
     // can recover and fulfil the order even if the browser dies before the
     // verify call lands. Paystack passes metadata through verbatim.
-    const shippingAddress = {
-      address1: address1.trim(),
-      address2: address2.trim(),
-      city: city.trim(),
-      state,
-      country: 'Nigeria',
-    }
     const metadata = {
       customerName: name.trim(),
       customerEmail: email.trim(),
       customerPhone: phone.trim(),
-      shippingAddress,
+      shippingAddress: fulfilment.shippingAddress,
+      fulfillmentMethod: fulfilment.fulfillmentMethod,
+      pickupLocationId: fulfilment.pickupLocationId,
       lines: lines.map((l) => ({
         variantId: l.variantId,
         productId: l.productId,
@@ -145,7 +195,7 @@ export default function CheckoutForm() {
       email: email.trim(),
       amount: subtotalKobo,
       ref: generateRef(),
-      callback: (response) => { handleVerify(response.reference) },
+      callback: (response) => { handleVerify(response.reference, fulfilment) },
       onClose: () => { setLoading(false) },
       metadata,
     })
@@ -201,76 +251,141 @@ export default function CheckoutForm() {
             />
           </div>
 
+          {/* Fulfilment method */}
           <div className="mt-4 border-t border-stone/20 pt-6">
-            <p className="text-label uppercase tracking-[0.1em] text-bone/50">Delivery Address</p>
-            <div className="mt-4 flex flex-col gap-4">
-              <div>
-                <label htmlFor="address1" className={FORM_STYLES.label}>Street address *</label>
-                <input
-                  id="address1"
-                  type="text"
-                  autoComplete="address-line1"
-                  required
-                  value={address1}
-                  onChange={(e) => setAddress1(e.target.value)}
-                  className={FORM_STYLES.input}
-                  placeholder="12 Banana Island Road"
-                />
-              </div>
+            <p className="text-label uppercase tracking-[0.1em] text-bone/50">How would you like to receive your order?</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Fulfilment method">
+              {([
+                { id: 'pickup' as const, title: 'Pick up in store', sub: 'Collect from a Lagos store · free' },
+                { id: 'shipping' as const, title: 'Ship to me', sub: 'Deliver to your address' },
+              ]).map((opt) => {
+                const active = method === opt.id
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => { setMethod(opt.id); setError(null) }}
+                    className={cn(
+                      'flex flex-col items-start border px-4 py-3 text-left transition-colors',
+                      active ? 'border-accent bg-accent/5' : 'border-stone/30 hover:border-stone'
+                    )}
+                  >
+                    <span className="text-body text-bone">{opt.title}</span>
+                    <span className="mt-0.5 text-small text-stone">{opt.sub}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-              <div>
-                <label htmlFor="address2" className={FORM_STYLES.label}>
-                  Apartment, estate, landmark <span className="text-stone">(optional)</span>
-                </label>
-                <input
-                  id="address2"
-                  type="text"
-                  autoComplete="address-line2"
-                  value={address2}
-                  onChange={(e) => setAddress2(e.target.value)}
-                  className={FORM_STYLES.input}
-                  placeholder="Flat 3B, Eko Atlantic"
-                />
+          {/* Pickup: choose a store */}
+          {method === 'pickup' && (
+            <div className="mt-2">
+              <p className={FORM_STYLES.label}>Choose a pickup store *</p>
+              <div className="mt-3 flex flex-col gap-3">
+                {NG_PICKUP_LOCATIONS.map((loc) => {
+                  const active = pickupId === loc.id
+                  return (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => { setPickupId(loc.id); setError(null) }}
+                      className={cn(
+                        'flex items-start gap-3 border px-4 py-3 text-left transition-colors',
+                        active ? 'border-accent bg-accent/5' : 'border-stone/30 hover:border-stone'
+                      )}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border',
+                          active ? 'border-accent' : 'border-stone/50'
+                        )}
+                      >
+                        {active && <span className="h-2 w-2 rounded-full bg-accent" />}
+                      </span>
+                      <span>
+                        <span className="block text-body text-bone">{loc.name}</span>
+                        <span className="mt-0.5 block text-small text-stone">
+                          {loc.displayLines.join(' · ')}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
+            </div>
+          )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
+          {/* Shipping: enter an address */}
+          {method === 'shipping' && (
+            <div className="mt-2">
+              <p className="text-label uppercase tracking-[0.1em] text-bone/50">Delivery Address</p>
+              <div className="mt-4 flex flex-col gap-4">
                 <div>
-                  <label htmlFor="city" className={FORM_STYLES.label}>City / LGA *</label>
+                  <label htmlFor="address1" className={FORM_STYLES.label}>Street address *</label>
                   <input
-                    id="city"
+                    id="address1"
                     type="text"
-                    autoComplete="address-level2"
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    autoComplete="address-line1"
+                    value={address1}
+                    onChange={(e) => setAddress1(e.target.value)}
                     className={FORM_STYLES.input}
-                    placeholder="Ikoyi"
+                    placeholder="12 Banana Island Road"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="state" className={FORM_STYLES.label}>State *</label>
-                  <select
-                    id="state"
-                    required
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className={`${FORM_STYLES.input} cursor-pointer`}
-                  >
-                    <option value="">Select state</option>
-                    {NIGERIAN_STATES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                  <label htmlFor="address2" className={FORM_STYLES.label}>
+                    Apartment, estate, landmark <span className="text-stone">(optional)</span>
+                  </label>
+                  <input
+                    id="address2"
+                    type="text"
+                    autoComplete="address-line2"
+                    value={address2}
+                    onChange={(e) => setAddress2(e.target.value)}
+                    className={FORM_STYLES.input}
+                    placeholder="Flat 3B, Eko Atlantic"
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="city" className={FORM_STYLES.label}>City / LGA *</label>
+                    <input
+                      id="city"
+                      type="text"
+                      autoComplete="address-level2"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className={FORM_STYLES.input}
+                      placeholder="Ikoyi"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="state" className={FORM_STYLES.label}>State *</label>
+                    <select
+                      id="state"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      className={`${FORM_STYLES.input} cursor-pointer`}
+                    >
+                      <option value="">Select state</option>
+                      {NIGERIAN_STATES.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-
-              <div>
-                <label className={FORM_STYLES.label}>Country</label>
-                <p className="px-4 py-3 border border-stone/30 text-body text-bone/40 bg-white/5">Nigeria</p>
-              </div>
             </div>
-          </div>
+          )}
         </form>
 
         <div className="mt-10">
@@ -289,7 +404,11 @@ export default function CheckoutForm() {
         <div className="border border-stone/20 bg-white/5 p-6">
           <p className="text-label uppercase tracking-[0.1em] text-bone/50">Total</p>
           <p className="mt-2 font-display text-h1 text-bone">{formatPrice(subtotalKobo, currency)}</p>
-          <p className="mt-1 text-small text-bone/40">Delivery fee calculated after order</p>
+          <p className="mt-1 text-small text-bone/40">
+            {method === 'pickup'
+              ? 'Free in-store pickup at your selected store'
+              : 'Delivery fee calculated after order'}
+          </p>
 
           {error && (
             <p className="mt-4 text-small text-error">{error}</p>
