@@ -63,7 +63,7 @@ export const GIFTS: GiftProduct[] = [
     subtitle: '12 × 2ml',
     description: 'Twelve handpicked 2ml miniatures from across the Number Series. The simplest way to find your Number, or gift the journey.',
     imageUrl: '/images/No Series Discovery Set.jpeg',
-    cta: { label: 'Shop the set', href: '/no-series' },
+    cta: { label: 'Build the set', href: '/number-discovery-set' },
     featured: true,
   },
   {
@@ -73,7 +73,7 @@ export const GIFTS: GiftProduct[] = [
     subtitle: '5 × 10ml',
     description: 'Five 10ml bottles from Signature Scents. Named, not numbered. Bolder compositions.',
     imageUrl: '/images/Signature Discovery Set 2.png',
-    cta: { label: 'Shop the set', href: '/signature' },
+    cta: { label: 'Shop the set', href: '/signature-discovery-set' },
     featured: false,
   },
 ]
