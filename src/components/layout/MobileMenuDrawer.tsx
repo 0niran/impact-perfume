@@ -102,9 +102,9 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
             <Image
               src="/images/Logo.png"
               alt="Impact Perfumes"
-              width={181}
-              height={121}
-              className="h-9 w-auto"
+              width={240}
+              height={161}
+              className="h-10 w-auto"
             />
           </Link>
           <button

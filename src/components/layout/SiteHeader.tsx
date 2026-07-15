@@ -111,10 +111,10 @@ export default function SiteHeader() {
               <Image
                 src="/images/Logo.png"
                 alt="Impact Perfumes"
-                width={181}
-                height={121}
+                width={240}
+                height={161}
                 priority
-                className="h-9 w-auto sm:h-10 lg:h-12"
+                className="h-11 w-auto sm:h-12 lg:h-14"
               />
             </Link>
           </div>
