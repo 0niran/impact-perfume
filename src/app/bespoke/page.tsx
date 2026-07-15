@@ -35,7 +35,7 @@ export default function BespokePage() {
           <p className="mt-5 max-w-xl text-body text-stone">
             Build your own Impact fragrance. Pick the silhouette, the signature
             color, and the engraving, or start with a Number from our existing
-            collection. Five steps. A real perfumer at the other end.
+            collection. Design it here; a real perfumer takes it from there.
           </p>
         </Container>
       </section>
