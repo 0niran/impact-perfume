@@ -33,6 +33,7 @@ const MENUS = {
         heading: 'Gift',
         links: [
           { label: 'All Gift Sets', href: '/gifts#gift-sets' },
+          { label: 'Bespoke', href: '/bespoke' },
         ],
       },
       {
@@ -51,9 +52,7 @@ const MENUS = {
         heading: 'The House',
         links: [
           { label: 'House Story', href: '/house-story' },
-          { label: 'Bespoke', href: '/bespoke' },
           { label: 'B2B', href: '/b2b' },
-          { label: 'Journal', href: '/journal' },
         ],
       },
     ],

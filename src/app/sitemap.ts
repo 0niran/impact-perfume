@@ -13,7 +13,6 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${url}/quiz`, priority: 0.8, changeFrequency: 'monthly' },
   { url: `${url}/b2b`, priority: 0.7, changeFrequency: 'monthly' },
   { url: `${url}/house-story`, priority: 0.6, changeFrequency: 'monthly' },
-  { url: `${url}/journal`, priority: 0.7, changeFrequency: 'weekly' },
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {
