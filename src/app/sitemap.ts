@@ -9,6 +9,8 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${url}/oils`, priority: 0.8, changeFrequency: 'weekly' },
   { url: `${url}/home`, priority: 0.8, changeFrequency: 'weekly' },
   { url: `${url}/gifts`, priority: 0.8, changeFrequency: 'weekly' },
+  { url: `${url}/number-discovery-set`, priority: 0.8, changeFrequency: 'weekly' },
+  { url: `${url}/signature-discovery-set`, priority: 0.8, changeFrequency: 'weekly' },
   { url: `${url}/signature`, priority: 0.8, changeFrequency: 'weekly' },
   { url: `${url}/quiz`, priority: 0.8, changeFrequency: 'monthly' },
   { url: `${url}/b2b`, priority: 0.7, changeFrequency: 'monthly' },

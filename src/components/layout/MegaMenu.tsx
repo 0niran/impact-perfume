@@ -38,8 +38,8 @@ const MENUS = {
       {
         heading: 'Discovery Set',
         links: [
-          { label: 'Number Series Discovery Set', href: '/gifts#discovery-sets' },
-          { label: 'Signature Discovery Set', href: '/gifts#discovery-sets' },
+          { label: 'Number Discovery Set', href: '/number-discovery-set' },
+          { label: 'Signature Discovery Set', href: '/signature-discovery-set' },
           { label: 'Take the Scent Quiz', href: '/quiz' },
         ],
       },
