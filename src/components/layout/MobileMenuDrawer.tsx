@@ -34,10 +34,10 @@ const sections = [
     title: 'Home & Car',
     links: [
       { label: 'Shop All', href: '/home' },
-      { label: 'Home Diffusers', href: '/home#home-diffusers' },
-      { label: 'Scent Candles', href: '/home#scent-candles' },
-      { label: 'Scenting Machines', href: '/home#scenting-machines' },
-      { label: 'Car Diffusers', href: '/home#car-diffusers' },
+      { label: 'Home Diffusers', href: '/home-diffusers' },
+      { label: 'Scent Candles', href: '/scent-candles' },
+      { label: 'Scenting Machines', href: '/scenting-machines' },
+      { label: 'Car Diffusers', href: '/car-diffusers' },
     ],
   },
   {

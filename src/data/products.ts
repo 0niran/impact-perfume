@@ -33,6 +33,17 @@ export const HOME_DIFFUSERS: StaticProduct[] = [
   { handle: 'home-diffuser-tropical-breeze', title: 'Tropical Breeze', descriptor: 'Coconut · Mango · Ylang Ylang', signatureColor: '#1A6B45', tagline: 'Bring the outside in.',           badge: '100ml · Reed diffuser' },
 ]
 
+export const SCENT_CANDLES: StaticProduct[] = [
+  { handle: 'candle-amber-oud',     title: 'Amber Oud',     descriptor: 'Amber · Oud · Vanilla',      signatureColor: '#6B4423', tagline: 'Hand-poured. Up to 50 hours.',  badge: '220g · Soy wax' },
+  { handle: 'candle-rose-noir',     title: 'Rose Noir',     descriptor: 'Rose · Patchouli · Musk',     signatureColor: '#8B2252', tagline: 'A quiet, blooming warmth.',     badge: '220g · Soy wax' },
+  { handle: 'candle-cedar-vetiver', title: 'Cedar Vetiver', descriptor: 'Cedar · Vetiver · Bergamot',   signatureColor: '#3D2B1F', tagline: 'Clean smoke and green wood.',   badge: '220g · Soy wax' },
+]
+
+export const SCENTING_MACHINES: StaticProduct[] = [
+  { handle: 'scenting-machine-atrium',  title: 'Atrium 500',  descriptor: 'Cold-air diffusion · 500m³',  signatureColor: '#2B2B2B', tagline: 'For lobbies and large spaces.',  badge: 'HVAC-ready' },
+  { handle: 'scenting-machine-suite',   title: 'Suite 150',   descriptor: 'Cold-air diffusion · 150m³',  signatureColor: '#3A3A3A', tagline: 'Offices, boutiques, suites.',    badge: 'Standalone' },
+]
+
 export interface GiftProduct {
   id: string
   label: string

@@ -78,9 +78,12 @@ export default function CategoryProductTile({
             </div>
           </div>
         ) : (
-          <span className="absolute inset-0 flex items-center justify-center font-display text-[4rem] text-stone/30 select-none">
-            {product.title.charAt(0)}
-          </span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 select-none">
+            <span className="flex h-20 w-20 items-center justify-center rounded-full border border-stone/25 font-display text-[2.25rem] text-bone/45 transition-transform duration-500 group-hover:scale-[1.04]">
+              {product.title.charAt(0)}
+            </span>
+            <span className="text-label uppercase tracking-[0.16em] text-stone/50">Impact</span>
+          </div>
         )}
 
         {canAdd && (
