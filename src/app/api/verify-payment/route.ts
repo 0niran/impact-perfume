@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fulfillOrder } from '@/lib/orderFulfillment'
+import { getPickupLocation } from '@/lib/config'
 import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
 import { verifyPaymentBodySchema, formatZodError } from '@/lib/validation'
@@ -51,8 +52,13 @@ export async function POST(req: NextRequest) {
     customerEmail,
     customerPhone,
     shippingAddress,
+    fulfillmentMethod,
+    pickupLocationId,
     lines,
   } = parsed.data
+
+  const pickupLocation =
+    fulfillmentMethod === 'pickup' ? getPickupLocation(pickupLocationId) : undefined
 
   // 1. Verify with Paystack
   let tx
@@ -128,6 +134,8 @@ export async function POST(req: NextRequest) {
     lines: verified.lines,
     paymentProvider: 'paystack',
     paymentRef: tx.reference,
+    fulfillmentMethod: fulfillmentMethod ?? 'shipping',
+    pickupLocationName: pickupLocation?.name,
   })
 
   if (!fulfilment.ok) {

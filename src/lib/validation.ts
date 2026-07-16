@@ -114,6 +114,14 @@ export const intlShippingAddressSchema = z.object({
     .max(12, 'Postal / ZIP code is too long')
     .regex(/^[A-Z0-9][A-Z0-9 -]*$/, 'Invalid postal / ZIP code'),
   country: safeText(100),
+  // ISO 3166-1 alpha-2, used for tax calculation and the Medusa country_code.
+  // Optional for backwards compatibility with in-flight clients.
+  countryCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, 'Invalid country code')
+    .optional(),
 })
 
 // --- Endpoint payloads ---
@@ -125,6 +133,11 @@ export const verifyPaymentBodySchema = z.object({
   customerEmail: emailSchema,
   customerPhone: phoneSchema,
   shippingAddress: ngShippingAddressSchema,
+  // How the order is fulfilled. Defaults to shipping when absent (older
+  // clients / webhook recovery). For pickup, pickupLocationId names the store
+  // and shippingAddress carries that store's address.
+  fulfillmentMethod: z.enum(['pickup', 'shipping']).optional(),
+  pickupLocationId: optionalSafeText(64).optional(),
   lines: z.array(cartLineInputSchema).min(1).max(50),
 })
 

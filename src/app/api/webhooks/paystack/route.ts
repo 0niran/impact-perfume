@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
+import { getPickupLocation } from '@/lib/config'
 import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
@@ -40,6 +41,8 @@ interface PaystackMetadata {
   customerEmail?: string
   customerPhone?: string
   shippingAddress?: ShippingAddress
+  fulfillmentMethod?: 'pickup' | 'shipping'
+  pickupLocationId?: string
   lines?: PaystackLine[]
 }
 
@@ -154,6 +157,11 @@ export async function POST(req: NextRequest) {
         lines: verified.lines,
         paymentProvider: 'paystack',
         paymentRef: d.reference,
+        fulfillmentMethod: md.fulfillmentMethod ?? 'shipping',
+        pickupLocationName:
+          md.fulfillmentMethod === 'pickup'
+            ? getPickupLocation(md.pickupLocationId)?.name
+            : undefined,
         source: 'webhook',
       })
       if (!result.ok) {

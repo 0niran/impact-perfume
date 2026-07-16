@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
 import { submitBespoke, type BespokeSubmitResult } from '@/app/bespoke/actions'
 import BottlePreview, { type BottleShape } from './BottlePreview'
+import Stepper from './Stepper'
 
 declare global {
   interface Window {
@@ -250,7 +251,7 @@ export default function BespokeConfigurator() {
     return (
       <div className="flex flex-col gap-8 py-12">
         <div>
-          <p className="text-label uppercase tracking-[0.1em] text-accent">Step Complete</p>
+          <p className="text-label uppercase tracking-[0.1em] text-accent">Brief Received</p>
           <h2 className="mt-3 font-display text-display-s text-bone">
             Your bespoke brief is in.
           </h2>
@@ -316,31 +317,14 @@ export default function BespokeConfigurator() {
     <div className="grid gap-10 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_460px]">
       {/* Configurator panel */}
       <div className="flex flex-col gap-8">
-        {/* Step indicator */}
-        <div className="flex items-center gap-2 overflow-x-auto">
-          {STEPS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setStep(s.id)}
-              className={cn(
-                'shrink-0 border px-4 py-1.5 text-label uppercase tracking-[0.08em] transition-colors',
-                step === s.id
-                  ? 'border-accent text-accent'
-                  : step > s.id
-                    ? 'border-stone/40 text-bone hover:border-accent hover:text-accent'
-                    : 'border-stone/20 text-stone'
-              )}
-            >
-              {s.id}. {s.label}
-            </button>
-          ))}
-        </div>
+        {/* Progress */}
+        <Stepper steps={STEPS} current={step} onStepClick={setStep} />
 
         {/* Step 1. Inspiration */}
         {step === 1 && (
           <section className="flex flex-col gap-6">
             <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">Step 1 of 5</p>
+              <p className="text-label uppercase tracking-[0.1em] text-accent">Inspiration</p>
               <h2 className="mt-2 font-display text-display-s text-bone">
                 Start with a scent
               </h2>
@@ -365,7 +349,9 @@ export default function BespokeConfigurator() {
                 >
                   <span className="text-body text-bone">{opt.label}</span>
                   {inspiration === opt.id && (
-                    <span className="text-label text-accent">SELECTED</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0 text-accent">
+                      <path d="M3 8.5l3 3 6.5-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   )}
                 </button>
               ))}
@@ -377,7 +363,7 @@ export default function BespokeConfigurator() {
         {step === 2 && (
           <section className="flex flex-col gap-8">
             <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">Step 2 of 5</p>
+              <p className="text-label uppercase tracking-[0.1em] text-accent">The Bottle</p>
               <h2 className="mt-2 font-display text-display-s text-bone">Design the vessel</h2>
               <p className="mt-3 max-w-xl text-body text-stone">
                 Choose the shape, signature color, and volume. Watch your bottle
@@ -458,7 +444,7 @@ export default function BespokeConfigurator() {
         {step === 3 && (
           <section className="flex flex-col gap-6">
             <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">Step 3 of 5</p>
+              <p className="text-label uppercase tracking-[0.1em] text-accent">Engraving</p>
               <h2 className="mt-2 font-display text-display-s text-bone">Make it personal</h2>
               <p className="mt-3 max-w-xl text-body text-stone">
                 Engrave a name or initials on the label. Add a short second line for
@@ -509,7 +495,7 @@ export default function BespokeConfigurator() {
         {step === 4 && (
           <section className="flex flex-col gap-8">
             <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">Step 4 of 5</p>
+              <p className="text-label uppercase tracking-[0.1em] text-accent">Order</p>
               <h2 className="mt-2 font-display text-display-s text-bone">How many, and by when</h2>
               <p className="mt-3 max-w-xl text-body text-stone">
                 Volume discounts apply automatically. For 50+ we prepare a custom quote.
@@ -571,7 +557,7 @@ export default function BespokeConfigurator() {
         {step === 5 && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div>
-              <p className="text-label uppercase tracking-[0.1em] text-accent">Step 5 of 5</p>
+              <p className="text-label uppercase tracking-[0.1em] text-accent">Your Details</p>
               <h2 className="mt-2 font-display text-display-s text-bone">Almost there</h2>
               <p className="mt-3 max-w-xl text-body text-stone">
                 Tell us how to reach you. Our perfumer will be in touch within 24 hours.

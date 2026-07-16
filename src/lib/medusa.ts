@@ -1,5 +1,7 @@
+import { unstable_cache } from 'next/cache'
 import type { MedusaProduct, MedusaVariant, MedusaProductMetadata, TileEnrichment, Enrichment } from '@/types'
 import { FALLBACK_COLOR } from '@/lib/constants'
+import { REGIONS } from '@/lib/region'
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://localhost:9000'
@@ -9,11 +11,17 @@ const PUBLISHABLE_KEY =
 
 const DEFAULT_REGION_ID = process.env.NEXT_PUBLIC_MEDUSA_REGION_ID ?? ''
 
-function storeHeaders(): Record<string, string> {
-  return {
-    'x-publishable-api-key': PUBLISHABLE_KEY,
-    'Content-Type': 'application/json',
+/**
+ * Publishable key for the market whose medusaRegionId is given, so each region
+ * reads availability from its own stock location. Falls back to the shared key
+ * (unchanged behaviour) until per-market keys are configured.
+ */
+function keyForMedusaRegion(medusaRegionId?: string): string {
+  if (medusaRegionId) {
+    const region = Object.values(REGIONS).find((r) => r.medusaRegionId === medusaRegionId)
+    if (region?.publishableKey) return region.publishableKey
   }
+  return PUBLISHABLE_KEY
 }
 
 function withRegion(params: URLSearchParams, regionId?: string): string {
@@ -66,23 +74,46 @@ export function getProductImage(product: MedusaProduct): string | null {
   return normaliseImageUrl(raw)
 }
 
+/**
+ * How long catalogue reads live in Vercel's Data Cache. The storefront pages
+ * are dynamically rendered (region comes from a cookie), so before this every
+ * visit re-hit the ~500ms Medusa backend. Caching the parsed result here serves
+ * it from the Data Cache instead, keeping stock/prices fresh within ~2 min.
+ */
+const CATALOGUE_TTL_SECONDS = 120
+
+/**
+ * Cached GET against the Medusa store API. Wrapped in unstable_cache so the
+ * parsed JSON is served from Vercel's Data Cache, keyed by the full URL and the
+ * region's publishable key — each region / category / limit caches on its own.
+ * The inner fetch is no-store because unstable_cache owns the caching layer.
+ */
+const cachedStoreGet = unstable_cache(
+  async (url: string, publishableKey: string): Promise<Record<string, unknown> | null> => {
+    try {
+      const res = await fetch(url, {
+        headers: { 'x-publishable-api-key': publishableKey, 'Content-Type': 'application/json' },
+        cache: 'no-store',
+      })
+      if (!res.ok) return null
+      return (await res.json()) as Record<string, unknown>
+    } catch {
+      return null
+    }
+  },
+  ['medusa-store-get'],
+  { revalidate: CATALOGUE_TTL_SECONDS, tags: ['medusa-catalogue'] }
+)
+
 export async function getMedusaProduct(
   handle: string,
   regionId?: string
 ): Promise<MedusaProduct | null> {
   if (!PUBLISHABLE_KEY) return null
-  try {
-    const params = new URLSearchParams({ handle, limit: '1' })
-    const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
-    )
-    if (!res.ok) return null
-    const json = await res.json()
-    return (json.products?.[0] as MedusaProduct) ?? null
-  } catch {
-    return null
-  }
+  const params = new URLSearchParams({ handle, limit: '1' })
+  const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
+  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  return ((json?.products as MedusaProduct[] | undefined)?.[0]) ?? null
 }
 
 export async function getMedusaProducts(
@@ -90,18 +121,10 @@ export async function getMedusaProducts(
   regionId?: string
 ): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
-  try {
-    const params = new URLSearchParams({ limit: String(limit) })
-    const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
-    )
-    if (!res.ok) return []
-    const json = await res.json()
-    return (json.products as MedusaProduct[]) ?? []
-  } catch {
-    return []
-  }
+  const params = new URLSearchParams({ limit: String(limit) })
+  const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
+  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  return (json?.products as MedusaProduct[]) ?? []
 }
 
 /**
@@ -110,17 +133,10 @@ export async function getMedusaProducts(
  */
 async function getCategoryId(handle: string): Promise<string | null> {
   if (!PUBLISHABLE_KEY) return null
-  try {
-    const res = await fetch(
-      `${BACKEND_URL}/store/product-categories?handle=${handle}&limit=1`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
-    )
-    if (!res.ok) return null
-    const json = await res.json()
-    return (json.product_categories?.[0]?.id as string) ?? null
-  } catch {
-    return null
-  }
+  const url = `${BACKEND_URL}/store/product-categories?handle=${handle}&limit=1`
+  const json = await cachedStoreGet(url, keyForMedusaRegion())
+  const cats = json?.product_categories as Array<{ id?: string }> | undefined
+  return (cats?.[0]?.id as string) ?? null
 }
 
 export async function getProductsByCategory(
@@ -129,21 +145,13 @@ export async function getProductsByCategory(
   regionId?: string
 ): Promise<MedusaProduct[]> {
   if (!PUBLISHABLE_KEY) return []
-  try {
-    const categoryId = await getCategoryId(categoryHandle)
-    if (!categoryId) return []
-    const params = new URLSearchParams({ limit: String(limit) })
-    params.set('category_id[]', categoryId)
-    const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
-    )
-    if (!res.ok) return []
-    const json = await res.json()
-    return (json.products as MedusaProduct[]) ?? []
-  } catch {
-    return []
-  }
+  const categoryId = await getCategoryId(categoryHandle)
+  if (!categoryId) return []
+  const params = new URLSearchParams({ limit: String(limit) })
+  params.set('category_id[]', categoryId)
+  const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
+  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  return (json?.products as MedusaProduct[]) ?? []
 }
 
 export async function getSignatureProducts(regionId?: string): Promise<MedusaProduct[]> {
@@ -158,19 +166,11 @@ export async function getAllNumberSeriesProducts(
   if (!PUBLISHABLE_KEY) return []
   const fromCategory = await getProductsByCategory('number-collection', limit, regionId)
   if (fromCategory.length > 0) return fromCategory
-  try {
-    const params = new URLSearchParams({ limit: String(limit) })
-    const res = await fetch(
-      `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`,
-      { headers: storeHeaders(), next: { revalidate: 60 } }
-    )
-    if (!res.ok) return []
-    const json = await res.json()
-    const all = (json.products as MedusaProduct[]) ?? []
-    return all.filter((p) => p.handle?.startsWith('no-'))
-  } catch {
-    return []
-  }
+  const params = new URLSearchParams({ limit: String(limit) })
+  const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
+  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  const all = (json?.products as MedusaProduct[]) ?? []
+  return all.filter((p) => p.handle?.startsWith('no-'))
 }
 
 function splitNotes(raw?: string): string[] | undefined {
@@ -267,6 +267,43 @@ export function toTileEnrichment(
     priceKobo: price.amount,
     inStock: variantInStock(variant),
   }
+}
+
+/**
+ * Map Medusa products into number tiles, logging (server-side) any product
+ * that gets dropped or looks misconfigured. A number tile is only shown when
+ * its number resolves (metadata.number, or a "no-<n>" / "oil-no-<n>" handle),
+ * so a product missing that would otherwise vanish from the grid with no
+ * trace. This surfaces the reason in the Vercel function logs instead.
+ *
+ * `context` is a short label for the grid (eg. "oils") used in the log line.
+ * Returns the surviving tiles unsorted — the caller sorts by number.
+ */
+export function buildTiles(
+  products: MedusaProduct[],
+  currency: string,
+  context: string
+): TileEnrichment[] {
+  const tiles: TileEnrichment[] = []
+  for (const p of products) {
+    const tile = toTileEnrichment(p, currency)
+    if (!tile) {
+      console.warn(
+        `[catalogue] "${p.handle ?? p.id}" is hidden from the ${context} grid: ` +
+          `no resolvable number. Set metadata.number in Medusa Admin ` +
+          `(or give it a "no-<n>" / "oil-no-<n>" handle).`
+      )
+      continue
+    }
+    if (!tile.priceMinor) {
+      console.warn(
+        `[catalogue] "${p.handle}" shows on the ${context} grid with no ` +
+          `${currency.toUpperCase()} price. Add a ${currency.toUpperCase()} price in Medusa Admin.`
+      )
+    }
+    tiles.push(tile)
+  }
+  return tiles
 }
 
 export interface CategoryProduct {

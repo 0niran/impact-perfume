@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { SITE_CONFIG } from '@/lib/config'
 import { unpackStripeLines } from '@/lib/stripeMetadata'
+import { recordTaxTransaction } from '@/lib/tax'
 
 /**
  * Stripe return_url lands here after the customer confirms a payment.
@@ -69,9 +70,16 @@ export async function GET(req: NextRequest) {
     customerPhone: md.customerPhone ?? '',
     shippingAddress,
     lines,
+    subtotalMinor: md.subtotalMinor ? Number(md.subtotalMinor) : undefined,
+    taxMinor: md.taxMinor ? Number(md.taxMinor) : undefined,
+    taxCalculationId: md.taxCalculationId || undefined,
     paymentProvider: 'stripe',
     paymentRef: intent.id,
   })
+
+  // Payment settled, so the tax was collected — record it in Stripe Tax for
+  // remittance reporting (idempotent by reference; no-op when tax was disabled).
+  await recordTaxTransaction(stripe, md.taxCalculationId || undefined, reference)
 
   // Payment succeeded either way. If order creation failed, the lock was
   // released for retry (e.g. the Stripe webhook) — send the customer to a

@@ -65,6 +65,60 @@ interface OrderEmailData {
   items: OrderItem[]
   totalKobo: number
   currency?: string
+  /** Pre-tax subtotal, MINOR units. When set with taxKobo > 0 the email shows a breakdown. */
+  subtotalKobo?: number
+  /** Tax added at checkout, MINOR units. */
+  taxKobo?: number
+  /** 'pickup' shows the store as the collection point instead of a delivery. */
+  fulfillmentMethod?: 'pickup' | 'shipping'
+  /** Store name when fulfillmentMethod is 'pickup'. */
+  pickupLocationName?: string
+}
+
+/**
+ * Totals block. When tax was added at checkout (taxKobo > 0) it renders
+ * Subtotal / Tax / Total; otherwise a single Total row, matching the prior look.
+ */
+function totalsRows(data: OrderEmailData, currency: string, totalLabel: string): string {
+  const hasTax = typeof data.taxKobo === 'number' && data.taxKobo > 0
+  const subtotal = data.subtotalKobo ?? data.totalKobo - (data.taxKobo ?? 0)
+  const breakdown = hasTax
+    ? `
+      <tr>
+        <td style="padding:16px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};">Subtotal</td>
+        <td style="padding:16px 0 0;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:${PALETTE.ink};">${formatPrice(subtotal, currency)}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};">Tax</td>
+        <td style="padding:6px 0 0;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:${PALETTE.ink};">${formatPrice(data.taxKobo as number, currency)}</td>
+      </tr>`
+    : ''
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;border-top:2px solid ${PALETTE.ink};">
+      ${breakdown}
+      <tr>
+        <td style="padding:18px 0 0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};letter-spacing:0.18em;text-transform:uppercase;">
+          ${totalLabel}
+        </td>
+        <td style="padding:18px 0 0;text-align:right;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:${PALETTE.ink};">
+          ${formatPrice(data.totalKobo, currency)}
+        </td>
+      </tr>
+    </table>`
+}
+
+/** Label + address lines for the delivery/pickup block, shared by both emails. */
+function deliveryLabel(data: OrderEmailData): string {
+  return data.fulfillmentMethod === 'pickup' ? 'Pick up from' : 'Delivery to'
+}
+function deliveryLines(data: OrderEmailData): string {
+  const a = data.shippingAddress
+  const street = `${esc(a.address1)}${a.address2 ? ', ' + esc(a.address2) : ''}`
+  if (data.fulfillmentMethod === 'pickup') {
+    const store = data.pickupLocationName ? `${esc(data.pickupLocationName)}<br/>` : ''
+    return `${esc(data.customerName)}<br/>${store}${street}<br/>${esc(a.city)}, ${esc(a.state)}`
+  }
+  return `${esc(data.customerName)}<br/>${street}<br/>${esc(a.city)}, ${esc(a.state)}<br/>${esc(a.country)}`
 }
 
 /* ----------------------------------------------------------------------------
@@ -218,28 +272,16 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
       ${itemRows(data.items, currency)}
     </table>
 
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;border-top:2px solid ${PALETTE.ink};">
-      <tr>
-        <td style="padding:18px 0 0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};letter-spacing:0.18em;text-transform:uppercase;">
-          Total paid
-        </td>
-        <td style="padding:18px 0 0;text-align:right;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:${PALETTE.ink};">
-          ${formatPrice(data.totalKobo, currency)}
-        </td>
-      </tr>
-    </table>
+    ${totalsRows(data, currency, 'Total paid')}
 
     <div style="height:36px;line-height:36px;font-size:1px;">&nbsp;</div>
 
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
         <td width="48%" valign="top">
-          ${sectionLabel('Delivery to')}
+          ${sectionLabel(deliveryLabel(data))}
           <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
-            ${esc(data.customerName)}<br/>
-            ${esc(data.shippingAddress.address1)}${data.shippingAddress.address2 ? ', ' + esc(data.shippingAddress.address2) : ''}<br/>
-            ${esc(data.shippingAddress.city)}, ${esc(data.shippingAddress.state)}<br/>
-            ${esc(data.shippingAddress.country)}
+            ${deliveryLines(data)}
           </p>
         </td>
         <td width="4%"></td>
@@ -309,16 +351,17 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
     </table>
 
     ${sectionLabel('Items')}
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${PALETTE.border};margin-bottom:24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${PALETTE.border};">
       ${itemRows(data.items, currency)}
     </table>
 
-    ${sectionLabel('Ship to')}
+    ${totalsRows(data, currency, 'Total paid')}
+
+    <div style="height:24px;line-height:24px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel(deliveryLabel(data))}
     <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:14px;color:${PALETTE.ink};line-height:1.7;">
-      ${esc(data.customerName)}<br/>
-      ${esc(data.shippingAddress.address1)}${data.shippingAddress.address2 ? ', ' + esc(data.shippingAddress.address2) : ''}<br/>
-      ${esc(data.shippingAddress.city)}, ${esc(data.shippingAddress.state)}<br/>
-      ${esc(data.shippingAddress.country)}
+      ${deliveryLines(data)}
     </p>
 
     <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;color:${PALETTE.stone};line-height:1.7;">

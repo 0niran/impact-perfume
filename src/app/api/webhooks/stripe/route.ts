@@ -5,6 +5,7 @@ import { claimPayment } from '@/lib/processedPayment'
 import { unpackStripeLines } from '@/lib/stripeMetadata'
 import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
+import { recordTaxTransaction } from '@/lib/tax'
 
 /**
  * Stripe webhook receiver. Verifies the request signature using
@@ -97,10 +98,15 @@ export async function POST(req: NextRequest) {
         customerPhone: md.customerPhone ?? '',
         shippingAddress,
         lines,
+        subtotalMinor: md.subtotalMinor ? Number(md.subtotalMinor) : undefined,
+        taxMinor: md.taxMinor ? Number(md.taxMinor) : undefined,
+        taxCalculationId: md.taxCalculationId || undefined,
         paymentProvider: 'stripe',
         paymentRef: intent.id,
         source: 'webhook',
       })
+      // Record the collected tax for remittance (idempotent by reference).
+      await recordTaxTransaction(stripe, md.taxCalculationId || undefined, md.reference ?? intent.id)
       if (!result.ok) {
         // Order creation failed and the lock was released — 500 so Stripe
         // retries with backoff.

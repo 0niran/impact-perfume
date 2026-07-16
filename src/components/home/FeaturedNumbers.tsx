@@ -46,7 +46,7 @@ export default async function FeaturedNumbers() {
               The Number Series
             </p>
             <h2 className="font-display text-[28px] md:text-display-s leading-[1.1] text-bone">
-              Find your number.
+              Find Your Scent.
             </h2>
           </div>
           <Link
