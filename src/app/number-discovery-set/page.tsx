@@ -34,7 +34,15 @@ export default async function NumberDiscoverySetPage() {
     .map((p) => toTileEnrichment(p, region.currency))
     .filter((t): t is NonNullable<typeof t> => t !== null)
     .sort((a, b) => a.number - b.number)
-    .map((t) => ({ number: t.number, descriptor: t.descriptor, color: t.signatureColor }))
+    .map((t) => ({
+      number: t.number,
+      descriptor: t.descriptor,
+      color: t.signatureColor,
+      imageUrl: t.imageUrl,
+      notes:
+        [t.topNotes?.[0], t.heartNotes?.[0], t.baseNotes?.[0]].filter(Boolean).join(' · ') ||
+        t.scentFamily,
+    }))
 
   const variant = setProduct?.variants?.[0]
   const price = setProduct ? getPrice(setProduct, region.currency) : null

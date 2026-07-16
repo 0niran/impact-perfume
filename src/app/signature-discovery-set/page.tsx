@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { getServerRegion } from '@/lib/serverRegion'
-import { getSignatureProducts, getMedusaProduct, getPrice } from '@/lib/medusa'
+import { getSignatureProducts, getMedusaProduct, getPrice, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
 import { SIGNATURE_PLACEHOLDERS } from '@/data/products'
+import { FALLBACK_COLOR } from '@/lib/constants'
+import CategoryProductTile from '@/components/shop/CategoryProductTile'
 import AddDiscoverySetButton from '@/components/shop/AddDiscoverySetButton'
 
 export const revalidate = 60
@@ -24,10 +26,24 @@ export default async function SignatureDiscoverySetPage() {
     getMedusaProduct('signature-discovery-set', region.medusaRegionId),
   ])
 
-  const contents =
+  // Display-only tiles: the set is one price, so individual prices/add are
+  // hidden (priceMinor 0). Each links to its Signature product page.
+  const tiles: CategoryProduct[] =
     sigProducts.length > 0
-      ? sigProducts.map((p) => p.title)
-      : SIGNATURE_PLACEHOLDERS.map((s) => s.title)
+      ? sigProducts.map((p) => ({ ...toCategoryProduct(p, region.currency), priceMinor: 0, priceKobo: 0 }))
+      : SIGNATURE_PLACEHOLDERS.map((s) => ({
+          handle: s.handle,
+          title: s.title,
+          descriptor: s.descriptor ?? '',
+          signatureColor: s.signatureColor ?? FALLBACK_COLOR,
+          tagline: '',
+          priceMinor: 0,
+          currency: region.currency,
+          priceKobo: 0,
+          imageUrl: s.imageUrl ?? null,
+          productId: s.handle,
+          variantId: s.handle,
+        }))
 
   const variant = setProduct?.variants?.[0]
   const price = setProduct ? getPrice(setProduct, region.currency) : null
@@ -46,55 +62,35 @@ export default async function SignatureDiscoverySetPage() {
             A curated set of our Signature Scents in sample sizes. Named, not
             numbered. Bolder compositions, ready to explore.
           </p>
+          {canBuy && price && variant && setProduct && (
+            <div className="mt-7 flex flex-wrap items-center gap-5">
+              <AddDiscoverySetButton
+                variantId={variant.id}
+                productId={setProduct.id}
+                name="Signature Discovery Set"
+                variantLabel="Curated Signature sample set"
+                priceMinor={price.amount}
+                currency={price.currency}
+                handle="signature-discovery-set"
+                href="/signature-discovery-set"
+              />
+              <p className="text-small text-stone">Ships in signature packaging.</p>
+            </div>
+          )}
         </Container>
       </section>
 
-      {/* Contents + add */}
+      {/* Product grid */}
       <section className="bg-ink py-10 md:py-14">
-        <Container className="grid gap-10 lg:grid-cols-[1fr_360px]">
-          <div>
-            <p className="text-label uppercase tracking-[0.1em] text-stone">Inside the set</p>
-            <ul className="mt-5 divide-y divide-stone/15 border-y border-stone/15">
-              {contents.map((title) => (
-                <li key={title} className="flex items-center gap-3 py-4">
-                  <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-                  <span className="text-body text-bone">{title}</span>
-                </li>
-              ))}
-            </ul>
+        <Container>
+          <p className="mb-6 text-label uppercase tracking-[0.1em] text-stone">Inside the set</p>
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3" role="list" aria-label="Signature scents in the set">
+            {tiles.map((p) => (
+              <div key={p.handle} role="listitem">
+                <CategoryProductTile product={p} href={`/signature/${p.handle}`} />
+              </div>
+            ))}
           </div>
-
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="border border-stone/20 bg-white/[0.02] p-6">
-              <p className="text-label uppercase tracking-[0.1em] text-stone">Signature Discovery Set</p>
-              {canBuy && price && variant && setProduct ? (
-                <>
-                  <p className="mt-2 font-display text-h1 text-bone">
-                    {new Intl.NumberFormat(region.locale, {
-                      style: 'currency',
-                      currency: region.currency,
-                      maximumFractionDigits: region.currency === 'NGN' ? 0 : 2,
-                    }).format(price.amount / 100)}
-                  </p>
-                  <p className="mt-1 text-small text-stone">Curated sample set. Ships in signature packaging.</p>
-                  <div className="mt-6">
-                    <AddDiscoverySetButton
-                      variantId={variant.id}
-                      productId={setProduct.id}
-                      name="Signature Discovery Set"
-                      variantLabel="Curated Signature sample set"
-                      priceMinor={price.amount}
-                      currency={price.currency}
-                      handle="signature-discovery-set"
-                      href="/signature-discovery-set"
-                    />
-                  </div>
-                </>
-              ) : (
-                <p className="mt-2 text-body text-stone">Coming soon.</p>
-              )}
-            </div>
-          </aside>
         </Container>
       </section>
     </>
