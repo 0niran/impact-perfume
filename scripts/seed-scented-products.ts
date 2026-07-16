@@ -5,8 +5,10 @@
  *   npx tsx scripts/seed-scented-products.ts --apply    # create
  *
  * For each of the 5 chosen Number Series scents we create a Scent Candle, a
- * Home Diffuser and a Car Diffuser, carrying that number's notes. Idempotent
- * (skips a handle that already exists). Prices:
+ * Home Diffuser and a Car Diffuser, carrying that number's notes. Products are
+ * INVENTORY-TRACKED: an inventory level is created at both the Lagos and Canada
+ * stock locations, so the warehouse manages stock in Medusa and it flows to the
+ * storefront. Idempotent (skips a handle that already exists). Prices:
  *   - Diffusers (home + car): ₦25,000 / CA$30
  *   - Scent candles:          ₦20,000 / CA$20
  */
@@ -21,6 +23,9 @@ const APPLY = process.argv.includes('--apply')
 
 const NG = 'sc_01KQMBCSX02P4R54TFRC4XMYFY'
 const CA = 'sc_01KWZKFFPZMQX3N1FC86C3DKJW'
+const LAGOS = 'sloc_01KR1CDBQ1Z6G5EK251JRBNMQ7'
+const CANADA = 'sloc_01KWZKFF9NG2YPYG78Z8Y7YBPH'
+const INIT_QTY = 20 // starting stock per location; the warehouse adjusts from here
 const NUMBERS = [1, 5, 11, 13, 18]
 
 const CATS = [
@@ -51,7 +56,6 @@ async function main() {
   console.log(APPLY ? 'APPLY MODE\n' : 'DRY RUN (pass --apply)\n')
   await auth()
 
-  // Category ids
   const catId: Record<string, string> = {}
   for (const c of CATS) {
     const found = (await get(`/admin/product-categories?handle=${c.catHandle}&limit=1`)).product_categories?.[0]
@@ -59,7 +63,6 @@ async function main() {
     catId[c.catHandle] = found.id
   }
 
-  // Notes for the chosen numbers
   const meta: Record<number, NumMeta> = {}
   for (const n of NUMBERS) {
     const p = (await get(`/admin/products?handle=no-${n}&limit=1&fields=handle,*metadata`)).products?.[0]
@@ -85,7 +88,7 @@ async function main() {
         categories: [{ id: catId[c.catHandle] }],
         sales_channels: [{ id: NG }, { id: CA }],
         options: [{ title: 'Size', values: [c.size] }],
-        variants: [{ title: c.size, manage_inventory: false, prices: c.prices, options: { Size: c.size } }],
+        variants: [{ title: c.size, manage_inventory: true, prices: c.prices, options: { Size: c.size } }],
         metadata: {
           number: String(n),
           descriptor: tileNotes || m.descriptor || '',
@@ -96,7 +99,20 @@ async function main() {
           signature_color: m.signature_color ?? '',
         },
       })
-      console.log(`  created ${handle} — "${title}" (${c.prices.map((p) => `${p.currency_code}:${p.amount}`).join(' / ')})`)
+
+      // Stock the tracked variant at both locations.
+      if (APPLY) {
+        const p = (await get(`/admin/products?handle=${handle}&limit=1&fields=id,*variants.inventory_items`)).products?.[0]
+        const iid = p?.variants?.[0]?.inventory_items?.[0]?.inventory_item_id
+        if (iid) {
+          for (const loc of [LAGOS, CANADA]) {
+            await post(`/admin/inventory-items/${iid}/location-levels`, { location_id: loc, stocked_quantity: INIT_QTY })
+          }
+        } else {
+          console.warn(`    ! no inventory item for ${handle}; stock not set`)
+        }
+      }
+      console.log(`  created ${handle} — "${title}" (tracked, ${INIT_QTY}@Lagos + ${INIT_QTY}@Canada)`)
       created++
     }
   }
