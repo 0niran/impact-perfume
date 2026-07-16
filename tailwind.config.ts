@@ -40,12 +40,18 @@ const config: Config = {
         sans: ["var(--font-sans)", "Manrope", "system-ui", "sans-serif"],
       },
       fontSize: {
-        "display-xl": ["80px", { lineHeight: "88px", letterSpacing: "-0.01em" }],
-        "display-l": ["56px", { lineHeight: "64px", letterSpacing: "-0.01em" }],
-        "display-s": ["36px", { lineHeight: "44px", letterSpacing: "-0.01em" }],
-        h1: ["40px", { lineHeight: "48px" }],
-        h2: ["28px", { lineHeight: "36px" }],
-        h3: ["22px", { lineHeight: "30px" }],
+        // Display + heading sizes are fluid: they scale down on small phones
+        // and up to the original size on desktop. clamp() is rem-based (not px)
+        // so browser zoom still scales the text, and max <= ~2.5x min so it
+        // passes WCAG SC 1.4.4. Mobile floors: xl 40, l 32, s 28, h1 28, h2 24,
+        // h3 20 (px); desktop caps match the previous fixed sizes.
+        "display-xl": ["clamp(2.5rem, 1.1rem + 6vw, 5rem)", { lineHeight: "1.05", letterSpacing: "-0.01em" }],
+        "display-l": ["clamp(2rem, 1rem + 4.4vw, 3.5rem)", { lineHeight: "1.1", letterSpacing: "-0.01em" }],
+        "display-s": ["clamp(1.75rem, 1.35rem + 1.8vw, 2.25rem)", { lineHeight: "1.15", letterSpacing: "-0.01em" }],
+        h1: ["clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem)", { lineHeight: "1.15" }],
+        h2: ["clamp(1.5rem, 1.25rem + 1.1vw, 1.75rem)", { lineHeight: "1.25" }],
+        h3: ["clamp(1.25rem, 1.1rem + 0.6vw, 1.375rem)", { lineHeight: "1.3" }],
+        // Body scale stays fixed — body sits at the 16px accessibility floor.
         "body-l": ["18px", { lineHeight: "28px" }],
         body: ["16px", { lineHeight: "26px" }],
         small: ["14px", { lineHeight: "22px" }],
