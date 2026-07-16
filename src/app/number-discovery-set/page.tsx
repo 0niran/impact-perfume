@@ -13,15 +13,15 @@ import DiscoverySetBuilder, { type PickItem } from '@/components/shop/DiscoveryS
 
 export const revalidate = 60
 
-const REQUIRED = 8
+const REQUIRED = 12
 const BOX_IMAGE = '/images/No Series Discovery Set.jpeg'
 
 export const metadata: Metadata = {
   title: 'Number Discovery Set',
-  description: 'Build your own discovery set: choose 8 from the Number Series as 2ml vials in our signature box.',
+  description: 'Build your own discovery set: choose 12 from the Number Series as 2ml vials in our signature box.',
   openGraph: {
     title: 'Number Discovery Set · Impact Perfumes',
-    description: 'Pick 8 from the Number Series and fill your own discovery box.',
+    description: 'Pick 12 from the Number Series and fill your own discovery box.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
