@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/cn'
 import { formatPrice } from '@/lib/format'
 import { useCartStore } from '@/store/cartStore'
@@ -9,6 +10,9 @@ export interface PickItem {
   number: number
   descriptor?: string
   color: string
+  imageUrl?: string
+  /** Compact scent-notes line, eg. "Agarwood · Praline · Vanilla". */
+  notes?: string
 }
 
 interface SetLine {
@@ -23,14 +27,22 @@ interface DiscoverySetBuilderProps {
   items: PickItem[]
   requiredCount: number
   setLine: SetLine
+  /** Fallback bottle image for numbers without their own photo. */
+  fallbackImage?: string
 }
 
 /**
  * Build-your-own discovery set: pick exactly `requiredCount` numbers, then add
- * the set to the cart as a single flat-priced line. The chosen numbers ride
+ * the set to the cart as a single flat-priced line. Each pick shows its bottle
+ * image and scent notes so the choice is informed; the chosen numbers ride
  * along in the cart line's label so they appear on the order and emails.
  */
-export default function DiscoverySetBuilder({ items, requiredCount, setLine }: DiscoverySetBuilderProps) {
+export default function DiscoverySetBuilder({
+  items,
+  requiredCount,
+  setLine,
+  fallbackImage = '/images/no_series.png',
+}: DiscoverySetBuilderProps) {
   const { add, setOpen } = useCartStore()
   const [selected, setSelected] = useState<number[]>([])
   const [added, setAdded] = useState(false)
@@ -71,7 +83,7 @@ export default function DiscoverySetBuilder({ items, requiredCount, setLine }: D
     <div className="pb-28">
       {/* Picker grid */}
       <div
-        className="grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3 lg:grid-cols-10"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
         role="listbox"
         aria-label={`Choose ${requiredCount} numbers`}
       >
@@ -86,29 +98,53 @@ export default function DiscoverySetBuilder({ items, requiredCount, setLine }: D
               aria-selected={isSelected}
               disabled={disabled}
               onClick={() => toggle(item.number)}
-              title={item.descriptor}
               className={cn(
-                'relative flex aspect-square flex-col items-center justify-center border transition-colors',
+                'group flex flex-col overflow-hidden border text-left transition-colors',
                 isSelected
-                  ? 'border-accent bg-accent/10'
+                  ? 'border-accent bg-accent/[0.06]'
                   : disabled
                     ? 'border-stone/15 opacity-40 cursor-not-allowed'
-                    : 'border-stone/25 hover:border-stone'
+                    : 'border-stone/20 hover:border-stone'
               )}
             >
-              <span
-                className="pointer-events-none absolute inset-0 opacity-50"
-                style={{ background: `radial-gradient(ellipse at center, ${item.color}2b 0%, transparent 70%)` }}
-                aria-hidden="true"
-              />
-              <span className="relative font-display text-h3 text-bone">{item.number}</span>
-              {isSelected && (
-                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-ink" aria-hidden="true">
-                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                    <path d="M1.5 4.5l2 2 4-5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Image */}
+              <div className="relative aspect-[4/5] w-full bg-ink">
+                <span
+                  className="pointer-events-none absolute inset-0 opacity-50"
+                  style={{ background: `radial-gradient(ellipse at center, ${item.color}2b 0%, transparent 70%)` }}
+                  aria-hidden="true"
+                />
+                <div className="absolute inset-0 flex items-center justify-center p-5">
+                  <div className="relative h-[86%] w-[78%]">
+                    <Image
+                      src={item.imageUrl || fallbackImage}
+                      alt={`Impact No. ${item.number}`}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-contain transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                  </div>
+                </div>
+                {/* Selection badge */}
+                <span
+                  className={cn(
+                    'absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border transition-colors',
+                    isSelected ? 'border-accent bg-accent text-ink' : 'border-stone/40 text-transparent'
+                  )}
+                  aria-hidden="true"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2.5 6.5l2 2 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-              )}
+              </div>
+
+              {/* Meta */}
+              <div className="border-t border-stone/15 px-3 py-3">
+                <p className="font-display text-h3 text-bone">No. {item.number}</p>
+                {item.descriptor && <p className="mt-0.5 text-small text-bone/70">{item.descriptor}</p>}
+                {item.notes && <p className="mt-1 truncate text-label uppercase tracking-[0.06em] text-stone">{item.notes}</p>}
+              </div>
             </button>
           )
         })}
