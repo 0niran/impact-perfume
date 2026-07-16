@@ -3,6 +3,8 @@ import Stripe from 'stripe'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { claimPayment } from '@/lib/processedPayment'
 import { unpackStripeLines } from '@/lib/stripeMetadata'
+import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
+import { SITE_CONFIG } from '@/lib/config'
 import { recordTaxTransaction } from '@/lib/tax'
 
 /**
@@ -123,17 +125,64 @@ export async function POST(req: NextRequest) {
     })
   } else if (event.type === 'charge.refunded') {
     const charge = event.data.object as Stripe.Charge
+    const amount = ((charge.amount_refunded ?? 0) / 100).toFixed(2)
+    const cur = (charge.currency ?? '').toUpperCase()
     console.warn('[stripe-webhook] charge.refunded — manual reconciliation required', {
       chargeId: charge.id,
       paymentIntent: charge.payment_intent,
     })
+    await sendEmail({
+      to: SITE_CONFIG.contact.email,
+      ...buildOwnerAlertEmail({
+        subjectPrefix: 'Refund',
+        heading: `Refund processed · ${amount} ${cur}`,
+        intro:
+          'A Stripe charge was refunded. Update the order in Medusa and restock the item if it is being returned.',
+        items: [
+          {
+            title: `Charge ${charge.id}`,
+            lines: [
+              `Amount refunded: ${amount} ${cur}`,
+              `Reference: ${charge.metadata?.reference ?? '(none)'}`,
+              `Payment intent: ${String(charge.payment_intent ?? '(none)')}`,
+              `Customer: ${charge.billing_details?.email ?? charge.receipt_email ?? '(unknown)'}`,
+            ],
+          },
+        ],
+      }),
+    }).catch((err) => console.error('[stripe-webhook] refund alert failed', err))
   } else if (event.type === 'charge.dispute.created') {
     const dispute = event.data.object as Stripe.Dispute
+    const amount = ((dispute.amount ?? 0) / 100).toFixed(2)
+    const cur = (dispute.currency ?? '').toUpperCase()
+    const dueBy = dispute.evidence_details?.due_by
+      ? new Date(dispute.evidence_details.due_by * 1000).toISOString().slice(0, 10)
+      : '(none)'
     console.warn('[stripe-webhook] dispute created — action required in Stripe dashboard', {
       disputeId: dispute.id,
       amount: dispute.amount,
       reason: dispute.reason,
     })
+    await sendEmail({
+      to: SITE_CONFIG.contact.email,
+      ...buildOwnerAlertEmail({
+        subjectPrefix: 'Dispute',
+        heading: `Payment dispute · ${amount} ${cur}`,
+        intro:
+          'A customer disputed a Stripe payment. Respond with evidence in the Stripe dashboard before the deadline or the funds are lost.',
+        items: [
+          {
+            title: `Dispute ${dispute.id}`,
+            lines: [
+              `Amount: ${amount} ${cur}`,
+              `Reason: ${dispute.reason}`,
+              `Evidence due by: ${dueBy}`,
+              `Payment intent: ${String(dispute.payment_intent ?? '(none)')}`,
+            ],
+          },
+        ],
+      }),
+    }).catch((err) => console.error('[stripe-webhook] dispute alert failed', err))
   }
 
   return NextResponse.json({ ok: true })

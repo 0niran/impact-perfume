@@ -17,6 +17,9 @@
  * Pass references as args to override the default list:
  *   npx tsx scripts/recover-stripe-orders.ts impact-ca-... impact-ca-...
  *
+ * Preview without writing anything (recommended first pass):
+ *   npx tsx scripts/recover-stripe-orders.ts --dry-run
+ *
  * Safe to re-run: an order that already exists is skipped by the idempotency
  * lock, and verifyPaidOrder still re-prices + re-checks stock before fulfilling.
  */
@@ -38,7 +41,13 @@ async function main() {
   if (!key) throw new Error('STRIPE_SECRET_KEY is required')
   const stripe = new Stripe(key, { apiVersion: '2026-04-22.dahlia' })
 
-  const references = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT_REFERENCES
+  // --dry-run reports what each reference would do (captured? amount? lines?)
+  // without releasing any lock or creating any order. Run this first.
+  const args = process.argv.slice(2)
+  const dryRun = args.includes('--dry-run')
+  const refArgs = args.filter((a) => a !== '--dry-run')
+  const references = refArgs.length ? refArgs : DEFAULT_REFERENCES
+  if (dryRun) console.log('DRY RUN — no locks released, no orders created.\n')
 
   for (const reference of references) {
     console.log(`\n=== ${reference} ===`)
@@ -78,6 +87,15 @@ async function main() {
     }
     if (lines.length === 0) {
       console.warn('  no line metadata — skipping')
+      continue
+    }
+
+    if (dryRun) {
+      const total = lines.reduce((s, l) => s + l.unitPriceKobo * l.qty, 0)
+      console.log(`  WOULD RECOVER — ${intent.currency.toUpperCase()} ${intent.amount} captured`)
+      console.log(`    email: ${md.customerEmail ?? intent.receipt_email ?? '(none)'}`)
+      console.log(`    lines: ${lines.length} (metadata total ${total})`)
+      console.log(`    PaymentIntent: ${intent.id}`)
       continue
     }
 

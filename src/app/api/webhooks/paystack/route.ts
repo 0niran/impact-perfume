@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { getPickupLocation } from '@/lib/config'
 import { verifyPaidOrder } from '@/lib/pricingGuard'
+import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
+import { SITE_CONFIG } from '@/lib/config'
 
 /**
  * Paystack server-to-server webhook. Signed with HMAC-SHA512 of the raw body
@@ -174,9 +176,27 @@ export async function POST(req: NextRequest) {
   } else if (event.event === 'charge.failed') {
     console.warn('[paystack-webhook] charge failed', { reference: event.data?.reference })
   } else if (event.event === 'refund.processed') {
+    const d = event.data
+    const amount = ((d.amount ?? 0) / 100).toLocaleString('en-NG')
+    const cur = (d.currency ?? 'NGN').toUpperCase()
     console.warn('[paystack-webhook] refund processed — manual reconciliation required', {
-      reference: event.data?.reference,
+      reference: d?.reference,
     })
+    await sendEmail({
+      to: SITE_CONFIG.contact.email,
+      ...buildOwnerAlertEmail({
+        subjectPrefix: 'Refund',
+        heading: `Refund processed · ${cur} ${amount}`,
+        intro:
+          'A Paystack payment was refunded. Update the order in Medusa and restock the item if it is being returned.',
+        items: [
+          {
+            title: `Reference ${d?.reference ?? '(none)'}`,
+            lines: [`Amount refunded: ${cur} ${amount}`, `Customer: ${d?.customer?.email ?? '(unknown)'}`],
+          },
+        ],
+      }),
+    }).catch((err) => console.error('[paystack-webhook] refund alert failed', err))
   }
 
   return NextResponse.json({ ok: true })
