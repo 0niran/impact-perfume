@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import CollectionPage from '@/components/shop/CollectionPage'
 import { loadCategoryProducts } from '@/lib/loadCategory'
 import { getServerRegion } from '@/lib/serverRegion'
-import { HOME_DIFFUSERS } from '@/data/products'
 
 export const revalidate = 60
 
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function HomeDiffusersPage() {
   const region = getServerRegion()
-  const products = await loadCategoryProducts('home-diffusers', region, HOME_DIFFUSERS)
+  const products = await loadCategoryProducts('home-diffusers', region)
   return (
     <CollectionPage
       eyebrow="For the Home"

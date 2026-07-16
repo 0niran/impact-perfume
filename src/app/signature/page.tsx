@@ -6,7 +6,6 @@ import { getSignatureProducts, getPrice, getProductImage } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
-import { SIGNATURE_PLACEHOLDERS, type SignaturePlaceholder } from '@/data/products'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
 
 export const revalidate = 60
@@ -22,64 +21,10 @@ export const metadata: Metadata = {
   },
 }
 
-function PlaceholderCard({ item }: { item: SignaturePlaceholder }) {
-  return (
-    <div className="group relative flex flex-col overflow-hidden border border-stone/15 bg-ink">
-      <div
-        className="relative overflow-hidden bg-ink"
-        style={{ aspectRatio: '3/4' }}
-      >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-60"
-          style={{
-            background: item.signatureColor
-              ? `radial-gradient(ellipse at center, ${item.signatureColor}33 0%, transparent 65%)`
-              : undefined,
-          }}
-          aria-hidden="true"
-        />
-        {item.imageUrl ? (
-          <Image
-            src={item.imageUrl}
-            alt={item.title}
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-contain p-6 transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <p className="font-brand text-[64px] leading-none text-stone/40">
-              {item.title.charAt(0)}
-            </p>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col p-6 border-t border-stone/20">
-        {item.subtitle && (
-          <p className="text-label uppercase tracking-[0.1em] text-stone">
-            {item.subtitle}
-          </p>
-        )}
-        <h3 className="mt-1 font-brand text-[22px] leading-snug text-bone">
-          {item.title}
-        </h3>
-        {item.descriptor && (
-          <p className="mt-2 text-small text-stone">{item.descriptor}</p>
-        )}
-        <p className="mt-auto pt-5 text-label uppercase tracking-[0.1em] text-accent">
-          Arriving soon
-        </p>
-      </div>
-    </div>
-  )
-}
-
 export default async function SignaturePage() {
   const region = getServerRegion()
   const products = await getSignatureProducts(region.medusaRegionId)
-  const liveHandles = new Set(products.map((p) => p.handle))
-  const placeholders = SIGNATURE_PLACEHOLDERS.filter((p) => !liveHandles.has(p.handle))
-  const showcaseCount = products.length + placeholders.length
+  const showcaseCount = products.length
 
   return (
     <>
@@ -184,9 +129,6 @@ export default async function SignaturePage() {
                   </div>
                 )
               })}
-              {placeholders.map((item) => (
-                <PlaceholderCard key={item.handle} item={item} />
-              ))}
             </div>
           )}
         </Container>

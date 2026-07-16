@@ -20,6 +20,9 @@ const APPLY = process.argv.includes('--apply')
 
 const NG_CHANNEL = 'sc_01KQMBCSX02P4R54TFRC4XMYFY'
 const CA_CHANNEL = 'sc_01KWZKFFPZMQX3N1FC86C3DKJW'
+const LAGOS = 'sloc_01KR1CDBQ1Z6G5EK251JRBNMQ7'
+const CANADA = 'sloc_01KWZKFF9NG2YPYG78Z8Y7YBPH'
+const INIT_QTY = 20 // starting stock per location; warehouse adjusts
 
 const SETS = [
   {
@@ -105,13 +108,26 @@ async function ensureProduct(set: (typeof SETS)[number], categoryId: string | nu
     variants: [
       {
         title: 'Standard',
-        manage_inventory: false,
+        manage_inventory: true,
         prices: PRICES,
         options: { Set: 'Standard' },
       },
     ],
   })
-  console.log(`  product "${set.title}" created (₦150,000 / CA$200, both channels)`)
+
+  // Stock the tracked variant at both locations.
+  if (APPLY) {
+    const p = (await get(`/admin/products?handle=${set.handle}&limit=1&fields=id,*variants.inventory_items`)).products?.[0]
+    const iid = p?.variants?.[0]?.inventory_items?.[0]?.inventory_item_id
+    if (iid) {
+      for (const loc of [LAGOS, CANADA]) {
+        await post(`/admin/inventory-items/${iid}/location-levels`, { location_id: loc, stocked_quantity: INIT_QTY })
+      }
+    } else {
+      console.warn(`  ! no inventory item for ${set.handle}; stock not set`)
+    }
+  }
+  console.log(`  product "${set.title}" created (₦150,000 / CA$200, tracked ${INIT_QTY}@Lagos + ${INIT_QTY}@Canada)`)
 }
 
 async function main() {
