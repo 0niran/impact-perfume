@@ -34,23 +34,24 @@ const sections = [
     title: 'Home & Car',
     links: [
       { label: 'Shop All', href: '/home' },
-      { label: 'Home Diffusers', href: '/home#home-diffusers' },
-      { label: 'Scent Candles', href: '/home#scent-candles' },
-      { label: 'Scenting Machines', href: '/home#scenting-machines' },
-      { label: 'Car Diffusers', href: '/home#car-diffusers' },
+      { label: 'Home Diffusers', href: '/home-diffusers' },
+      { label: 'Scent Candles', href: '/scent-candles' },
+      { label: 'Scenting Machines', href: '/scenting-machines' },
+      { label: 'Car Diffusers', href: '/car-diffusers' },
     ],
   },
   {
     title: 'Gift',
     links: [
       { label: 'All Gift Sets', href: '/gifts#gift-sets' },
+      { label: 'Bespoke', href: '/bespoke' },
     ],
   },
   {
     title: 'Discovery Set',
     links: [
-      { label: 'Number Series Discovery Set', href: '/gifts#discovery-sets' },
-      { label: 'Signature Discovery Set', href: '/gifts#discovery-sets' },
+      { label: 'Number Discovery Set', href: '/number-discovery-set' },
+      { label: 'Signature Discovery Set', href: '/signature-discovery-set' },
       { label: 'Take the Scent Quiz', href: '/quiz' },
     ],
   },
@@ -58,9 +59,7 @@ const sections = [
     title: 'Our Story',
     links: [
       { label: 'House Story', href: '/house-story' },
-      { label: 'Bespoke', href: '/bespoke' },
       { label: 'B2B', href: '/b2b' },
-      { label: 'Journal', href: '/journal' },
     ],
   },
 ]
@@ -103,9 +102,9 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
             <Image
               src="/images/Logo.png"
               alt="Impact Perfumes"
-              width={181}
-              height={121}
-              className="h-9 w-auto"
+              width={240}
+              height={161}
+              className="h-10 w-auto"
             />
           </Link>
           <button

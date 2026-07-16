@@ -1,139 +1,50 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
-import { getProductsByCategory, toCategoryProduct, type CategoryProduct } from '@/lib/medusa'
-import { getServerRegion } from '@/lib/serverRegion'
-import { HOME_DIFFUSERS, CAR_DIFFUSERS } from '@/data/products'
-import { SITE_CONFIG } from '@/lib/config'
-import CategoryProductTile from '@/components/shop/CategoryProductTile'
-
-export const revalidate = 60
+import { Container } from '@/components/layout'
 
 export const metadata: Metadata = {
   title: 'Home & Car',
   description:
-    'Scent your home and car with Impact. Home diffusers, scent candles, and scenting machines designed to last.',
+    'Scent your home and car with Impact. Home diffusers, scent candles, scenting machines, and car diffusers designed to last.',
   openGraph: {
     title: 'Home & Car · Impact Perfumes',
-    description: 'Home diffusers, scent candles, and scenting machines from Impact Perfumes.',
+    description: 'Home diffusers, scent candles, scenting machines, and car diffusers from Impact Perfumes.',
     images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 
-interface SubCategory {
-  id: string
-  label: string
-  eyebrow: string
-  heading: string
-  description: string
-  medusaHandle: string
-  staticFallback?: { handle: string; title: string; descriptor: string; signatureColor: string; tagline: string; badge: string }[]
-}
-
-const SUBCATEGORIES: SubCategory[] = [
+const CATEGORIES = [
   {
-    id: 'home-diffusers',
-    label: 'Home Diffusers',
+    href: '/home-diffusers',
     eyebrow: 'For the Home',
-    heading: 'Home Diffusers',
-    description:
-      'Reed diffusers that slowly release fragrance into your space. Minimal design, maximum presence.',
-    medusaHandle: 'home-diffusers',
-    staticFallback: HOME_DIFFUSERS,
+    title: 'Home Diffusers',
+    description: 'Reed diffusers that fill a room slowly and evenly.',
+    color: '#8B2252',
   },
   {
-    id: 'scent-candles',
-    label: 'Scent Candles',
+    href: '/scent-candles',
     eyebrow: 'Light & Linger',
-    heading: 'Scent Candles',
-    description:
-      'Hand-poured candles in our signature fragrances. Burn time up to 50 hours.',
-    medusaHandle: 'scent-candles',
+    title: 'Scent Candles',
+    description: 'Hand-poured soy candles, up to 50 hours.',
+    color: '#6B4423',
   },
   {
-    id: 'scenting-machines',
-    label: 'Scenting Machines',
+    href: '/scenting-machines',
     eyebrow: 'Always On',
-    heading: 'Scenting Machines',
-    description:
-      'Cold-air diffusion machines for hotels, offices, and large spaces. Consistent fragrance, all day.',
-    medusaHandle: 'scenting-machines',
+    title: 'Scenting Machines',
+    description: 'Cold-air diffusion for hotels, offices, and large spaces.',
+    color: '#2B2B2B',
   },
   {
-    id: 'car-diffusers',
-    label: 'Car Diffusers',
+    href: '/car-diffusers',
     eyebrow: 'On the Move',
-    heading: 'Car Diffusers',
-    description:
-      'Vent-mounted clip-on diffusers. Up to 60 days per refill.',
-    medusaHandle: 'car-diffusers',
-    staticFallback: CAR_DIFFUSERS,
+    title: 'Car Diffusers',
+    description: 'Vent-mounted clip-ons. Up to 60 days per refill.',
+    color: '#1B5E8C',
   },
 ]
 
-async function loadSubcategory(
-  sub: SubCategory,
-  regionId: string | undefined,
-  currency: string
-): Promise<CategoryProduct[]> {
-  const medusaProducts = await getProductsByCategory(sub.medusaHandle, 100, regionId)
-  if (medusaProducts.length > 0) return medusaProducts.map((p) => toCategoryProduct(p, currency))
-  if (sub.staticFallback) {
-    return sub.staticFallback.map((s) => ({
-      handle: s.handle,
-      title: s.title,
-      descriptor: s.descriptor,
-      signatureColor: s.signatureColor,
-      tagline: s.tagline,
-      priceMinor: 0,
-      currency,
-      priceKobo: 0,
-      imageUrl: null,
-      productId: s.handle,
-      variantId: s.handle,
-    }))
-  }
-  return []
-}
-
-function EmptyState({ label }: { label: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-5 border border-stone/20 bg-white/[0.02] py-16 px-8 text-center">
-      <p className="font-display text-h2 text-bone">{label} coming soon</p>
-      <p className="max-w-md text-body text-stone">
-        We&apos;re curating this collection now. Be the first to know when it lands.
-      </p>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href={SITE_CONFIG.social.whatsapp}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center bg-accent px-6 text-label uppercase tracking-[0.1em] text-ink hover:opacity-90 transition-opacity"
-          style={{ height: 44 }}
-        >
-          Notify me on WhatsApp
-        </Link>
-        <Link
-          href="/b2b"
-          className="inline-flex items-center border border-stone/40 px-6 text-label uppercase tracking-[0.1em] text-bone hover:border-accent hover:text-accent transition-colors"
-          style={{ height: 44 }}
-        >
-          Bulk inquiry
-        </Link>
-      </div>
-    </div>
-  )
-}
-
-export default async function HomeAndCarPage() {
-  const region = getServerRegion()
-  const subData = await Promise.all(
-    SUBCATEGORIES.map(async (sub) => ({
-      sub,
-      products: await loadSubcategory(sub, region.medusaRegionId, region.currency),
-    }))
-  )
-
+export default function HomeAndCarPage() {
   return (
     <>
       {/* Hero */}
@@ -152,54 +63,38 @@ export default async function HomeAndCarPage() {
         </Container>
       </section>
 
-      {/* Sticky sub-nav */}
-      <nav
-        aria-label="Sub-category navigation"
-        className="sticky top-16 z-30 border-b border-stone/20 bg-ink/95 backdrop-blur-sm"
-      >
-        <Container className="flex items-center gap-2 overflow-x-auto py-3">
-          {SUBCATEGORIES.map((sub) => (
-            <Link
-              key={sub.id}
-              href={`#${sub.id}`}
-              className="shrink-0 border border-stone/30 px-4 py-1.5 text-label uppercase tracking-[0.08em] text-bone hover:border-accent hover:text-accent transition-colors"
-            >
-              {sub.label}
-            </Link>
-          ))}
+      {/* Category cards */}
+      <section className="bg-ink py-10 md:py-14">
+        <Container>
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.href}
+                href={cat.href}
+                className="group relative flex flex-col justify-between overflow-hidden border border-stone/15 bg-ink p-8 transition-colors hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
+                style={{ minHeight: 200 }}
+              >
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-50 transition-opacity duration-500 group-hover:opacity-70"
+                  style={{ background: `radial-gradient(ellipse at top right, ${cat.color}33 0%, transparent 60%)` }}
+                  aria-hidden="true"
+                />
+                <div className="relative">
+                  <p className="text-label uppercase tracking-[0.1em] text-accent">{cat.eyebrow}</p>
+                  <h2 className="mt-2 font-display text-h1 text-bone">{cat.title}</h2>
+                  <p className="mt-2 max-w-sm text-body text-stone">{cat.description}</p>
+                </div>
+                <span className="relative mt-6 inline-flex items-center gap-2 text-label uppercase tracking-[0.1em] text-bone group-hover:text-accent transition-colors">
+                  Shop {cat.title}
+                  <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
+                    <path d="M9 1l4 4-4 4M13 5H1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </Link>
+            ))}
+          </div>
         </Container>
-      </nav>
-
-      {/* Sub-category sections */}
-      {subData.map(({ sub, products }, idx) => (
-        <Section
-          key={sub.id}
-          id={sub.id}
-          className={idx % 2 === 0 ? 'bg-ink' : 'bg-mist/40'}
-        >
-          <Container>
-            <div className="mb-10 max-w-2xl">
-              <p className="text-label uppercase tracking-[0.1em] text-accent">{sub.eyebrow}</p>
-              <h2 className="mt-2 font-display text-h1 text-bone">{sub.heading}</h2>
-              <p className="mt-3 text-body text-stone">{sub.description}</p>
-            </div>
-
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
-                {products.map((p) => (
-                  <CategoryProductTile
-                    key={p.handle}
-                    product={p}
-                    href={`/products/${p.handle}`}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState label={sub.heading} />
-            )}
-          </Container>
-        </Section>
-      ))}
+      </section>
 
       {/* Closing CTA */}
       <section className="border-t border-stone/20 bg-ink py-14">

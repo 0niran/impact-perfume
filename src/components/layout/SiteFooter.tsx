@@ -24,7 +24,6 @@ const linkColumns: { heading: string; links: FooterLink[] }[] = [
       { label: 'House Story', href: '/house-story' },
       { label: 'B2B / Bespoke', href: '/b2b' },
       { label: 'Corporate Gifting', href: '/b2b' },
-      { label: 'Journal', href: '/journal' },
     ],
   },
 ]
