@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { OILS, CAR_DIFFUSERS, HOME_DIFFUSERS } from '@/data/products'
-import { getAllNumberSeriesProducts } from '@/lib/medusa'
+import type { MedusaProduct } from '@/types'
+import { getAllNumberSeriesProducts, getProductsByCategory } from '@/lib/medusa'
 import { FALLBACK_COLOR } from '@/lib/constants'
 import { rateLimit } from '@/lib/rateLimit'
 
@@ -9,7 +9,7 @@ export interface SearchResult {
   title: string
   descriptor: string
   signatureColor: string
-  category: 'Number Series' | 'Perfume Oils' | 'Car Diffusers' | 'Home Diffusers'
+  category: 'Number Series' | 'Perfume Oils' | 'Car Diffusers' | 'Home Diffusers' | 'Scent Candles' | 'Scenting Machines'
   href: string
   number?: number
 }
@@ -35,35 +35,28 @@ async function getNumberSeries(): Promise<SearchResult[]> {
   }
 }
 
-function staticResults(): SearchResult[] {
-  const oils: SearchResult[] = OILS.map((o) => ({
-    handle: o.handle,
-    title: o.title,
-    descriptor: o.descriptor,
-    signatureColor: o.signatureColor,
-    category: 'Perfume Oils',
-    href: '/oils',
-  }))
-
-  const car: SearchResult[] = CAR_DIFFUSERS.map((d) => ({
-    handle: d.handle,
-    title: d.title,
-    descriptor: d.descriptor,
-    signatureColor: d.signatureColor,
-    category: 'Car Diffusers',
-    href: '/home',
-  }))
-
-  const home: SearchResult[] = HOME_DIFFUSERS.map((d) => ({
-    handle: d.handle,
-    title: d.title,
-    descriptor: d.descriptor,
-    signatureColor: d.signatureColor,
-    category: 'Home Diffusers',
-    href: '/home',
-  }))
-
-  return [...oils, ...car, ...home]
+/** Live category search: maps a Medusa category to search results. */
+async function categoryResults(
+  categoryHandle: string,
+  category: SearchResult['category'],
+  href: (p: MedusaProduct) => string
+): Promise<SearchResult[]> {
+  try {
+    const products = await getProductsByCategory(categoryHandle, 100)
+    return products.map((p) => {
+      const m = p.metadata ?? {}
+      return {
+        handle: p.handle,
+        title: p.title,
+        descriptor: m.descriptor ?? p.subtitle ?? '',
+        signatureColor: m.signature_color ?? FALLBACK_COLOR,
+        category,
+        href: href(p),
+      }
+    })
+  } catch {
+    return []
+  }
 }
 
 function score(result: SearchResult, q: string): number {
@@ -90,17 +83,20 @@ export async function GET(req: NextRequest) {
   }
 
   const q = req.nextUrl.searchParams.get('q')?.trim() ?? ''
-
   if (q.length < 2) {
     return NextResponse.json({ results: [] })
   }
 
-  const [numberSeries, staticAll] = await Promise.all([
+  const groups = await Promise.all([
     getNumberSeries(),
-    Promise.resolve(staticResults()),
+    categoryResults('oils', 'Perfume Oils', (p) => `/oil/${p.handle.replace('oil-no-', '')}`),
+    categoryResults('scent-candles', 'Scent Candles', (p) => `/products/${p.handle}`),
+    categoryResults('home-diffusers', 'Home Diffusers', (p) => `/products/${p.handle}`),
+    categoryResults('car-diffusers', 'Car Diffusers', (p) => `/products/${p.handle}`),
+    categoryResults('scenting-machines', 'Scenting Machines', (p) => `/products/${p.handle}`),
   ])
 
-  const all = [...numberSeries, ...staticAll]
+  const all = groups.flat()
 
   const scored = all
     .map((r) => ({ ...r, _score: score(r, q) }))

@@ -24,7 +24,9 @@ export default function CategoryProductTile({
   const [added, setAdded] = useState(false)
   const priceAmount = product.priceMinor ?? product.priceKobo
   const currency = product.currency ?? 'NGN'
-  const canAdd = priceAmount > 0
+  // Undefined inStock is treated as available (static/legacy items).
+  const inStock = product.inStock !== false
+  const canAdd = priceAmount > 0 && inStock
 
   const image = product.imageUrl ?? fallbackImage
 
@@ -108,15 +110,17 @@ export default function CategoryProductTile({
       <div className="border-t border-stone/15 bg-ink px-4 py-3">
         <div className="flex items-baseline justify-between gap-3">
           <p className="text-body font-medium text-bone truncate">{product.title}</p>
-          {canAdd && (
-            <p className="text-small text-stone tabular-nums shrink-0">
+          {priceAmount > 0 && (
+            <p className={`text-small tabular-nums shrink-0 ${inStock ? 'text-stone' : 'text-stone/50 line-through'}`}>
               {formatPrice(priceAmount, currency)}
             </p>
           )}
         </div>
-        {product.descriptor && (
+        {!inStock ? (
+          <p className="text-small text-error">Sold out</p>
+        ) : product.descriptor ? (
           <p className="text-small text-stone truncate">{product.descriptor}</p>
-        )}
+        ) : null}
       </div>
     </Link>
   )

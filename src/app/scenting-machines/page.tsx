@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import CollectionPage from '@/components/shop/CollectionPage'
 import { loadCategoryProducts } from '@/lib/loadCategory'
 import { getServerRegion } from '@/lib/serverRegion'
-import { SCENTING_MACHINES } from '@/data/products'
 
 export const revalidate = 60
 
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function ScentingMachinesPage() {
   const region = getServerRegion()
-  const products = await loadCategoryProducts('scenting-machines', region, SCENTING_MACHINES)
+  const products = await loadCategoryProducts('scenting-machines', region)
   return (
     <CollectionPage
       eyebrow="Always On"
