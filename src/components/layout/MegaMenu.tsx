@@ -32,7 +32,7 @@ const MENUS = {
       {
         heading: 'Gift',
         links: [
-          { label: 'All Gift Sets', href: '/gifts#gift-sets' },
+          { label: 'Gift Sets', href: '/gifts' },
           { label: 'Bespoke', href: '/bespoke' },
         ],
       },
