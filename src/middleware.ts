@@ -47,7 +47,14 @@ export function middleware(request: NextRequest) {
   // If the cookie already matches the geo result, no-op to avoid churn.
   if (existing === regionId) return NextResponse.next()
 
-  const response = NextResponse.next()
+  // Write the region onto the *incoming* request too, then forward those
+  // headers. Without this, getServerRegion() reads the pre-existing (or absent)
+  // cookie on the very first visit and renders the wrong currency — e.g. a UK
+  // visitor with no cookie yet defaults to NG/NGN, and only flips to CA/CAD on
+  // the next navigation. Setting it on the request makes the first render use
+  // the geo-correct region; setting it on the response persists it in the browser.
+  request.cookies.set('impact_region', regionId)
+  const response = NextResponse.next({ request: { headers: request.headers } })
   response.cookies.set('impact_region', regionId, {
     maxAge: 60 * 60 * 24 * 180, // 180 days
     path: '/',

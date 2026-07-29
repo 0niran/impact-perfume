@@ -18,7 +18,7 @@ const BOX_IMAGE = '/images/No Series Discovery Set.jpeg'
 
 export const metadata: Metadata = {
   title: 'Number Discovery Set',
-  description: 'Build your own discovery set: choose 12 from the Number Series as 2ml vials in our signature box.',
+  description: 'Build your own discovery set: choose 12 fragrances from the Number Series collection as 2ml vials in our signature box.',
   openGraph: {
     title: 'Number Discovery Set · Impact Perfumes',
     description: 'Pick 12 from the Number Series and fill your own discovery box.',
@@ -63,8 +63,9 @@ export default async function NumberDiscoverySetPage() {
                 Build Your Set.
               </h1>
               <p className="mt-4 max-w-lg text-body text-stone">
-                Choose {REQUIRED} from the Number Series as 2ml vials, presented in our
-                signature box. The simplest way to find your scent, or gift the journey.
+                Choose {REQUIRED} fragrances from the Number Series collection as 2ml
+                vials, presented in our signature box. The simplest way to find your
+                scent, or gift the journey.
               </p>
               {price && price.amount > 0 && (
                 <p className="mt-5 font-display text-h1 text-bone">

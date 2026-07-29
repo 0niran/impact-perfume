@@ -6,7 +6,7 @@ const COLLECTIONS = [
     label: 'The Number Series',
     eyebrow: 'Signature EDPs',
     description:
-      '50 numbered Eau de Parfums. One silhouette. An infinite world of difference inside each bottle.',
+      '50+ Eau de Parfums. One silhouette. An infinite world of difference inside each bottle.',
     cta: 'Shop the Series',
     href: '/no-series',
     accent: 'rgba(107,68,35,0.15)',

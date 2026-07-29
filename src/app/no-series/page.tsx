@@ -9,10 +9,10 @@ import DiscoveryNudge from '@/components/shop/DiscoveryNudge'
 export const metadata: Metadata = {
   title: 'Number Series',
   description:
-    '50 numbered EDPs. Each fragrance in the Number Series tells a different story. Find yours.',
+    '50+ fragrances. Each one in the Number Series tells a different story. Find yours.',
   openGraph: {
     title: 'Number Series · Impact Perfumes',
-    description: '50 unique fragrances. One house.',
+    description: '50+ fragrances. One house.',
     images: [{ url: '/og-shop.jpg', width: 1200, height: 630 }],
   },
 }

@@ -17,11 +17,12 @@
  * by 100 here at the write boundary.
  */
 
-import { buildCustomerEmail, buildBusinessEmail, sendEmail } from '@/lib/email'
+import { buildCustomerEmail, buildBusinessEmail, buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { REGIONS, type RegionId } from '@/lib/region'
 import { claimPayment, releasePayment, recordMedusaOrderId, type PaymentSource } from '@/lib/processedPayment'
 import { ngInclusiveVat } from '@/lib/tax'
+import { findLowStockAfterOrder, LOW_STOCK_THRESHOLD } from '@/lib/lowStock'
 
 export interface ShippingAddress {
   address1: string
@@ -358,15 +359,36 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boole
     pickupLocationName: input.pickupLocationName,
   }
 
+  // Low-stock alert to the business inbox: if any purchased item's remaining
+  // stock is now below the threshold, notify so they can restock. Best-effort,
+  // and never blocks or fails the order.
+  const lowStockAlert = (async () => {
+    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+    if (!backendUrl) return
+    const token = await getMedusaAdminToken()
+    if (!token) return
+    const alerts = await findLowStockAfterOrder({ backendUrl, token, orderId })
+    if (alerts.length === 0) return
+    const plural = alerts.length > 1
+    const { subject, html } = buildOwnerAlertEmail({
+      subjectPrefix: 'Low stock',
+      heading: `${alerts.length} item${plural ? 's' : ''} running low`,
+      intro: `The following item${plural ? 's have' : ' has'} dropped below ${LOW_STOCK_THRESHOLD} in stock after order ${input.reference}. Restock soon to avoid selling out.`,
+      items: alerts,
+    })
+    await sendEmail({ to: SITE_CONFIG.contact.email, subject, html })
+  })()
+
   // Emails are best-effort — a send failure must not fail an order that the
   // customer already paid for and that now exists in Medusa.
   const results = await Promise.allSettled([
     sendEmail({ to: input.customerEmail, ...buildCustomerEmail(orderEmailData) }),
     sendEmail({ to: SITE_CONFIG.contact.email, ...buildBusinessEmail(orderEmailData) }),
+    lowStockAlert,
   ])
   results.forEach((r, i) => {
     if (r.status === 'rejected') {
-      const label = ['customerEmail', 'businessEmail'][i] ?? 'unknown'
+      const label = ['customerEmail', 'businessEmail', 'lowStockAlert'][i] ?? 'unknown'
       console.error(`[orderFulfillment] ${label} rejected`, {
         reason: r.reason instanceof Error ? r.reason.message : r.reason,
         reference: input.reference,
