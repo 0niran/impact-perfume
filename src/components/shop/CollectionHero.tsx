@@ -8,7 +8,7 @@ export default function CollectionHero() {
           The Number Series
         </p>
         <h1 className="mt-3 font-display text-[36px] leading-[1.1] md:text-display-l text-bone">
-          50 Numbers. One House.
+          50+ Fragrances. One House.
         </h1>
         <p className="mt-4 max-w-lg text-body text-stone">
           Each fragrance in the series tells a different story. Find yours.

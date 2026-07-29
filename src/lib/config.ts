@@ -71,18 +71,6 @@ export const NG_PICKUP_LOCATIONS: PickupLocation[] = [
       country: 'Nigeria',
     },
   },
-  {
-    id: 'ikeja-city-mall',
-    name: 'Ikeja City Mall',
-    displayLines: ['Entrance 2, Ikeja City Mall', 'Opposite Nike Store', 'Ikeja, Lagos'],
-    address: {
-      address1: 'Entrance 2, Ikeja City Mall',
-      address2: 'Opposite Nike Store',
-      city: 'Ikeja',
-      state: 'Lagos',
-      country: 'Nigeria',
-    },
-  },
 ]
 
 export function getPickupLocation(id: string | undefined | null): PickupLocation | undefined {
