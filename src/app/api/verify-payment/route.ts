@@ -4,6 +4,7 @@ import { getPickupLocation } from '@/lib/config'
 import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
 import { verifyPaymentBodySchema, formatZodError } from '@/lib/validation'
+import { verifyDeliveryQuote } from '@/lib/deliveryQuote'
 
 interface PaystackVerifyResponse {
   status: boolean
@@ -54,11 +55,19 @@ export async function POST(req: NextRequest) {
     shippingAddress,
     fulfillmentMethod,
     pickupLocationId,
+    deliveryQuoteToken,
     lines,
   } = parsed.data
 
   const pickupLocation =
     fulfillmentMethod === 'pickup' ? getPickupLocation(pickupLocationId) : undefined
+
+  // For a shipping order, the delivery fee + geocoded coordinates come from the
+  // signed quote token, bound to this exact address. Never trust a client fee.
+  const verifiedQuote =
+    fulfillmentMethod !== 'pickup'
+      ? verifyDeliveryQuote(deliveryQuoteToken, shippingAddress)
+      : null
 
   // 1. Verify with Paystack
   let tx
@@ -96,7 +105,7 @@ export async function POST(req: NextRequest) {
   //    lines match Medusa's canonical prices AND that the amount Paystack
   //    captured equals the server total. Shared with the Paystack webhook so
   //    both fulfilment triggers enforce the same checks (audit H-1).
-  const verified = await verifyPaidOrder(lines, 'NG', tx.amount)
+  const verified = await verifyPaidOrder(lines, 'NG', tx.amount, verifiedQuote?.rawFeeMinor ?? 0)
   if (!verified.ok) {
     console.error('[verify-payment] re-pricing/amount check failed — refusing to fulfil', {
       reference: tx.reference,
@@ -132,6 +141,9 @@ export async function POST(req: NextRequest) {
       country: shippingAddress.country,
     },
     lines: verified.lines,
+    subtotalMinor: verified.subtotalMinor,
+    deliveryFeeMinor: verified.deliveryFeeMinor,
+    deliveryGeo: verifiedQuote ? { lat: verifiedQuote.lat, lng: verifiedQuote.lng } : undefined,
     paymentProvider: 'paystack',
     paymentRef: tx.reference,
     fulfillmentMethod: fulfillmentMethod ?? 'shipping',

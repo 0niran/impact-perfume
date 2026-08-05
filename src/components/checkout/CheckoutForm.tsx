@@ -43,6 +43,14 @@ interface Fulfilment {
   pickupLocationId?: string
 }
 
+interface DeliveryQuote {
+  /** Fee actually charged in MINOR units (0 when free delivery applies). */
+  chargedFeeMinor: number
+  freeDelivery: boolean
+  /** Signed token the server validates at payment time. */
+  token: string
+}
+
 function generateRef(): string {
   // crypto.getRandomValues is widely supported in modern browsers; refs
   // need to be unpredictable so attackers can't pre-compute valid refs
@@ -73,9 +81,89 @@ export default function CheckoutForm() {
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
 
+  // Live GIG delivery quote for the entered address (shipping only).
+  const [quote, setQuote] = useState<DeliveryQuote | null>(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
+  const [quoteError, setQuoteError] = useState<string | null>(null)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scriptReady = useRef(false)
+
+  const itemCount = lines.reduce((sum, l) => sum + l.qty, 0)
+
+  // Fetch a delivery quote once the address is complete. Debounced so we don't
+  // hit GIG on every keystroke; aborts the in-flight request when inputs change.
+  useEffect(() => {
+    if (method !== 'shipping') {
+      setQuote(null)
+      setQuoteError(null)
+      setQuoteLoading(false)
+      return
+    }
+    const ready = address1.trim() && city.trim() && state
+    if (!ready) {
+      setQuote(null)
+      setQuoteError(null)
+      setQuoteLoading(false)
+      return
+    }
+
+    let active = true
+    const controller = new AbortController()
+    setQuote(null)
+    setQuoteError(null)
+    setQuoteLoading(true)
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/delivery/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shippingAddress: {
+              address1: address1.trim(),
+              address2: address2.trim() || undefined,
+              city: city.trim(),
+              state,
+              country: 'Nigeria',
+            },
+            subtotalMinor: subtotalKobo,
+            itemCount,
+          }),
+          signal: controller.signal,
+        })
+        const data = await res.json()
+        if (!active) return
+        if (data.ok) {
+          setQuote({
+            chargedFeeMinor: data.chargedFeeMinor,
+            freeDelivery: data.freeDelivery,
+            token: data.token,
+          })
+          setQuoteError(null)
+        } else {
+          setQuote(null)
+          setQuoteError(data.message ?? 'Could not calculate delivery for this address.')
+        }
+      } catch (err) {
+        if (active && (err as Error).name !== 'AbortError') {
+          setQuoteError('Could not calculate delivery right now. Please try again.')
+        }
+      } finally {
+        if (active) setQuoteLoading(false)
+      }
+    }, 700)
+
+    return () => {
+      active = false
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [method, address1, address2, city, state, subtotalKobo, itemCount])
+
+  const deliveryFeeMinor = method === 'shipping' ? quote?.chargedFeeMinor ?? 0 : 0
+  const totalKobo = subtotalKobo + deliveryFeeMinor
 
   useEffect(() => {
     if (document.getElementById(SITE_CONFIG.paystack.scriptId)) {
@@ -120,13 +208,14 @@ export default function CheckoutForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         reference,
-        amountKobo: subtotalKobo,
+        amountKobo: totalKobo,
         customerName: name,
         customerEmail: email,
         customerPhone: phone,
         shippingAddress: fulfilment.shippingAddress,
         fulfillmentMethod: fulfilment.fulfillmentMethod,
         pickupLocationId: fulfilment.pickupLocationId,
+        deliveryQuoteToken: fulfilment.fulfillmentMethod === 'shipping' ? quote?.token : undefined,
         lines,
       }),
     })
@@ -161,6 +250,18 @@ export default function CheckoutForm() {
       return
     }
 
+    // Shipping orders need a live delivery quote before we can charge the fee.
+    if (method === 'shipping') {
+      if (quoteLoading) {
+        setError('Calculating delivery… one moment.')
+        return
+      }
+      if (!quote) {
+        setError(quoteError ?? 'Please enter a delivery address to calculate delivery.')
+        return
+      }
+    }
+
     if (!scriptReady.current || !window.PaystackPop) {
       setError('Payment provider not loaded. Please refresh and try again.')
       return
@@ -178,6 +279,8 @@ export default function CheckoutForm() {
       shippingAddress: fulfilment.shippingAddress,
       fulfillmentMethod: fulfilment.fulfillmentMethod,
       pickupLocationId: fulfilment.pickupLocationId,
+      // Server re-validates this token to trust the delivery fee + coordinates.
+      deliveryQuoteToken: fulfilment.fulfillmentMethod === 'shipping' ? quote?.token : undefined,
       lines: lines.map((l) => ({
         variantId: l.variantId,
         productId: l.productId,
@@ -187,13 +290,13 @@ export default function CheckoutForm() {
         unitPriceKobo: l.unitPriceKobo,
         currency: l.currency,
       })),
-      amountKobo: subtotalKobo,
+      amountKobo: totalKobo,
     }
 
     const handler = window.PaystackPop.setup({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
       email: email.trim(),
-      amount: subtotalKobo,
+      amount: totalKobo,
       ref: generateRef(),
       callback: (response) => { handleVerify(response.reference, fulfilment) },
       onClose: () => { setLoading(false) },
@@ -402,13 +505,42 @@ export default function CheckoutForm() {
 
       <div className="flex flex-col gap-6">
         <div className="border border-stone/20 bg-white/5 p-6">
+          {method === 'shipping' && (
+            <div className="mb-4 flex flex-col gap-2 border-b border-stone/20 pb-4 text-small">
+              <div className="flex items-center justify-between text-bone/60">
+                <span>Subtotal</span>
+                <span>{formatPrice(subtotalKobo, currency)}</span>
+              </div>
+              <div className="flex items-center justify-between text-bone/60">
+                <span>Delivery</span>
+                <span>
+                  {quoteLoading
+                    ? 'Calculating…'
+                    : quote
+                      ? quote.freeDelivery
+                        ? 'Free'
+                        : formatPrice(quote.chargedFeeMinor, currency)
+                      : '—'}
+                </span>
+              </div>
+            </div>
+          )}
+
           <p className="text-label uppercase tracking-[0.1em] text-bone/50">Total</p>
-          <p className="mt-2 font-display text-h1 text-bone">{formatPrice(subtotalKobo, currency)}</p>
+          <p className="mt-2 font-display text-h1 text-bone">{formatPrice(totalKobo, currency)}</p>
           <p className="mt-1 text-small text-bone/40">
             {method === 'pickup'
               ? 'Free in-store pickup at your selected store'
-              : 'Delivery fee calculated after order'}
+              : quote?.freeDelivery
+                ? 'Free home delivery by GIG'
+                : quote
+                  ? 'Home delivery by GIG, tracked to your door'
+                  : 'Enter your address to calculate delivery'}
           </p>
+
+          {method === 'shipping' && quoteError && (
+            <p className="mt-3 text-small text-error">{quoteError}</p>
+          )}
 
           {error && (
             <p className="mt-4 text-small text-error">{error}</p>
@@ -417,7 +549,7 @@ export default function CheckoutForm() {
           <button
             type="submit"
             form="checkout-form"
-            disabled={loading}
+            disabled={loading || (method === 'shipping' && (quoteLoading || !quote))}
             className="mt-6 flex h-[52px] w-full items-center justify-center bg-accent text-label uppercase tracking-[0.1em] text-ink transition-all duration-300 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing…' : 'Pay with Paystack'}

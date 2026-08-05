@@ -23,6 +23,7 @@ import { REGIONS, type RegionId } from '@/lib/region'
 import { claimPayment, releasePayment, recordMedusaOrderId, type PaymentSource } from '@/lib/processedPayment'
 import { ngInclusiveVat } from '@/lib/tax'
 import { findLowStockAfterOrder, LOW_STOCK_THRESHOLD } from '@/lib/lowStock'
+import { createShipment, gigTrackingUrl as gigTrackingLink } from '@/lib/gig'
 
 export interface ShippingAddress {
   address1: string
@@ -56,6 +57,16 @@ export interface FulfillmentInput {
   subtotalMinor?: number
   /** Tax added at checkout in MINOR units. Present/> 0 on the CAD rail. */
   taxMinor?: number
+  /**
+   * Delivery fee charged in MINOR units (0 / absent for pickup or free
+   * delivery). NG home-delivery only. totalKobo already includes it.
+   */
+  deliveryFeeMinor?: number
+  /**
+   * Geocoded destination coordinates from the delivery quote, used to book the
+   * GIG shipment. Present only for NG home-delivery orders.
+   */
+  deliveryGeo?: { lat: number; lng: number }
   /** Stripe Tax calculation id, for the order record. */
   taxCalculationId?: string
   paymentProvider: 'paystack' | 'stripe'
@@ -106,6 +117,50 @@ async function getMedusaAdminToken(): Promise<string | null> {
   }
 }
 
+/**
+ * Write the GIG waybill / label / tracking onto the Medusa order metadata so it
+ * shows in admin (and the print + fulfilment widgets). Merges onto the existing
+ * metadata rather than replacing it. Best-effort.
+ */
+async function persistGigWaybill(
+  orderId: string,
+  fields: { waybill: string; labelUrl?: string; trackingUrl: string }
+): Promise<void> {
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  if (!backendUrl) return
+  const token = await getMedusaAdminToken()
+  if (!token) return
+  try {
+    const getRes = await fetch(`${backendUrl}/admin/orders/${orderId}?fields=metadata`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const current = getRes.ok
+      ? ((await getRes.json())?.order?.metadata as Record<string, unknown> | null) ?? {}
+      : {}
+    const metadata = {
+      ...current,
+      gig_waybill: fields.waybill,
+      gig_tracking_url: fields.trackingUrl,
+      ...(fields.labelUrl ? { gig_label_url: fields.labelUrl } : {}),
+    }
+    const res = await fetch(`${backendUrl}/admin/orders/${orderId}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ metadata }),
+    })
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      console.error('[orderFulfillment] persist waybill failed', {
+        status: res.status,
+        body: body.slice(0, 300),
+        orderId,
+      })
+    }
+  } catch (err) {
+    console.error('[orderFulfillment] persist waybill threw', err instanceof Error ? err.message : err)
+  }
+}
+
 async function createMedusaOrder(input: FulfillmentInput): Promise<string | null> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   const region = REGIONS[input.regionId]
@@ -127,13 +182,16 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
   const lastName = nameParts.slice(1).join(' ') || '-'
 
   // Tax bookkeeping on the order record. NG prices are VAT-inclusive, so the
-  // charged total already contains 7.5% — record the embedded portion. CA adds
-  // tax at checkout, so it arrives on the input.
+  // product subtotal already contains 7.5% — record the embedded portion. CA
+  // adds tax at checkout, so it arrives on the input. Delivery is tracked
+  // separately and excluded from the product subtotal / VAT calc.
   const isNg = input.regionId === 'NG'
-  const taxMinorRecord = isNg ? ngInclusiveVat(input.totalKobo) : input.taxMinor ?? 0
-  const subtotalMinorRecord = isNg
-    ? input.totalKobo - taxMinorRecord
-    : input.subtotalMinor ?? input.totalKobo - taxMinorRecord
+  const deliveryFeeMinorRecord = input.deliveryFeeMinor ?? 0
+  // Product subtotal only (NG: VAT-inclusive; CA: pre-tax), delivery excluded.
+  const productSubtotalMinor = input.subtotalMinor ?? input.totalKobo - deliveryFeeMinorRecord
+  const taxMinorRecord = isNg ? ngInclusiveVat(productSubtotalMinor) : input.taxMinor ?? 0
+  // Ex-tax product subtotal for the record (subtotal + tax + delivery = total).
+  const subtotalMinorRecord = isNg ? productSubtotalMinor - taxMinorRecord : productSubtotalMinor
 
   // 1) Create the draft
   const draftBody = {
@@ -154,12 +212,25 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
       postal_code: input.shippingAddress.postalCode ?? '',
       country_code: region.countryCode.toLowerCase(),
     },
-    items: input.lines.map((l) => ({
-      variant_id: l.variantId,
-      quantity: l.qty,
-      // Medusa v2 expects MAJOR units; storefront tracks MINOR units.
-      unit_price: Math.round(l.unitPriceKobo / 100),
-    })),
+    items: [
+      ...input.lines.map((l) => ({
+        variant_id: l.variantId,
+        quantity: l.qty,
+        // Medusa v2 expects MAJOR units; storefront tracks MINOR units.
+        unit_price: Math.round(l.unitPriceKobo / 100),
+      })),
+      // Delivery as a custom line so the order's item total equals the captured
+      // payment. Omitted for pickup / free delivery (fee 0).
+      ...(deliveryFeeMinorRecord > 0
+        ? [
+            {
+              title: 'Delivery (GIG home delivery)',
+              quantity: 1,
+              unit_price: Math.round(deliveryFeeMinorRecord / 100),
+            },
+          ]
+        : []),
+    ],
     metadata: {
       [`${input.paymentProvider}_reference`]: input.paymentRef,
       payment_status: 'paid',
@@ -167,8 +238,10 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
       customer_phone: input.customerPhone,
       reference: input.reference,
       // Money breakdown (MINOR units) for reconciliation and remittance.
+      // subtotal + tax + delivery = total.
       subtotal_minor: String(subtotalMinorRecord),
       tax_minor: String(taxMinorRecord),
+      delivery_fee_minor: String(deliveryFeeMinorRecord),
       total_minor: String(input.totalKobo),
       tax_inclusive: isNg ? 'true' : 'false',
       tax_calculation_id: input.taxCalculationId ?? '',
@@ -338,6 +411,59 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boole
   }
   recordMedusaOrderId(input.reference, orderId).catch(() => undefined)
 
+  // Book the GIG home-delivery shipment for NG shipping orders. Runs after the
+  // order is durably created: on success the idempotency lock is held, so a
+  // webhook retry no-ops and can't double-book. Best-effort — a failure never
+  // fails an order the customer already paid for (ops can book manually).
+  let gigWaybill: string | undefined
+  let gigTrackingUrl: string | undefined
+  if (
+    input.regionId === 'NG' &&
+    (input.fulfillmentMethod ?? 'shipping') === 'shipping' &&
+    input.deliveryGeo
+  ) {
+    try {
+      const itemCount = input.lines.reduce((sum, l) => sum + l.qty, 0)
+      const declaredValueMajor = Math.round(
+        (input.subtotalMinor ?? input.totalKobo - (input.deliveryFeeMinor ?? 0)) / 100
+      )
+      const addr = input.shippingAddress
+      const receiverAddress = [addr.address1, addr.address2, addr.city, addr.state, addr.country]
+        .filter(Boolean)
+        .join(', ')
+      const shipment = await createShipment({
+        receiverName: input.customerName,
+        receiverPhone: input.customerPhone,
+        receiverLat: input.deliveryGeo.lat,
+        receiverLng: input.deliveryGeo.lng,
+        receiverAddress,
+        itemCount,
+        declaredValueMajor,
+      })
+      if (shipment) {
+        gigWaybill = shipment.waybill
+        gigTrackingUrl = gigTrackingLink(shipment.waybill)
+        await persistGigWaybill(orderId, {
+          waybill: shipment.waybill,
+          labelUrl: shipment.labelUrl,
+          trackingUrl: gigTrackingUrl,
+        })
+        console.log('[orderFulfillment] GIG shipment booked', {
+          orderId,
+          waybill: shipment.waybill,
+          reference: input.reference,
+        })
+      } else {
+        console.error('[orderFulfillment] GIG shipment not created', {
+          reference: input.reference,
+          orderId,
+        })
+      }
+    } catch (err) {
+      console.error('[orderFulfillment] GIG shipment threw', err instanceof Error ? err.message : err)
+    }
+  }
+
   const orderEmailData = {
     reference: input.reference,
     customerName: input.customerName,
@@ -355,8 +481,13 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boole
     // Present on the CAD rail so the email shows Subtotal / Tax / Total.
     subtotalKobo: input.subtotalMinor,
     taxKobo: input.taxMinor,
+    // Delivery fee (NG home delivery). 0 / undefined for pickup or free delivery.
+    deliveryFeeKobo: input.deliveryFeeMinor,
     fulfillmentMethod: input.fulfillmentMethod ?? 'shipping',
     pickupLocationName: input.pickupLocationName,
+    // GIG tracking, when a shipment was booked.
+    gigWaybill,
+    gigTrackingUrl,
   }
 
   // Low-stock alert to the business inbox: if any purchased item's remaining
