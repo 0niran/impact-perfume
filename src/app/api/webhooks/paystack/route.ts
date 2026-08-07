@@ -5,6 +5,7 @@ import { getPickupLocation } from '@/lib/config'
 import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
+import { verifyDeliveryQuote } from '@/lib/deliveryQuote'
 
 /**
  * Paystack server-to-server webhook. Signed with HMAC-SHA512 of the raw body
@@ -43,6 +44,7 @@ interface PaystackMetadata {
   shippingAddress?: ShippingAddress
   fulfillmentMethod?: 'pickup' | 'shipping'
   pickupLocationId?: string
+  deliveryQuoteToken?: string
   lines?: PaystackLine[]
 }
 
@@ -133,7 +135,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: 'currency-mismatch' })
     }
 
-    const verified = await verifyPaidOrder(md.lines, 'NG', d.amount)
+    // Delivery fee + coordinates come from the signed quote token in metadata,
+    // bound to the shipping address. Pickup orders carry no token.
+    const verifiedQuote =
+      md.fulfillmentMethod !== 'pickup'
+        ? verifyDeliveryQuote(md.deliveryQuoteToken, md.shippingAddress)
+        : null
+
+    const verified = await verifyPaidOrder(md.lines, 'NG', d.amount, verifiedQuote?.rawFeeMinor ?? 0)
     if (!verified.ok) {
       console.error('[paystack-webhook] re-pricing/amount check failed — refusing to fulfil', {
         reference: d.reference,
@@ -155,6 +164,9 @@ export async function POST(req: NextRequest) {
         customerPhone: md.customerPhone ?? '',
         shippingAddress: md.shippingAddress,
         lines: verified.lines,
+        subtotalMinor: verified.subtotalMinor,
+        deliveryFeeMinor: verified.deliveryFeeMinor,
+        deliveryGeo: verifiedQuote ? { lat: verifiedQuote.lat, lng: verifiedQuote.lng } : undefined,
         paymentProvider: 'paystack',
         paymentRef: d.reference,
         fulfillmentMethod: md.fulfillmentMethod ?? 'shipping',

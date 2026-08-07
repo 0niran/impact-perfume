@@ -157,7 +157,9 @@ describe('POST /api/webhooks/paystack — event handling', () => {
     expect(verifyPaidOrderMock).toHaveBeenCalledWith(
       expect.any(Array),
       'NG',
-      5_000_000
+      5_000_000,
+      // Delivery fee: 0 here — no valid quote token on this fixture.
+      0
     )
   })
 

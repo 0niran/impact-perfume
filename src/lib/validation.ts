@@ -138,7 +138,21 @@ export const verifyPaymentBodySchema = z.object({
   // and shippingAddress carries that store's address.
   fulfillmentMethod: z.enum(['pickup', 'shipping']).optional(),
   pickupLocationId: optionalSafeText(64).optional(),
+  // Signed delivery-quote token from /api/delivery/quote. Carries the raw GIG
+  // fee + geocoded coordinates, bound to the shipping address. Absent for
+  // pickup orders and free-of-delivery legacy clients.
+  deliveryQuoteToken: z.string().trim().max(2000).optional(),
   lines: z.array(cartLineInputSchema).min(1).max(50),
+})
+
+// Body for /api/delivery/quote — price a home delivery for a typed address.
+export const deliveryQuoteBodySchema = z.object({
+  shippingAddress: ngShippingAddressSchema,
+  // Order subtotal in MINOR units, for the free-delivery threshold + GIG's
+  // declared insurance value. Server re-checks the threshold at payment time,
+  // so a tampered value here can't underpay — it only affects the preview.
+  subtotalMinor: z.number().int().min(0).max(10_000_000_000),
+  itemCount: z.number().int().min(1).max(999),
 })
 
 export const stripeCreateIntentBodySchema = z.object({

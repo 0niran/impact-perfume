@@ -69,10 +69,16 @@ interface OrderEmailData {
   subtotalKobo?: number
   /** Tax added at checkout, MINOR units. */
   taxKobo?: number
+  /** Delivery fee, MINOR units. Shown as its own line when > 0. */
+  deliveryFeeKobo?: number
   /** 'pickup' shows the store as the collection point instead of a delivery. */
   fulfillmentMethod?: 'pickup' | 'shipping'
   /** Store name when fulfillmentMethod is 'pickup'. */
   pickupLocationName?: string
+  /** GIG waybill, when a home-delivery shipment was booked. */
+  gigWaybill?: string
+  /** Public GIG tracking URL for the waybill. */
+  gigTrackingUrl?: string
 }
 
 /**
@@ -81,18 +87,32 @@ interface OrderEmailData {
  */
 function totalsRows(data: OrderEmailData, currency: string, totalLabel: string): string {
   const hasTax = typeof data.taxKobo === 'number' && data.taxKobo > 0
-  const subtotal = data.subtotalKobo ?? data.totalKobo - (data.taxKobo ?? 0)
-  const breakdown = hasTax
+  const delivery = data.deliveryFeeKobo ?? 0
+  const hasDelivery = delivery > 0
+  // Product subtotal excludes tax (CA) and delivery. Fall back by subtracting.
+  const subtotal = data.subtotalKobo ?? data.totalKobo - (data.taxKobo ?? 0) - delivery
+  const taxRow = hasTax
     ? `
-      <tr>
-        <td style="padding:16px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};">Subtotal</td>
-        <td style="padding:16px 0 0;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:${PALETTE.ink};">${formatPrice(subtotal, currency)}</td>
-      </tr>
       <tr>
         <td style="padding:6px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};">Tax</td>
         <td style="padding:6px 0 0;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:${PALETTE.ink};">${formatPrice(data.taxKobo as number, currency)}</td>
       </tr>`
     : ''
+  const deliveryRow = hasDelivery
+    ? `
+      <tr>
+        <td style="padding:6px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};">Delivery</td>
+        <td style="padding:6px 0 0;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:${PALETTE.ink};">${formatPrice(delivery, currency)}</td>
+      </tr>`
+    : ''
+  const breakdown =
+    hasTax || hasDelivery
+      ? `
+      <tr>
+        <td style="padding:16px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.slate};">Subtotal</td>
+        <td style="padding:16px 0 0;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:${PALETTE.ink};">${formatPrice(subtotal, currency)}</td>
+      </tr>${taxRow}${deliveryRow}`
+      : ''
   return `
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;border-top:2px solid ${PALETTE.ink};">
       ${breakdown}
@@ -118,7 +138,13 @@ function deliveryLines(data: OrderEmailData): string {
     const store = data.pickupLocationName ? `${esc(data.pickupLocationName)}<br/>` : ''
     return `${esc(data.customerName)}<br/>${store}${street}<br/>${esc(a.city)}, ${esc(a.state)}`
   }
-  return `${esc(data.customerName)}<br/>${street}<br/>${esc(a.city)}, ${esc(a.state)}<br/>${esc(a.country)}`
+  const tracking = data.gigWaybill
+    ? `<br/><br/><span style="color:${PALETTE.slate};">GIG waybill:</span> ${esc(data.gigWaybill)}` +
+      (data.gigTrackingUrl
+        ? `<br/><a href="${data.gigTrackingUrl}" style="color:${PALETTE.ink};text-decoration:underline;">Track your delivery</a>`
+        : '')
+    : ''
+  return `${esc(data.customerName)}<br/>${street}<br/>${esc(a.city)}, ${esc(a.state)}<br/>${esc(a.country)}${tracking}`
 }
 
 /* ----------------------------------------------------------------------------

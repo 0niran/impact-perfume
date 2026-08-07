@@ -256,8 +256,12 @@ export async function validateLinePricing(
 export interface VerifiedOrder {
   ok: boolean
   message?: string
-  /** Server-derived total in MINOR units. */
+  /** Server-derived total in MINOR units, INCLUDING any delivery fee. */
   totalMinor: number
+  /** Product subtotal in MINOR units, before delivery. */
+  subtotalMinor: number
+  /** Delivery fee actually charged in MINOR units (0 when free / pickup). */
+  deliveryFeeMinor: number
   /** Server-priced lines, shaped for fulfillOrder. */
   lines: CartLine[]
 }
@@ -273,6 +277,11 @@ export interface VerifiedOrder {
  * without it a customer could pay ₦1 for a full cart and still be fulfilled by
  * the webhook. Returns server-priced lines so the order record never trusts
  * client-sent prices.
+ *
+ * `rawDeliveryFeeMinor` is the delivery fee from a validated GIG quote token
+ * (0 for pickup). The free-delivery threshold is applied here, against the
+ * SERVER-repriced subtotal, so neither the fee nor the free-delivery waiver can
+ * be gamed: the asserted total is repricedSubtotal + chargedDeliveryFee.
  */
 export async function verifyPaidOrder(
   rawLines: Array<{
@@ -284,7 +293,8 @@ export async function verifyPaidOrder(
     unitPriceKobo: number
   }>,
   regionId: RegionId,
-  paidAmountMinor: number
+  paidAmountMinor: number,
+  rawDeliveryFeeMinor = 0
 ): Promise<VerifiedOrder> {
   const validation = await validateLinePricing(
     rawLines.map((l) => ({
@@ -296,14 +306,25 @@ export async function verifyPaidOrder(
     regionId
   )
   if (!validation.ok) {
-    return { ok: false, message: validation.message, totalMinor: 0, lines: [] }
+    return { ok: false, message: validation.message, totalMinor: 0, subtotalMinor: 0, deliveryFeeMinor: 0, lines: [] }
   }
+
+  const subtotalMinor = validation.totalMinor
+  // Waive delivery over the region's free-delivery threshold. Decided here, on
+  // the trusted subtotal, so a client can't fake "free delivery".
+  const threshold = REGIONS[regionId].freeDeliveryThresholdMinor
+  const deliveryFeeMinor =
+    subtotalMinor >= threshold ? 0 : Math.max(0, Math.round(rawDeliveryFeeMinor))
+  const totalMinor = subtotalMinor + deliveryFeeMinor
+
   // Allow a 1-MINOR-unit tolerance for rounding between provider and Medusa.
-  if (Math.abs(validation.totalMinor - paidAmountMinor) > 1) {
+  if (Math.abs(totalMinor - paidAmountMinor) > 1) {
     return {
       ok: false,
       message: 'Amount paid does not match the order total.',
-      totalMinor: validation.totalMinor,
+      totalMinor,
+      subtotalMinor,
+      deliveryFeeMinor,
       lines: [],
     }
   }
@@ -314,5 +335,5 @@ export async function verifyPaidOrder(
     qty: l.qty,
     unitPriceKobo: validation.lines[i]?.serverUnitPriceMinor ?? l.unitPriceKobo,
   }))
-  return { ok: true, totalMinor: validation.totalMinor, lines }
+  return { ok: true, totalMinor, subtotalMinor, deliveryFeeMinor, lines }
 }
