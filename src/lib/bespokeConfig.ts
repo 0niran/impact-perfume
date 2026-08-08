@@ -1,0 +1,187 @@
+/**
+ * Reads the bespoke pricing config from Medusa so every price and rate is
+ * editable in the admin with nothing hardcoded in the app. Four draft products
+ * (hidden from the storefront) hold the values:
+ *
+ *   bespoke-base         3 variants (50/100/200ml)  -> base price per volume
+ *   bespoke-bottle       2 variants (Gloss/Matted)  -> bottle-type surcharge
+ *   bespoke-inscription  3 variants (Gold/Silver/Sticker) -> inscription surcharge
+ *   bespoke-config       product metadata           -> business rates
+ *
+ * Variants are keyed by SKU (stable across renames); the display label comes
+ * from the variant title, so the owner can retitle freely. Prices are read from
+ * the admin API (variant.prices[] in MAJOR units) and multiplied to MINOR here.
+ *
+ * Wrapped in unstable_cache with the same TTL as the catalogue, so admin edits
+ * appear within a couple of minutes without an admin login on every render.
+ *
+ * On any failure the reader returns null and callers degrade to the "we'll
+ * confirm your price" quote path — it never falls back to hardcoded prices.
+ */
+
+import { unstable_cache } from 'next/cache'
+import type { BespokeConfig, BespokeRates, PricedOption } from '@/lib/bespokePricing'
+
+const CONFIG_TTL_SECONDS = 120
+const CURRENCY = 'ngn' // Bespoke is NGN / Paystack only.
+
+/** SKU -> stable option key + display order, per group. */
+const VOLUME_SKUS: Record<string, string> = {
+  'BSPOKE-BASE-50': '50',
+  'BSPOKE-BASE-100': '100',
+  'BSPOKE-BASE-200': '200',
+}
+const BOTTLE_SKUS: Record<string, string> = {
+  'BSPOKE-BOTTLE-GLOSS': 'gloss',
+  'BSPOKE-BOTTLE-MATTED': 'matted',
+}
+const INSCRIPTION_SKUS: Record<string, string> = {
+  'BSPOKE-INSCR-GOLD': 'gold-foil',
+  'BSPOKE-INSCR-SILVER': 'silver-foil',
+  'BSPOKE-INSCR-STICKER': 'rain-sticker',
+}
+
+/** Conservative rate fallbacks, applied per-key only if the metadata is absent. */
+const RATE_FALLBACK: BespokeRates = {
+  depositPct: 50,
+  quoteMinQty: 50,
+  discountTiers: [],
+}
+
+interface AdminVariant {
+  title?: string
+  sku?: string
+  prices?: Array<{ currency_code?: string; amount?: number }>
+}
+interface AdminProduct {
+  handle?: string
+  metadata?: Record<string, unknown> | null
+  variants?: AdminVariant[]
+}
+
+async function getAdminToken(backendUrl: string): Promise<string | null> {
+  const email = process.env.MEDUSA_ADMIN_EMAIL
+  const password = process.env.MEDUSA_ADMIN_PASSWORD
+  if (!email || !password) return null
+  try {
+    const res = await fetch(`${backendUrl}/auth/user/emailpass`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const { token } = await res.json()
+    return token ?? null
+  } catch {
+    return null
+  }
+}
+
+async function fetchProduct(
+  backendUrl: string,
+  token: string,
+  handle: string
+): Promise<AdminProduct | null> {
+  const url =
+    `${backendUrl}/admin/products?handle=${encodeURIComponent(handle)}&limit=1` +
+    `&fields=handle,metadata,*variants.prices,variants.title,variants.sku`
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const json = (await res.json()) as { products?: AdminProduct[] }
+    return json.products?.[0] ?? null
+  } catch {
+    return null
+  }
+}
+
+function ngnMinor(variant: AdminVariant): number {
+  const p = variant.prices?.find((x) => x.currency_code === CURRENCY)
+  // Medusa v2 stores MAJOR units; the storefront works in MINOR (kobo).
+  return Math.round((p?.amount ?? 0) * 100)
+}
+
+/** Build the ordered PricedOption list for one group from its SKU->key map. */
+function optionsFrom(
+  product: AdminProduct | null,
+  skuMap: Record<string, string>
+): PricedOption[] {
+  const bySku = new Map((product?.variants ?? []).map((v) => [v.sku ?? '', v]))
+  const out: PricedOption[] = []
+  // Preserve the map's declared order, not Medusa's variant order.
+  for (const [sku, key] of Object.entries(skuMap)) {
+    const v = bySku.get(sku)
+    if (!v) continue
+    out.push({ key, label: v.title?.trim() || key, priceMinor: ngnMinor(v) })
+  }
+  return out
+}
+
+function toNumber(value: unknown, fallback: number): number {
+  const n = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN
+  return Number.isFinite(n) ? n : fallback
+}
+
+function ratesFrom(product: AdminProduct | null): BespokeRates {
+  const m = product?.metadata ?? {}
+  const tiers: Array<{ minQty: number; pct: number }> = []
+  // Tier metadata is discrete scalar keys so each is a simple number to edit.
+  for (const i of [1, 2, 3]) {
+    const min = m[`discount_tier${i}_min`]
+    const pct = m[`discount_tier${i}_pct`]
+    if (min != null && pct != null) {
+      const minQty = toNumber(min, 0)
+      const p = toNumber(pct, 0)
+      if (minQty > 0 && p > 0) tiers.push({ minQty, pct: p })
+    }
+  }
+  tiers.sort((a, b) => a.minQty - b.minQty)
+  return {
+    depositPct: toNumber(m.deposit_pct, RATE_FALLBACK.depositPct),
+    quoteMinQty: toNumber(m.quote_min_qty, RATE_FALLBACK.quoteMinQty),
+    discountTiers: tiers,
+  }
+}
+
+async function readConfig(): Promise<BespokeConfig | null> {
+  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  if (!backendUrl) return null
+  const token = await getAdminToken(backendUrl)
+  if (!token) return null
+
+  const [base, bottle, inscription, cfg] = await Promise.all([
+    fetchProduct(backendUrl, token, 'bespoke-base'),
+    fetchProduct(backendUrl, token, 'bespoke-bottle'),
+    fetchProduct(backendUrl, token, 'bespoke-inscription'),
+    fetchProduct(backendUrl, token, 'bespoke-config'),
+  ])
+
+  const volumes = optionsFrom(base, VOLUME_SKUS)
+  const bottleTypes = optionsFrom(bottle, BOTTLE_SKUS)
+  const inscriptions = optionsFrom(inscription, INSCRIPTION_SKUS)
+
+  // The two axes the estimate can't work without. Missing them = degrade to quote.
+  if (volumes.length === 0 || bottleTypes.length === 0) {
+    console.error('[bespokeConfig] missing base or bottle products; degrading to quote', {
+      volumes: volumes.length,
+      bottleTypes: bottleTypes.length,
+      inscriptions: inscriptions.length,
+    })
+    return null
+  }
+
+  return { volumes, bottleTypes, inscriptions, rates: ratesFrom(cfg) }
+}
+
+/**
+ * Cached bespoke config. Returns null when Medusa is unreachable or the config
+ * products are missing — callers show the quote path in that case.
+ */
+export const getBespokeConfig = unstable_cache(readConfig, ['bespoke-config'], {
+  revalidate: CONFIG_TTL_SECONDS,
+  tags: ['bespoke-config'],
+})
