@@ -1,4 +1,14 @@
 // v3 — locks down image hosts (audit L-1) and adds security headers (audit M-1)
+
+// Durable Medusa uploads via S3-compatible object storage (R2/S3). Set
+// NEXT_PUBLIC_MEDUSA_IMAGE_HOST to the bucket's public host (e.g.
+// files.impactperfumes.com or <bucket>.<account>.r2.dev) once storage is live,
+// and Next/Image will serve those images. No-op until the var is set.
+const mediaHost = process.env.NEXT_PUBLIC_MEDUSA_IMAGE_HOST
+const mediaPattern = mediaHost
+  ? [{ protocol: "https", hostname: mediaHost }]
+  : []
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -11,6 +21,8 @@ const nextConfig = {
       // Medusa product images — local dev server
       { protocol: "http", hostname: "localhost", port: "9000" },
       { protocol: "http", hostname: "127.0.0.1", port: "9000" },
+      // Durable Medusa uploads on object storage (R2/S3), when configured.
+      ...mediaPattern,
     ],
   },
   async headers() {
