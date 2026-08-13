@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { Container } from '@/components/layout'
+import { getBespokeConfig } from '@/lib/bespokeConfig'
 
-// Lazy-load: the configurator is a 6.6 kB client bundle (SVG preview + form
-// state) and only matters when a visitor lands on /bespoke.
+// Lazy-load: the configurator is a client bundle (form state) that only
+// matters when a visitor lands on /bespoke.
 const BespokeConfigurator = dynamic(
   () => import('@/components/bespoke/BespokeConfigurator'),
   { loading: () => <div className="py-20 text-center text-stone">Loading…</div> }
@@ -12,7 +13,7 @@ const BespokeConfigurator = dynamic(
 export const metadata: Metadata = {
   title: 'Bespoke',
   description:
-    'Design your own Impact fragrance. Choose the bottle, the scent, the engraving. Made for you.',
+    'Design your own Impact fragrance. Choose the bottle, the scent, the inscription. Made for you.',
   openGraph: {
     title: 'Bespoke · Impact Perfumes',
     description: 'Design your own Impact fragrance bottle. Bespoke composition, signature presentation.',
@@ -20,7 +21,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default function BespokePage() {
+export default async function BespokePage() {
+  // Prices and rates come from Medusa (draft config products) so nothing is
+  // hardcoded. If Medusa is unreachable the configurator shows the quote path.
+  const config = await getBespokeConfig()
+
   return (
     <>
       {/* Hero */}
@@ -33,8 +38,8 @@ export default function BespokePage() {
             From bottle to base note.
           </h1>
           <p className="mt-5 max-w-xl text-body text-stone">
-            Build your own Impact fragrance. Pick the silhouette, the signature
-            color, and the engraving, or start with a Number from our existing
+            Build your own Impact fragrance. Pick the bottle, the signature
+            color, and the inscription, or start with a Number from our existing
             collection. Design it here; a real perfumer takes it from there.
           </p>
         </Container>
@@ -44,9 +49,9 @@ export default function BespokePage() {
       <section className="border-b border-stone/20 bg-mist/40 py-10">
         <Container className="grid gap-6 sm:grid-cols-3">
           {[
-            { step: '01', heading: 'Design', body: 'Configure your bottle and notes, see the bottle come together as you go.' },
+            { step: '01', heading: 'Design', body: 'Configure your bottle, scent, and inscription.' },
             { step: '02', heading: 'Brief', body: 'Submit your composition. Our perfumer reviews and confirms within 24h.' },
-            { step: '03', heading: 'Craft', body: 'Pay 50% deposit to secure your slot. Final price confirmed before production.' },
+            { step: '03', heading: 'Craft', body: 'Pay a deposit to secure your slot. Final price confirmed before production.' },
           ].map((s) => (
             <div key={s.step}>
               <p className="text-label uppercase tracking-[0.1em] text-accent">{s.step}</p>
@@ -60,7 +65,7 @@ export default function BespokePage() {
       {/* Configurator */}
       <section className="bg-ink py-12 md:py-20">
         <Container>
-          <BespokeConfigurator />
+          <BespokeConfigurator config={config} />
         </Container>
       </section>
     </>
