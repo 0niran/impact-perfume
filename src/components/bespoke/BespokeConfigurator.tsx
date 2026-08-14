@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { formatPrice } from '@/lib/format'
@@ -10,7 +11,14 @@ import {
   computeBespokeEstimate,
   type BespokeConfig,
 } from '@/lib/bespokePricing'
+import type { PaymentProvider, RegionId } from '@/lib/region'
 import Stepper from './Stepper'
+
+// Stripe deposit (CA) is lazy so the @stripe/* bundles never ship to NG visitors.
+const BespokeStripeDeposit = dynamic(() => import('./BespokeStripeDeposit'), {
+  ssr: false,
+  loading: () => <p className="mt-4 text-small text-stone">Preparing secure payment…</p>,
+})
 
 declare global {
   interface Window {
@@ -86,7 +94,17 @@ function defaultVolumeKey(config: BespokeConfig | null): string {
   return config.volumes.find((v) => v.key === '100')?.key ?? config.volumes[0]?.key ?? ''
 }
 
-export default function BespokeConfigurator({ config }: { config: BespokeConfig | null }) {
+export default function BespokeConfigurator({
+  config,
+  currency,
+  paymentProvider,
+  regionId,
+}: {
+  config: BespokeConfig | null
+  currency: 'NGN' | 'CAD'
+  paymentProvider: PaymentProvider
+  regionId: RegionId
+}) {
   const [step, setStep] = useState(1)
   const [inspiration, setInspiration] = useState<string>('no-5')
   const [bottleTypeKey, setBottleTypeKey] = useState<string>(config?.bottleTypes[0]?.key ?? '')
@@ -107,9 +125,12 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitResult, setSubmitResult] = useState<BespokeSubmitResult | null>(null)
   const [depositStatus, setDepositStatus] = useState<'idle' | 'loading' | 'paid'>('idle')
+  const [depositReturn, setDepositReturn] = useState(false)
   const paystackReady = useRef(false)
 
+  // Load Paystack only for the NG rail; CA uses Stripe via BespokeStripeDeposit.
   useEffect(() => {
+    if (paymentProvider !== 'paystack') return
     if (document.getElementById(SITE_CONFIG.paystack.scriptId)) {
       paystackReady.current = true
       return
@@ -120,6 +141,13 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
     script.async = true
     script.onload = () => { paystackReady.current = true }
     document.head.appendChild(script)
+  }, [paymentProvider])
+
+  // A 3DS card on the CA rail redirects back to /bespoke?deposit=success,
+  // landing on a fresh page with no in-memory brief; surface a paid confirmation.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('deposit') === 'success') setDepositReturn(true)
   }, [])
 
   const hasInscriptionText = Boolean(engravingLine1.trim() || engravingLine2.trim())
@@ -195,6 +223,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
       email,
       phone,
       city,
+      regionId,
     })
 
     if (result.ok) {
@@ -207,7 +236,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
   }
 
   function handlePayDeposit() {
-    if (!submitResult?.depositKobo || !paystackReady.current || !window.PaystackPop) {
+    if (!submitResult?.depositMinor || !paystackReady.current || !window.PaystackPop) {
       setSubmitError('Payment provider not ready. Please refresh and try again.')
       return
     }
@@ -217,7 +246,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
     const handler = window.PaystackPop.setup({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
       email: email.trim(),
-      amount: submitResult.depositKobo,
+      amount: submitResult.depositMinor,
       ref: generateRef(),
       callback: () => { setDepositStatus('paid') },
       onClose: () => {
@@ -228,9 +257,30 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
     handler.openIframe()
   }
 
+  // -------- Deposit return (CA 3DS redirect lands here on a fresh page) --------
+  if (depositReturn && submitStatus !== 'success') {
+    return (
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 py-12">
+        <p className="text-label uppercase tracking-[0.1em] text-accent">Deposit Received</p>
+        <h2 className="font-display text-display-s text-bone">Thank you, your deposit is in.</h2>
+        <p className="max-w-xl text-body text-stone">
+          Your bespoke deposit is confirmed. Our perfumer will be in touch within 24 hours to
+          finalise your composition and the balance.
+        </p>
+        <div>
+          <Link href="/" className="text-small text-stone hover:text-bone transition-colors">
+            ← Back to the house
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   // -------- Success state --------
   if (submitStatus === 'success' && submitResult) {
-    const depositNaira = submitResult.depositKobo ? formatPrice(submitResult.depositKobo) : null
+    const depositLabel = submitResult.depositMinor
+      ? formatPrice(submitResult.depositMinor, currency)
+      : null
 
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-8 py-12">
@@ -246,29 +296,54 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
           </p>
         </div>
 
-        {depositNaira ? (
+        {depositLabel ? (
           <div className="max-w-xl border border-stone/30 bg-mist/40 p-6">
             <p className="text-label uppercase tracking-[0.1em] text-stone">Secure your slot</p>
-            <p className="mt-2 font-display text-h1 text-bone">{depositNaira}</p>
+            <p className="mt-2 font-display text-h1 text-bone">{depositLabel}</p>
             <p className="mt-1 text-small text-stone">
               Deposit toward your order. Balance settled before delivery. Refundable up to 7 days.
             </p>
-            <button
-              onClick={handlePayDeposit}
-              disabled={depositStatus === 'loading' || depositStatus === 'paid'}
-              className="mt-6 inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
-              style={{ height: 48 }}
-            >
-              {depositStatus === 'paid'
-                ? 'Deposit Paid ✓'
-                : depositStatus === 'loading'
-                  ? 'Processing…'
-                  : `Pay ${depositNaira} Deposit`}
-            </button>
-            {depositStatus === 'paid' && (
-              <p className="mt-4 text-small text-success">
-                Thank you, your deposit is recorded. You&apos;ll receive a confirmation email shortly.
-              </p>
+
+            {paymentProvider === 'stripe' ? (
+              depositStatus === 'paid' ? (
+                <p className="mt-4 text-small text-success">
+                  Thank you, your deposit is recorded. You&apos;ll receive a confirmation email shortly.
+                </p>
+              ) : (
+                <BespokeStripeDeposit
+                  selection={{
+                    volumeKey,
+                    bottleTypeKey,
+                    inscriptionKey: hasInscriptionText ? inscriptionKey : null,
+                    quantity,
+                  }}
+                  inquiryId={submitResult.inquiryId}
+                  customerEmail={email.trim()}
+                  customerName={name.trim()}
+                  depositLabel={depositLabel}
+                  onPaid={() => setDepositStatus('paid')}
+                />
+              )
+            ) : (
+              <>
+                <button
+                  onClick={handlePayDeposit}
+                  disabled={depositStatus === 'loading' || depositStatus === 'paid'}
+                  className="mt-6 inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
+                  style={{ height: 48 }}
+                >
+                  {depositStatus === 'paid'
+                    ? 'Deposit Paid ✓'
+                    : depositStatus === 'loading'
+                      ? 'Processing…'
+                      : `Pay ${depositLabel} Deposit`}
+                </button>
+                {depositStatus === 'paid' && (
+                  <p className="mt-4 text-small text-success">
+                    Thank you, your deposit is recorded. You&apos;ll receive a confirmation email shortly.
+                  </p>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -363,7 +438,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
                   >
                     <span className="text-body text-bone">{b.label}</span>
                     {b.priceMinor > 0 && (
-                      <span className="text-label text-accent">+{formatPrice(b.priceMinor)}</span>
+                      <span className="text-label text-accent">+{formatPrice(b.priceMinor, currency)}</span>
                     )}
                   </button>
                 ))}
@@ -409,7 +484,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
                     )}
                   >
                     <span className="text-body text-bone">{v.label}</span>
-                    <span className="text-label text-stone">{formatPrice(v.priceMinor)}</span>
+                    <span className="text-label text-stone">{formatPrice(v.priceMinor, currency)}</span>
                   </button>
                 ))}
               </div>
@@ -483,7 +558,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
                   >
                     <span className="text-body text-bone">{m.label}</span>
                     {m.priceMinor > 0 && (
-                      <span className="text-label text-accent">+{formatPrice(m.priceMinor)}</span>
+                      <span className="text-label text-accent">+{formatPrice(m.priceMinor, currency)}</span>
                     )}
                   </button>
                 ))}
@@ -668,12 +743,12 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
           ) : estimate?.needsQuote ? (
             <p className="font-display text-h3 text-bone">Custom quote</p>
           ) : (
-            <p className="font-display text-h2 text-bone">{formatPrice(estimate?.totalMinor ?? 0)}</p>
+            <p className="font-display text-h2 text-bone">{formatPrice(estimate?.totalMinor ?? 0, currency)}</p>
           )}
         </div>
         {config && estimate && !estimate.needsQuote && (
           <p className="mt-1 text-small text-stone">
-            {formatPrice(estimate.unitMinor)} × {quantity}
+            {formatPrice(estimate.unitMinor, currency)} × {quantity}
             {estimate.discountPct > 0 && ` · ${estimate.discountPct}% off`}
             {' · '}
             {config.rates.depositPct}% deposit to secure

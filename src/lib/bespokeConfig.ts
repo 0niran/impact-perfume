@@ -23,7 +23,9 @@ import { unstable_cache } from 'next/cache'
 import type { BespokeConfig, BespokeRates, PricedOption } from '@/lib/bespokePricing'
 
 const CONFIG_TTL_SECONDS = 120
-const CURRENCY = 'ngn' // Bespoke is NGN / Paystack only.
+
+/** Currencies the bespoke config can price in; matches Medusa currency codes. */
+export type BespokeCurrency = 'ngn' | 'cad'
 
 /** SKU -> stable option key + display order, per group. */
 const VOLUME_SKUS: Record<string, string> = {
@@ -99,16 +101,17 @@ async function fetchProduct(
   }
 }
 
-function ngnMinor(variant: AdminVariant): number {
-  const p = variant.prices?.find((x) => x.currency_code === CURRENCY)
-  // Medusa v2 stores MAJOR units; the storefront works in MINOR (kobo).
+function priceMinor(variant: AdminVariant, currency: BespokeCurrency): number {
+  const p = variant.prices?.find((x) => x.currency_code === currency)
+  // Medusa v2 stores MAJOR units; the storefront works in MINOR (kobo/cents).
   return Math.round((p?.amount ?? 0) * 100)
 }
 
 /** Build the ordered PricedOption list for one group from its SKU->key map. */
 function optionsFrom(
   product: AdminProduct | null,
-  skuMap: Record<string, string>
+  skuMap: Record<string, string>,
+  currency: BespokeCurrency
 ): PricedOption[] {
   const bySku = new Map((product?.variants ?? []).map((v) => [v.sku ?? '', v]))
   const out: PricedOption[] = []
@@ -116,7 +119,7 @@ function optionsFrom(
   for (const [sku, key] of Object.entries(skuMap)) {
     const v = bySku.get(sku)
     if (!v) continue
-    out.push({ key, label: v.title?.trim() || key, priceMinor: ngnMinor(v) })
+    out.push({ key, label: v.title?.trim() || key, priceMinor: priceMinor(v, currency) })
   }
   return out
 }
@@ -147,7 +150,7 @@ function ratesFrom(product: AdminProduct | null): BespokeRates {
   }
 }
 
-async function readConfig(): Promise<BespokeConfig | null> {
+async function readConfig(currency: BespokeCurrency): Promise<BespokeConfig | null> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   if (!backendUrl) return null
   const token = await getAdminToken(backendUrl)
@@ -160,16 +163,22 @@ async function readConfig(): Promise<BespokeConfig | null> {
     fetchProduct(backendUrl, token, 'bespoke-config'),
   ])
 
-  const volumes = optionsFrom(base, VOLUME_SKUS)
-  const bottleTypes = optionsFrom(bottle, BOTTLE_SKUS)
-  const inscriptions = optionsFrom(inscription, INSCRIPTION_SKUS)
+  const volumes = optionsFrom(base, VOLUME_SKUS, currency)
+  const bottleTypes = optionsFrom(bottle, BOTTLE_SKUS, currency)
+  const inscriptions = optionsFrom(inscription, INSCRIPTION_SKUS, currency)
 
   // The two axes the estimate can't work without. Missing them = degrade to quote.
-  if (volumes.length === 0 || bottleTypes.length === 0) {
-    console.error('[bespokeConfig] missing base or bottle products; degrading to quote', {
+  // Also degrade when this currency has no base prices set yet (e.g. CAD before
+  // the owner enters values in the admin) so we never quote a zero price — the
+  // page falls back to the "we'll confirm your price" path instead.
+  const priced = volumes.some((v) => v.priceMinor > 0)
+  if (volumes.length === 0 || bottleTypes.length === 0 || !priced) {
+    console.error('[bespokeConfig] missing/unpriced base or bottle; degrading to quote', {
+      currency,
       volumes: volumes.length,
       bottleTypes: bottleTypes.length,
       inscriptions: inscriptions.length,
+      priced,
     })
     return null
   }
@@ -178,10 +187,14 @@ async function readConfig(): Promise<BespokeConfig | null> {
 }
 
 /**
- * Cached bespoke config. Returns null when Medusa is unreachable or the config
- * products are missing — callers show the quote path in that case.
+ * Cached bespoke config for a currency ('ngn' or 'cad'). unstable_cache keys on
+ * the argument, so each currency gets its own entry under the shared tag (a
+ * single revalidation busts both). Returns null when Medusa is unreachable, the
+ * config products are missing, or this currency has no prices yet — callers show
+ * the quote path in that case.
  */
-export const getBespokeConfig = unstable_cache(readConfig, ['bespoke-config'], {
-  revalidate: CONFIG_TTL_SECONDS,
-  tags: ['bespoke-config'],
-})
+export const getBespokeConfig = unstable_cache(
+  (currency: BespokeCurrency = 'ngn') => readConfig(currency),
+  ['bespoke-config'],
+  { revalidate: CONFIG_TTL_SECONDS, tags: ['bespoke-config'] }
+)
