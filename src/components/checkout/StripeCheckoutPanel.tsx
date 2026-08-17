@@ -10,6 +10,7 @@ import {
   useStripe,
 } from '@stripe/react-stripe-js'
 import { useCartStore, cartSelectors, type CartLine } from '@/store/cartStore'
+import { toCartLinePayload } from '@/lib/cartPayload'
 import { formatPrice } from '@/lib/format'
 import { countryOptions } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
@@ -116,14 +117,7 @@ export default function StripeCheckoutPanel() {
             country: countryName,
             countryCode: draft.country,
           },
-          lines: lines.map((l) => ({
-            variantId: l.variantId,
-            productId: l.productId,
-            name: l.name,
-            variantLabel: l.variantLabel,
-            qty: l.qty,
-            unitPriceKobo: l.unitPriceKobo,
-          })),
+          lines: lines.map(toCartLinePayload),
         }),
       })
       const data = await res.json()
