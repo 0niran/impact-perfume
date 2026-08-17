@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
 import { buildAbandonedCartEmail, sendEmail } from '@/lib/email'
+import { serverEnv } from '@/lib/env'
 
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -37,7 +38,7 @@ interface PendingCartDoc {
 // (audit H-2). Local-dev convenience is recovered by setting CRON_SECRET
 // in .env.local.
 function isAuthorised(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
+  const secret = serverEnv.cronSecret
   if (!secret) return false
   const auth = req.headers.get('authorization')
   return auth === `Bearer ${secret}`

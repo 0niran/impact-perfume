@@ -6,6 +6,7 @@ import { unpackStripeLines } from '@/lib/stripeMetadata'
 import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { recordTaxTransaction } from '@/lib/tax'
+import { serverEnv } from '@/lib/env'
 
 /**
  * Stripe webhook receiver. Verifies the request signature using
@@ -24,8 +25,8 @@ import { recordTaxTransaction } from '@/lib/tax'
  */
 
 export async function POST(req: NextRequest) {
-  const stripeKey = process.env.STRIPE_SECRET_KEY
-  const signingSecret = process.env.STRIPE_WEBHOOK_SECRET
+  const stripeKey = serverEnv.stripeSecretKey
+  const signingSecret = serverEnv.stripeWebhookSecret
   if (!stripeKey || !signingSecret) {
     console.error('[stripe-webhook] missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET')
     return NextResponse.json({ ok: false }, { status: 500 })

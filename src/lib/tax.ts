@@ -19,6 +19,7 @@
  */
 
 import type Stripe from 'stripe'
+import { serverEnv } from '@/lib/env'
 
 /** Stripe tax code for general tangible goods (fragrance). */
 const GENERAL_GOODS_TAX_CODE = 'txcd_99999999'
@@ -43,7 +44,7 @@ export interface TaxResult {
 }
 
 export function isStripeTaxEnabled(): boolean {
-  return process.env.STRIPE_TAX_ENABLED === 'true'
+  return serverEnv.stripeTaxEnabled
 }
 
 interface TaxAddress {

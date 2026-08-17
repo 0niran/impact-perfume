@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rateLimit'
 import { deliveryQuoteBodySchema, formatZodError } from '@/lib/validation'
 import { geocodeAddress } from '@/lib/geocode'
+import { placeDetails } from '@/lib/places'
 import { quoteDelivery, isGigConfigured } from '@/lib/gig'
 import { signDeliveryQuote } from '@/lib/deliveryQuote'
 import { REGIONS } from '@/lib/region'
@@ -41,19 +42,30 @@ export async function POST(req: NextRequest) {
     const { message, field } = formatZodError(parsed.error)
     return NextResponse.json({ ok: false, message, field }, { status: 400 })
   }
-  const { shippingAddress, subtotalMinor, itemCount } = parsed.data
+  const { shippingAddress, subtotalMinor, itemCount, placeId, sessionToken } = parsed.data
 
-  const addressString = [
-    shippingAddress.address1,
-    shippingAddress.address2,
-    shippingAddress.city,
-    shippingAddress.state,
-    'Nigeria',
-  ]
-    .filter(Boolean)
-    .join(', ')
-
-  const geo = await geocodeAddress(addressString)
+  // Prefer coordinates from the autocomplete-selected place (authoritative,
+  // resolved server-side so the client can't assert a cheaper location). Fall
+  // back to geocoding the typed text for manually entered addresses.
+  let geo: { lat: number; lng: number; formattedAddress: string } | null = null
+  if (placeId) {
+    const details = await placeDetails(placeId, { sessionToken })
+    if (details) {
+      geo = { lat: details.lat, lng: details.lng, formattedAddress: details.formattedAddress }
+    }
+  }
+  if (!geo) {
+    const addressString = [
+      shippingAddress.address1,
+      shippingAddress.address2,
+      shippingAddress.city,
+      shippingAddress.state,
+      'Nigeria',
+    ]
+      .filter(Boolean)
+      .join(', ')
+    geo = await geocodeAddress(addressString)
+  }
   if (!geo) {
     return NextResponse.json(
       {

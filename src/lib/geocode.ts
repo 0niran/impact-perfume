@@ -9,6 +9,8 @@
  *   GOOGLE_MAPS_API_KEY   a key with the Geocoding API enabled + billing on
  */
 
+import { serverEnv } from '@/lib/env'
+
 export interface GeocodeResult {
   lat: number
   lng: number
@@ -22,7 +24,7 @@ export interface GeocodeResult {
  * to degrade (checkout blocks the quote and asks the customer to check it).
  */
 export async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
-  const key = process.env.GOOGLE_MAPS_API_KEY
+  const key = serverEnv.googleMapsApiKey
   if (!key) {
     console.error('[geocode] GOOGLE_MAPS_API_KEY not set')
     return null
