@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCartStore, cartSelectors, type CartLine } from '@/store/cartStore'
+import { toCartLinePayload } from '@/lib/cartPayload'
 import { formatPrice } from '@/lib/format'
 import { NIGERIAN_STATES } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
@@ -281,15 +282,7 @@ export default function CheckoutForm() {
       pickupLocationId: fulfilment.pickupLocationId,
       // Server re-validates this token to trust the delivery fee + coordinates.
       deliveryQuoteToken: fulfilment.fulfillmentMethod === 'shipping' ? quote?.token : undefined,
-      lines: lines.map((l) => ({
-        variantId: l.variantId,
-        productId: l.productId,
-        name: l.name,
-        variantLabel: l.variantLabel,
-        qty: l.qty,
-        unitPriceKobo: l.unitPriceKobo,
-        currency: l.currency,
-      })),
+      lines: lines.map(toCartLinePayload),
       amountKobo: totalKobo,
     }
 
