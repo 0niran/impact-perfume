@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Container } from '@/components/layout'
 import { getServerRegion } from '@/lib/serverRegion'
 import { getMedusaProduct, getPrice, getProductImage, variantInStock } from '@/lib/medusa'
+import { formatPrice } from '@/lib/format'
 import AddToCartButton from '@/components/shop/AddToCartButton'
 
 export const revalidate = 60
@@ -68,7 +69,7 @@ export default async function ProductPage({ params }: { params: { handle: string
           <div>
             <h1 className="font-display text-display-s leading-none text-bone">{product.title}</h1>
             {price.amount > 0 && (
-              <p className="mt-4 font-display text-h1 text-bone">{formatCurrency(price.amount, region.currency, region.locale)}</p>
+              <p className="mt-4 font-display text-h1 text-bone">{formatPrice(price.amount, region.currency)}</p>
             )}
             {description && (
               <p className="mt-5 max-w-lg text-body text-stone">{description}</p>
@@ -118,10 +119,3 @@ export default async function ProductPage({ params }: { params: { handle: string
   )
 }
 
-function formatCurrency(amountMinor: number, currency: string, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: currency === 'NGN' ? 0 : 2,
-  }).format(amountMinor / 100)
-}

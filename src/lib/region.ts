@@ -85,20 +85,10 @@ export function getRegion(id: RegionId | string | null | undefined): Region {
   return REGIONS[DEFAULT_REGION_ID]
 }
 
-export function formatPrice(amountMinor: number, region: Region): string {
-  if (amountMinor === 0) return 'Coming soon'
-  return new Intl.NumberFormat(region.locale, {
-    style: 'currency',
-    currency: region.currency,
-    maximumFractionDigits: region.currency === 'NGN' ? 0 : 2,
-  }).format(amountMinor / 100)
-}
-
-/** Shorthand when a price is known to be in NGN but we still want generic formatting */
-export function formatPriceFromCurrency(amountMinor: number, currency: Currency | string): string {
-  const region = Object.values(REGIONS).find((r) => r.currency === currency) ?? REGIONS[DEFAULT_REGION_ID]
-  return formatPrice(amountMinor, region)
-}
+/**
+ * Money formatting lives in one place: formatPrice(amountMinor, currency) in
+ * @/lib/format. Import it there rather than re-adding a region-based variant.
+ */
 
 /** Free-shipping threshold for a given ISO currency code (uppercase). Falls back to 0. */
 export function getShippingThreshold(currency: string): number {
