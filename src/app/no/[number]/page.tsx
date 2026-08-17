@@ -5,6 +5,7 @@ import { getMedusaProduct, getPrice, toEnrichment, getProductImage, variantInSto
 import { getServerRegion } from '@/lib/serverRegion'
 import { shippingCopyFor } from '@/lib/shippingCopy'
 import { SITE_URL } from '@/lib/constants'
+import { jsonLdScript } from '@/lib/jsonLd'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
 import RelatedProducts from '@/components/pdp/RelatedProducts'
@@ -89,7 +90,7 @@ export default async function PDPPage({
       <Script
         id={`json-ld-product-${enrichment.number}`}
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
       <div className="lg:grid lg:grid-cols-2">
         <ColorPanel
