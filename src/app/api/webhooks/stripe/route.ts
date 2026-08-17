@@ -61,6 +61,19 @@ export async function POST(req: NextRequest) {
     const intent = event.data.object as Stripe.PaymentIntent
     const md = intent.metadata ?? {}
 
+    // Bespoke deposits are not cart orders — they carry no line metadata and
+    // must not go through fulfilOrder. Parity with the NG deposit, which also
+    // records nothing server-side; the charge lives in the Stripe dashboard and
+    // the inquiry is already saved in Sanity.
+    if (md.kind === 'bespoke-deposit') {
+      console.log('[stripe-webhook] bespoke deposit paid', {
+        intentId: intent.id,
+        inquiryId: md.inquiryId || '(none)',
+        reference: md.reference || '(none)',
+      })
+      return NextResponse.json({ ok: true, kind: 'bespoke-deposit' })
+    }
+
     let shippingAddress: ShippingAddress
     let lines: CartLine[]
     try {

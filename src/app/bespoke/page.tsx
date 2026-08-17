@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { Container } from '@/components/layout'
 import { getBespokeConfig } from '@/lib/bespokeConfig'
+import { getServerRegion } from '@/lib/serverRegion'
 
 // Lazy-load: the configurator is a client bundle (form state) that only
 // matters when a visitor lands on /bespoke.
@@ -22,9 +23,12 @@ export const metadata: Metadata = {
 }
 
 export default async function BespokePage() {
-  // Prices and rates come from Medusa (draft config products) so nothing is
-  // hardcoded. If Medusa is unreachable the configurator shows the quote path.
-  const config = await getBespokeConfig()
+  // Region drives currency + deposit provider. NG prices in NGN (Paystack),
+  // CA in CAD (Stripe). Prices/rates come from Medusa (draft config products)
+  // so nothing is hardcoded; if Medusa is unreachable, or this region has no
+  // prices yet, the configurator shows the quote path.
+  const region = getServerRegion()
+  const config = await getBespokeConfig(region.currencyCode)
 
   return (
     <>
@@ -65,7 +69,12 @@ export default async function BespokePage() {
       {/* Configurator */}
       <section className="bg-ink py-12 md:py-20">
         <Container>
-          <BespokeConfigurator config={config} />
+          <BespokeConfigurator
+            config={config}
+            currency={region.currency}
+            paymentProvider={region.paymentProvider}
+            regionId={region.id}
+          />
         </Container>
       </section>
     </>

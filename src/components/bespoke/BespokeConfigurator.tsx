@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
@@ -9,6 +10,7 @@ import {
   computeBespokeEstimate,
   type BespokeConfig,
 } from '@/lib/bespokePricing'
+import type { PaymentProvider, RegionId } from '@/lib/region'
 import Stepper from './Stepper'
 import BespokeSuccess from './BespokeSuccess'
 import {
@@ -47,7 +49,17 @@ function defaultVolumeKey(config: BespokeConfig | null): string {
   return config.volumes.find((v) => v.key === '100')?.key ?? config.volumes[0]?.key ?? ''
 }
 
-export default function BespokeConfigurator({ config }: { config: BespokeConfig | null }) {
+export default function BespokeConfigurator({
+  config,
+  currency,
+  paymentProvider,
+  regionId,
+}: {
+  config: BespokeConfig | null
+  currency: 'NGN' | 'CAD'
+  paymentProvider: PaymentProvider
+  regionId: RegionId
+}) {
   const [step, setStep] = useState(1)
   const [inspiration, setInspiration] = useState<string>('no-5')
   const [bottleTypeKey, setBottleTypeKey] = useState<string>(config?.bottleTypes[0]?.key ?? '')
@@ -68,9 +80,12 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitResult, setSubmitResult] = useState<BespokeSubmitResult | null>(null)
   const [depositStatus, setDepositStatus] = useState<'idle' | 'loading' | 'paid'>('idle')
+  const [depositReturn, setDepositReturn] = useState(false)
   const paystackReady = useRef(false)
 
+  // Load Paystack only for the NG rail; CA uses Stripe via BespokeStripeDeposit.
   useEffect(() => {
+    if (paymentProvider !== 'paystack') return
     if (document.getElementById(SITE_CONFIG.paystack.scriptId)) {
       paystackReady.current = true
       return
@@ -81,6 +96,13 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
     script.async = true
     script.onload = () => { paystackReady.current = true }
     document.head.appendChild(script)
+  }, [paymentProvider])
+
+  // A 3DS card on the CA rail redirects back to /bespoke?deposit=success,
+  // landing on a fresh page with no in-memory brief; surface a paid confirmation.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('deposit') === 'success') setDepositReturn(true)
   }, [])
 
   const hasInscriptionText = Boolean(engravingLine1.trim() || engravingLine2.trim())
@@ -156,6 +178,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
       email,
       phone,
       city,
+      regionId,
     })
 
     if (result.ok) {
@@ -168,7 +191,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
   }
 
   function handlePayDeposit() {
-    if (!submitResult?.depositKobo || !paystackReady.current || !window.PaystackPop) {
+    if (!submitResult?.depositMinor || !paystackReady.current || !window.PaystackPop) {
       setSubmitError('Payment provider not ready. Please refresh and try again.')
       return
     }
@@ -178,7 +201,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
     const handler = window.PaystackPop.setup({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
       email: email.trim(),
-      amount: submitResult.depositKobo,
+      amount: submitResult.depositMinor,
       ref: generateRef(),
       callback: () => { setDepositStatus('paid') },
       onClose: () => {
@@ -189,13 +212,43 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
     handler.openIframe()
   }
 
+  // -------- Deposit return (CA 3DS redirect lands here on a fresh page) --------
+  if (depositReturn && submitStatus !== 'success') {
+    return (
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 py-12">
+        <p className="text-label uppercase tracking-[0.1em] text-accent">Deposit Received</p>
+        <h2 className="font-display text-display-s text-bone">Thank you, your deposit is in.</h2>
+        <p className="max-w-xl text-body text-stone">
+          Your bespoke deposit is confirmed. Our perfumer will be in touch within 24 hours to
+          finalise your composition and the balance.
+        </p>
+        <div>
+          <Link href="/" className="text-small text-stone hover:text-bone transition-colors">
+            ← Back to the house
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   // -------- Success state --------
   if (submitStatus === 'success' && submitResult) {
     return (
       <BespokeSuccess
         result={submitResult}
+        currency={currency}
+        paymentProvider={paymentProvider}
         depositStatus={depositStatus}
+        selection={{
+          volumeKey,
+          bottleTypeKey,
+          inscriptionKey: hasInscriptionText ? inscriptionKey : null,
+          quantity,
+        }}
+        customerEmail={email.trim()}
+        customerName={name.trim()}
         onPayDeposit={handlePayDeposit}
+        onStripePaid={() => setDepositStatus('paid')}
       />
     )
   }
@@ -272,7 +325,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
                   >
                     <span className="text-body text-bone">{b.label}</span>
                     {b.priceMinor > 0 && (
-                      <span className="text-label text-accent">+{formatPrice(b.priceMinor)}</span>
+                      <span className="text-label text-accent">+{formatPrice(b.priceMinor, currency)}</span>
                     )}
                   </button>
                 ))}
@@ -318,7 +371,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
                     )}
                   >
                     <span className="text-body text-bone">{v.label}</span>
-                    <span className="text-label text-stone">{formatPrice(v.priceMinor)}</span>
+                    <span className="text-label text-stone">{formatPrice(v.priceMinor, currency)}</span>
                   </button>
                 ))}
               </div>
@@ -392,7 +445,7 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
                   >
                     <span className="text-body text-bone">{m.label}</span>
                     {m.priceMinor > 0 && (
-                      <span className="text-label text-accent">+{formatPrice(m.priceMinor)}</span>
+                      <span className="text-label text-accent">+{formatPrice(m.priceMinor, currency)}</span>
                     )}
                   </button>
                 ))}
@@ -577,12 +630,12 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
           ) : estimate?.needsQuote ? (
             <p className="font-display text-h3 text-bone">Custom quote</p>
           ) : (
-            <p className="font-display text-h2 text-bone">{formatPrice(estimate?.totalMinor ?? 0)}</p>
+            <p className="font-display text-h2 text-bone">{formatPrice(estimate?.totalMinor ?? 0, currency)}</p>
           )}
         </div>
         {config && estimate && !estimate.needsQuote && (
           <p className="mt-1 text-small text-stone">
-            {formatPrice(estimate.unitMinor)} × {quantity}
+            {formatPrice(estimate.unitMinor, currency)} × {quantity}
             {estimate.discountPct > 0 && ` · ${estimate.discountPct}% off`}
             {' · '}
             {config.rates.depositPct}% deposit to secure
