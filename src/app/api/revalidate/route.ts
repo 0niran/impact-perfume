@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { serverEnv } from '@/lib/env'
 
 /**
  * On-demand ISR invalidation. Use whenever Medusa data changes outside of
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
   // Fails CLOSED when CRON_SECRET is unset — refusing to flush is better
   // than letting anyone trigger cache regeneration when env vars are
   // misconfigured (audit H-2).
-  const secret = process.env.CRON_SECRET
+  const secret = serverEnv.cronSecret
   if (!secret) {
     return NextResponse.json({ ok: false, message: 'Revalidation not configured.' }, { status: 503 })
   }

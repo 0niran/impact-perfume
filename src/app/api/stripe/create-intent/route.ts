@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/rateLimit'
 import { stripeCreateIntentBodySchema, formatZodError } from '@/lib/validation'
 import { packStripeLines } from '@/lib/stripeMetadata'
 import { computeStripeTax } from '@/lib/tax'
+import { serverEnv } from '@/lib/env'
 
 export async function POST(req: NextRequest) {
   const limit = await rateLimit(req, 'stripe-create-intent', { limit: 10, window: '1 m' })
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const stripeKey = process.env.STRIPE_SECRET_KEY
+  const stripeKey = serverEnv.stripeSecretKey
   if (!stripeKey) {
     return NextResponse.json(
       { ok: false, message: 'Stripe is not configured.' },

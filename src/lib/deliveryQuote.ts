@@ -16,6 +16,7 @@
 
 import crypto from 'crypto'
 import type { ShippingAddress } from '@/lib/orderFulfillment'
+import { serverEnv } from '@/lib/env'
 
 /** How long a quote stays valid. Paying takes seconds; 30 min is generous. */
 const TOKEN_TTL_MS = 30 * 60 * 1000
@@ -38,7 +39,7 @@ export interface VerifiedQuote {
 }
 
 function signingKey(): string | null {
-  return process.env.GIG_QUOTE_SECRET || process.env.PAYSTACK_SECRET_KEY || null
+  return serverEnv.gigQuoteSecret || serverEnv.paystackSecretKey || null
 }
 
 function b64url(buf: Buffer): string {

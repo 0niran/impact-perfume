@@ -5,6 +5,7 @@ import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { rateLimit } from '@/lib/rateLimit'
 import { verifyPaymentBodySchema, formatZodError } from '@/lib/validation'
 import { verifyDeliveryQuote } from '@/lib/deliveryQuote'
+import { serverEnv } from '@/lib/env'
 
 interface PaystackVerifyResponse {
   status: boolean
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const secretKey = process.env.PAYSTACK_SECRET_KEY
+  const secretKey = serverEnv.paystackSecretKey
   if (!secretKey) {
     return NextResponse.json(
       { ok: false, message: 'Payment service not configured.' },
