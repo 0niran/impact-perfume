@@ -4,6 +4,7 @@ import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFu
 import { SITE_CONFIG } from '@/lib/config'
 import { unpackStripeLines } from '@/lib/stripeMetadata'
 import { recordTaxTransaction } from '@/lib/tax'
+import { serverEnv } from '@/lib/env'
 
 /**
  * Stripe return_url lands here after the customer confirms a payment.
@@ -14,7 +15,7 @@ import { recordTaxTransaction } from '@/lib/tax'
  * the customer is sent back to /checkout with an error.
  */
 export async function GET(req: NextRequest) {
-  const stripeKey = process.env.STRIPE_SECRET_KEY
+  const stripeKey = serverEnv.stripeSecretKey
   const base = SITE_CONFIG.url
   if (!stripeKey) return NextResponse.redirect(`${base}/checkout?error=stripe_unconfigured`)
 

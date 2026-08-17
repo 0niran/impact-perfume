@@ -1,5 +1,6 @@
 import { SITE_CONFIG } from '@/lib/config'
 import { formatPrice } from '@/lib/format'
+import { serverEnv } from '@/lib/env'
 
 /**
  * HTML-escape user-supplied strings before interpolating into the email
@@ -539,7 +540,7 @@ export async function sendEmail({
   subject: string
   html: string
 }): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY
+  const apiKey = serverEnv.resendApiKey
   if (!apiKey) return // Silently skip if not configured
 
   await fetch('https://api.resend.com/emails', {

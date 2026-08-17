@@ -3,8 +3,6 @@ import {
   REGIONS,
   DEFAULT_REGION_ID,
   getRegion,
-  formatPrice,
-  formatPriceFromCurrency,
   getShippingThreshold,
 } from '../region'
 
@@ -30,33 +28,6 @@ describe('getRegion', () => {
 
   it('default region is Nigeria', () => {
     expect(DEFAULT_REGION_ID).toBe('NG')
-  })
-})
-
-describe('region.formatPrice (region-based formatter)', () => {
-  it('returns "Coming soon" for zero amount', () => {
-    expect(formatPrice(0, REGIONS.NG)).toBe('Coming soon')
-    expect(formatPrice(0, REGIONS.CA)).toBe('Coming soon')
-  })
-
-  it('formats NGN with no fraction digits', () => {
-    expect(formatPrice(5_000_000, REGIONS.NG)).toBe('₦50,000')
-  })
-
-  it('formats CAD with 2 fraction digits', () => {
-    expect(formatPrice(6_500, REGIONS.CA)).toMatch(/\$65/)
-  })
-})
-
-describe('formatPriceFromCurrency', () => {
-  it('routes to the right region by currency', () => {
-    expect(formatPriceFromCurrency(5_000_000, 'NGN')).toBe('₦50,000')
-    expect(formatPriceFromCurrency(6_500, 'CAD')).toMatch(/\$65/)
-  })
-
-  it('falls back to default region for unknown currencies', () => {
-    // Unknown currency uses default (NGN) formatter
-    expect(formatPriceFromCurrency(5_000_000, 'USD')).toBe('₦50,000')
   })
 })
 

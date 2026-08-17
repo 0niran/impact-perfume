@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { buildOwnerAlertEmail, sendEmail, type AlertItem } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
+import { getMedusaAdminToken } from '@/lib/medusaAdmin'
+import { serverEnv } from '@/lib/env'
 
 /**
  * Payment/order reconciliation. Catches the "paid but no Medusa order" class of
@@ -24,34 +26,15 @@ import { SITE_CONFIG } from '@/lib/config'
  */
 
 function isAuthorised(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
+  const secret = serverEnv.cronSecret
   if (!secret) return false
   return req.headers.get('authorization') === `Bearer ${secret}`
-}
-
-async function medusaAdminToken(): Promise<string | null> {
-  const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const email = process.env.MEDUSA_ADMIN_EMAIL
-  const password = process.env.MEDUSA_ADMIN_PASSWORD
-  if (!backend || !email || !password) return null
-  try {
-    const res = await fetch(`${backend}/auth/user/emailpass`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) return null
-    const { token } = await res.json()
-    return token ?? null
-  } catch {
-    return null
-  }
 }
 
 /** Every reference-like string recorded on Medusa orders created since `since`. */
 async function fulfilledReferences(since: Date): Promise<Set<string> | null> {
   const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const token = await medusaAdminToken()
+  const token = await getMedusaAdminToken()
   if (!backend || !token) return null
   const refs = new Set<string>()
   try {
@@ -99,7 +82,7 @@ export async function GET(req: NextRequest) {
   let checkedPaystack = 0
 
   // --- Stripe (CAD) ---
-  const stripeKey = process.env.STRIPE_SECRET_KEY
+  const stripeKey = serverEnv.stripeSecretKey
   if (stripeKey) {
     const stripe = new Stripe(stripeKey, { apiVersion: '2026-04-22.dahlia' })
     try {
@@ -125,7 +108,7 @@ export async function GET(req: NextRequest) {
   }
 
   // --- Paystack (NGN) ---
-  const paystackKey = process.env.PAYSTACK_SECRET_KEY
+  const paystackKey = serverEnv.paystackSecretKey
   if (paystackKey) {
     try {
       const res = await fetch(

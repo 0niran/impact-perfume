@@ -6,6 +6,7 @@ import { verifyPaidOrder } from '@/lib/pricingGuard'
 import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { verifyDeliveryQuote } from '@/lib/deliveryQuote'
+import { serverEnv } from '@/lib/env'
 
 /**
  * Paystack server-to-server webhook. Signed with HMAC-SHA512 of the raw body
@@ -62,7 +63,7 @@ interface PaystackEvent {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.PAYSTACK_SECRET_KEY
+  const secret = serverEnv.paystackSecretKey
   if (!secret) {
     console.error('[paystack-webhook] missing PAYSTACK_SECRET_KEY')
     return NextResponse.json({ ok: false }, { status: 500 })
