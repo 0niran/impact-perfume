@@ -10,6 +10,8 @@
  * final details lookup so Google bills them as one session.
  */
 
+import { serverEnv } from '@/lib/env'
+
 const AUTOCOMPLETE_URL = 'https://places.googleapis.com/v1/places:autocomplete'
 const DETAILS_URL = 'https://places.googleapis.com/v1/places'
 
@@ -31,7 +33,7 @@ export interface PlaceDetails {
 }
 
 function key(): string | null {
-  const k = process.env.GOOGLE_MAPS_API_KEY
+  const k = serverEnv.googleMapsApiKey
   if (!k) {
     console.error('[places] GOOGLE_MAPS_API_KEY not set')
     return null
