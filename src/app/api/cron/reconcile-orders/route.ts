@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { buildOwnerAlertEmail, sendEmail, type AlertItem } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
+import { getMedusaAdminToken } from '@/lib/medusaAdmin'
 
 /**
  * Payment/order reconciliation. Catches the "paid but no Medusa order" class of
@@ -29,29 +30,10 @@ function isAuthorised(req: NextRequest): boolean {
   return req.headers.get('authorization') === `Bearer ${secret}`
 }
 
-async function medusaAdminToken(): Promise<string | null> {
-  const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const email = process.env.MEDUSA_ADMIN_EMAIL
-  const password = process.env.MEDUSA_ADMIN_PASSWORD
-  if (!backend || !email || !password) return null
-  try {
-    const res = await fetch(`${backend}/auth/user/emailpass`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) return null
-    const { token } = await res.json()
-    return token ?? null
-  } catch {
-    return null
-  }
-}
-
 /** Every reference-like string recorded on Medusa orders created since `since`. */
 async function fulfilledReferences(since: Date): Promise<Set<string> | null> {
   const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const token = await medusaAdminToken()
+  const token = await getMedusaAdminToken()
   if (!backend || !token) return null
   const refs = new Set<string>()
   try {
