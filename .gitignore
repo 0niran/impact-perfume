@@ -39,3 +39,7 @@ yarn-error.log*
 
 # local previews / scratch
 /tmp/
+
+# Business documents and internal review notes (keep out of source control)
+*.docx
+UX-UI-Review*.md
