@@ -21,6 +21,7 @@
 
 import { unstable_cache } from 'next/cache'
 import type { BespokeConfig, BespokeRates, PricedOption } from '@/lib/bespokePricing'
+import { getMedusaAdminToken } from '@/lib/medusaAdmin'
 
 const CONFIG_TTL_SECONDS = 120
 const CURRENCY = 'ngn' // Bespoke is NGN / Paystack only.
@@ -57,25 +58,6 @@ interface AdminProduct {
   handle?: string
   metadata?: Record<string, unknown> | null
   variants?: AdminVariant[]
-}
-
-async function getAdminToken(backendUrl: string): Promise<string | null> {
-  const email = process.env.MEDUSA_ADMIN_EMAIL
-  const password = process.env.MEDUSA_ADMIN_PASSWORD
-  if (!email || !password) return null
-  try {
-    const res = await fetch(`${backendUrl}/auth/user/emailpass`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const { token } = await res.json()
-    return token ?? null
-  } catch {
-    return null
-  }
 }
 
 async function fetchProduct(
@@ -150,7 +132,7 @@ function ratesFrom(product: AdminProduct | null): BespokeRates {
 async function readConfig(): Promise<BespokeConfig | null> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   if (!backendUrl) return null
-  const token = await getAdminToken(backendUrl)
+  const token = await getMedusaAdminToken()
   if (!token) return null
 
   const [base, bottle, inscription, cfg] = await Promise.all([

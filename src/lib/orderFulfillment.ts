@@ -24,6 +24,7 @@ import { claimPayment, releasePayment, recordMedusaOrderId, type PaymentSource }
 import { ngInclusiveVat } from '@/lib/tax'
 import { findLowStockAfterOrder, LOW_STOCK_THRESHOLD } from '@/lib/lowStock'
 import { createShipment, gigTrackingUrl as gigTrackingLink } from '@/lib/gig'
+import { getMedusaAdminToken } from '@/lib/medusaAdmin'
 
 export interface ShippingAddress {
   address1: string
@@ -84,37 +85,6 @@ export interface FulfillmentInput {
    * 'verify' (the browser-redirect path); webhook callers should pass 'webhook'.
    */
   source?: PaymentSource
-}
-
-async function getMedusaAdminToken(): Promise<string | null> {
-  const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const email = process.env.MEDUSA_ADMIN_EMAIL
-  const password = process.env.MEDUSA_ADMIN_PASSWORD
-  if (!backendUrl || !email || !password) {
-    console.error('[orderFulfillment] Missing Medusa admin env vars', {
-      hasBackend: Boolean(backendUrl),
-      hasEmail: Boolean(email),
-      hasPassword: Boolean(password),
-    })
-    return null
-  }
-  try {
-    const res = await fetch(`${backendUrl}/auth/user/emailpass`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      console.error('[orderFulfillment] Medusa auth failed', { status: res.status, body: text.slice(0, 300) })
-      return null
-    }
-    const { token } = await res.json()
-    return token ?? null
-  } catch (err) {
-    console.error('[orderFulfillment] Medusa auth threw', err instanceof Error ? err.message : err)
-    return null
-  }
 }
 
 /**
