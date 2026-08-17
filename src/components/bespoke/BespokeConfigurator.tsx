@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { formatPrice } from '@/lib/format'
 import { SITE_CONFIG } from '@/lib/config'
@@ -11,6 +10,14 @@ import {
   type BespokeConfig,
 } from '@/lib/bespokePricing'
 import Stepper from './Stepper'
+import BespokeSuccess from './BespokeSuccess'
+import {
+  INSPIRATIONS,
+  COLORS,
+  TIMELINES,
+  STEPS,
+  type ColorOption,
+} from './bespokeOptions'
 
 declare global {
   interface Window {
@@ -30,55 +37,9 @@ interface PaystackOptions {
   metadata?: Record<string, unknown>
 }
 
-interface ColorOption {
-  hex: string
-  name: string
-}
-
-interface TimelineOption {
-  id: string
-  label: string
-  description: string
-}
-
-const INSPIRATIONS = [
-  { id: 'no-1', label: 'No. 1 · Fruity' },
-  { id: 'no-5', label: 'No. 5 · Sweet Oud' },
-  { id: 'no-14', label: 'No. 14 · Citrus' },
-  { id: 'no-25', label: 'No. 25 · Vanilla' },
-  { id: 'no-33', label: 'No. 33 · Woody' },
-  { id: 'compose', label: 'Compose from scratch with our perfumer' },
-] as const
-
-const COLORS: ColorOption[] = [
-  { hex: '#1E64A4', name: 'Cobalt' },
-  { hex: '#A8137C', name: 'Magenta' },
-  { hex: '#C18A1F', name: 'Saffron' },
-  { hex: '#1FA84F', name: 'Verdant' },
-  { hex: '#1A1612', name: 'Onyx' },
-  { hex: '#C25719', name: 'Ember' },
-  { hex: '#7414B0', name: 'Plum' },
-  { hex: '#0E5F58', name: 'Teal' },
-]
-
-const TIMELINES: TimelineOption[] = [
-  { id: 'asap', label: 'ASAP', description: 'Within 2 weeks if possible.' },
-  { id: '2-weeks', label: '2 Weeks', description: 'A standard turnaround.' },
-  { id: '1-month', label: '1 Month', description: 'Plenty of time to perfect.' },
-  { id: 'flexible', label: 'Flexible', description: 'No firm deadline.' },
-]
-
 function generateRef(): string {
   return `bespoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
-
-const STEPS = [
-  { id: 1, label: 'Inspiration' },
-  { id: 2, label: 'Bottle' },
-  { id: 3, label: 'Inscription' },
-  { id: 4, label: 'Quantity' },
-  { id: 5, label: 'Your Details' },
-] as const
 
 /** Prefer the 100ml base as the default, otherwise the first available volume. */
 function defaultVolumeKey(config: BespokeConfig | null): string {
@@ -230,64 +191,12 @@ export default function BespokeConfigurator({ config }: { config: BespokeConfig 
 
   // -------- Success state --------
   if (submitStatus === 'success' && submitResult) {
-    const depositNaira = submitResult.depositKobo ? formatPrice(submitResult.depositKobo) : null
-
     return (
-      <div className="mx-auto flex max-w-2xl flex-col gap-8 py-12">
-        <div>
-          <p className="text-label uppercase tracking-[0.1em] text-accent">Brief Received</p>
-          <h2 className="mt-3 font-display text-display-s text-bone">
-            Your bespoke brief is in.
-          </h2>
-          <p className="mt-4 max-w-xl text-body text-stone">
-            Reference: <span className="font-mono text-bone">{submitResult.inquiryId}</span>.
-            Our perfumer will review your composition and reach out within 24 hours
-            to confirm details, samples, and the final price.
-          </p>
-        </div>
-
-        {depositNaira ? (
-          <div className="max-w-xl border border-stone/30 bg-mist/40 p-6">
-            <p className="text-label uppercase tracking-[0.1em] text-stone">Secure your slot</p>
-            <p className="mt-2 font-display text-h1 text-bone">{depositNaira}</p>
-            <p className="mt-1 text-small text-stone">
-              Deposit toward your order. Balance settled before delivery. Refundable up to 7 days.
-            </p>
-            <button
-              onClick={handlePayDeposit}
-              disabled={depositStatus === 'loading' || depositStatus === 'paid'}
-              className="mt-6 inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
-              style={{ height: 48 }}
-            >
-              {depositStatus === 'paid'
-                ? 'Deposit Paid ✓'
-                : depositStatus === 'loading'
-                  ? 'Processing…'
-                  : `Pay ${depositNaira} Deposit`}
-            </button>
-            {depositStatus === 'paid' && (
-              <p className="mt-4 text-small text-success">
-                Thank you, your deposit is recorded. You&apos;ll receive a confirmation email shortly.
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="max-w-xl border border-stone/30 bg-mist/40 p-6">
-            <p className="text-label uppercase tracking-[0.1em] text-stone">Next step</p>
-            <p className="mt-2 font-display text-h2 text-bone">We&apos;ll send your price</p>
-            <p className="mt-2 text-small text-stone">
-              Our perfumer will confirm pricing and a delivery schedule when they
-              reach out.
-            </p>
-          </div>
-        )}
-
-        <div>
-          <Link href="/" className="text-small text-stone hover:text-bone transition-colors">
-            ← Back to the house
-          </Link>
-        </div>
-      </div>
+      <BespokeSuccess
+        result={submitResult}
+        depositStatus={depositStatus}
+        onPayDeposit={handlePayDeposit}
+      />
     )
   }
 
