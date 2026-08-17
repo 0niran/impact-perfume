@@ -7,6 +7,13 @@ import { toCartLinePayload } from '@/lib/cartPayload'
 import { formatPrice } from '@/lib/format'
 import { NIGERIAN_STATES } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
+import AddressAutocomplete, { type SelectedAddress } from './AddressAutocomplete'
+
+/** Map a Google admin-area name ("Lagos", "Lagos State") to a NIGERIAN_STATES option. */
+function matchNgState(name: string): string | null {
+  const norm = name.trim().replace(/\s+state$/i, '').toLowerCase()
+  return NIGERIAN_STATES.find((s) => s.toLowerCase() === norm) ?? null
+}
 import { SITE_CONFIG, NG_PICKUP_LOCATIONS, getPickupLocation } from '@/lib/config'
 import { cn } from '@/lib/cn'
 import CartLineItem from '@/components/cart/CartLineItem'
@@ -78,6 +85,9 @@ export default function CheckoutForm() {
   const [pickupId, setPickupId] = useState('')
 
   const [address1, setAddress1] = useState('')
+  // Set when address1 came from an autocomplete pick; sent to the quote route so
+  // it uses the place's exact coordinates. Cleared when the field is edited.
+  const [placeId, setPlaceId] = useState<string | null>(null)
   const [address2, setAddress2] = useState('')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
@@ -131,6 +141,9 @@ export default function CheckoutForm() {
             },
             subtotalMinor: subtotalKobo,
             itemCount,
+            // When present, the server uses the place's exact coordinates
+            // instead of geocoding the typed text.
+            placeId: placeId ?? undefined,
           }),
           signal: controller.signal,
         })
@@ -161,7 +174,7 @@ export default function CheckoutForm() {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [method, address1, address2, city, state, subtotalKobo, itemCount])
+  }, [method, address1, address2, city, state, placeId, subtotalKobo, itemCount])
 
   const deliveryFeeMinor = method === 'shipping' ? quote?.chargedFeeMinor ?? 0 : 0
   const totalKobo = subtotalKobo + deliveryFeeMinor
@@ -424,15 +437,28 @@ export default function CheckoutForm() {
               <div className="mt-4 flex flex-col gap-4">
                 <div>
                   <label htmlFor="address1" className={FORM_STYLES.label}>Street address *</label>
-                  <input
-                    id="address1"
-                    type="text"
-                    autoComplete="address-line1"
+                  <AddressAutocomplete
+                    regionCode="ng"
+                    inputId="address1"
+                    inputClassName={FORM_STYLES.input}
+                    placeholder="Start typing your address…"
                     value={address1}
-                    onChange={(e) => setAddress1(e.target.value)}
-                    className={FORM_STYLES.input}
-                    placeholder="12 Banana Island Road"
+                    onInputChange={(text) => {
+                      // Manual edit invalidates the picked place; quote falls back to geocode.
+                      setAddress1(text)
+                      setPlaceId(null)
+                    }}
+                    onSelect={(a: SelectedAddress) => {
+                      setAddress1(a.address1)
+                      if (a.city) setCity(a.city)
+                      const st = matchNgState(a.state)
+                      if (st) setState(st)
+                      setPlaceId(a.placeId)
+                    }}
                   />
+                  <p className="mt-1 text-small text-stone">
+                    Pick your address from the list so delivery reaches you accurately.
+                  </p>
                 </div>
 
                 <div>

@@ -153,6 +153,11 @@ export const deliveryQuoteBodySchema = z.object({
   // so a tampered value here can't underpay — it only affects the preview.
   subtotalMinor: z.number().int().min(0).max(10_000_000_000),
   itemCount: z.number().int().min(1).max(999),
+  // When the address came from autocomplete, the selected place. The quote
+  // route resolves it server-side to authoritative coordinates instead of
+  // geocoding the typed text.
+  placeId: z.string().min(1).max(300).optional(),
+  sessionToken: z.string().min(1).max(64).optional(),
 })
 
 export const stripeCreateIntentBodySchema = z.object({
