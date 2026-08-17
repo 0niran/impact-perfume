@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { buildOwnerAlertEmail, sendEmail, type AlertItem } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { getMedusaAdminToken } from '@/lib/medusaAdmin'
+import { serverEnv } from '@/lib/env'
 
 /**
  * Payment/order reconciliation. Catches the "paid but no Medusa order" class of
@@ -25,7 +26,7 @@ import { getMedusaAdminToken } from '@/lib/medusaAdmin'
  */
 
 function isAuthorised(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
+  const secret = serverEnv.cronSecret
   if (!secret) return false
   return req.headers.get('authorization') === `Bearer ${secret}`
 }
@@ -81,7 +82,7 @@ export async function GET(req: NextRequest) {
   let checkedPaystack = 0
 
   // --- Stripe (CAD) ---
-  const stripeKey = process.env.STRIPE_SECRET_KEY
+  const stripeKey = serverEnv.stripeSecretKey
   if (stripeKey) {
     const stripe = new Stripe(stripeKey, { apiVersion: '2026-04-22.dahlia' })
     try {
@@ -107,7 +108,7 @@ export async function GET(req: NextRequest) {
   }
 
   // --- Paystack (NGN) ---
-  const paystackKey = process.env.PAYSTACK_SECRET_KEY
+  const paystackKey = serverEnv.paystackSecretKey
   if (paystackKey) {
     try {
       const res = await fetch(

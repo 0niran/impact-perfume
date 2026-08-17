@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { serverEnv } from '@/lib/env'
 
 /**
  * Receives product lifecycle events from Medusa and revalidates the affected
@@ -26,7 +27,7 @@ interface MedusaEventPayload {
 }
 
 function expectedSecret(): string | undefined {
-  return process.env.MEDUSA_WEBHOOK_SECRET || process.env.CRON_SECRET
+  return serverEnv.medusaWebhookSecret || serverEnv.cronSecret
 }
 
 // Fails CLOSED when no secret is configured — refusing the webhook is
