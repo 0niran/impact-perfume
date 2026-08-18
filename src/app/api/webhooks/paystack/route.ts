@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { getPickupLocation } from '@/lib/config'
 import { verifyPaidOrder } from '@/lib/pricingGuard'
-import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
+import { buildOwnerAlertEmail, buildRefundEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { verifyDeliveryQuote } from '@/lib/deliveryQuote'
 import { serverEnv } from '@/lib/env'
@@ -210,6 +210,21 @@ export async function POST(req: NextRequest) {
         ],
       }),
     }).catch((err) => console.error('[paystack-webhook] refund alert failed', err))
+
+    // Branded confirmation to the customer, when Paystack has their email.
+    const customerEmail = d?.customer?.email ?? ''
+    if (customerEmail) {
+      const customerName = `${d.customer?.first_name ?? ''} ${d.customer?.last_name ?? ''}`.trim()
+      await sendEmail({
+        to: customerEmail,
+        ...buildRefundEmail({
+          customerName: customerName || undefined,
+          reference: d?.reference ?? '',
+          amountMinor: d?.amount ?? 0,
+          currency: d?.currency ?? 'NGN',
+        }),
+      }).catch((err) => console.error('[paystack-webhook] customer refund email failed', err))
+    }
   }
 
   return NextResponse.json({ ok: true })

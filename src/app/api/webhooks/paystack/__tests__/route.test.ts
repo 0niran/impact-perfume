@@ -13,11 +13,22 @@ vi.mock('@/lib/pricingGuard', () => ({
   verifyPaidOrder: (...args: unknown[]) => verifyPaidOrderMock(...args),
 }))
 
+// Spy on the email layer so we can assert the customer refund confirmation.
+const sendEmailMock = vi.fn().mockResolvedValue({ ok: true })
+const buildRefundEmailMock = vi.fn().mockReturnValue({ subject: 'refund', html: '<r>' })
+vi.mock('@/lib/email', () => ({
+  sendEmail: (...args: unknown[]) => sendEmailMock(...args),
+  buildOwnerAlertEmail: vi.fn().mockReturnValue({ subject: 'o', html: '<o>' }),
+  buildRefundEmail: (...args: unknown[]) => buildRefundEmailMock(...args),
+}))
+
 const SECRET = 'test_paystack_secret'
 
 beforeEach(() => {
   vi.stubEnv('PAYSTACK_SECRET_KEY', SECRET)
   fulfillOrderMock.mockClear()
+  sendEmailMock.mockClear()
+  buildRefundEmailMock.mockClear()
   verifyPaidOrderMock.mockReset()
   verifyPaidOrderMock.mockResolvedValue({
     ok: true,
@@ -188,6 +199,32 @@ describe('POST /api/webhooks/paystack — event handling', () => {
     const res = await callRoute(signedRequest(evt))
     expect(res.status).toBe(200)
     expect(fulfillOrderMock).not.toHaveBeenCalled()
+  })
+
+  it('emails the customer a branded refund confirmation when Paystack has their email', async () => {
+    const evt = {
+      event: 'refund.processed',
+      data: {
+        reference: 'ref-9',
+        amount: 5_000_000,
+        currency: 'NGN',
+        customer: { email: 'jane@example.com', first_name: 'Jane', last_name: 'Doe' },
+      },
+    }
+    const res = await callRoute(signedRequest(evt))
+    expect(res.status).toBe(200)
+    expect(buildRefundEmailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ reference: 'ref-9', amountMinor: 5_000_000, currency: 'NGN', customerName: 'Jane Doe' })
+    )
+    const recipients = sendEmailMock.mock.calls.map((c: unknown[]) => (c[0] as { to: string }).to)
+    expect(recipients).toContain('jane@example.com')
+  })
+
+  it('skips the customer refund email when Paystack has no customer email', async () => {
+    const evt = { event: 'refund.processed', data: { reference: 'ref-10', amount: 100, currency: 'NGN' } }
+    const res = await callRoute(signedRequest(evt))
+    expect(res.status).toBe(200)
+    expect(buildRefundEmailMock).not.toHaveBeenCalled()
   })
 
   it('returns 400 on invalid JSON body', async () => {
