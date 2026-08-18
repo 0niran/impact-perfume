@@ -21,7 +21,7 @@
 
 import { unstable_cache } from 'next/cache'
 import type { BespokeConfig, BespokeRates, PricedOption } from '@/lib/bespokePricing'
-import { getMedusaAdminToken } from '@/lib/medusaAdmin'
+import { getMedusaAdminAuthHeader } from '@/lib/medusaAdmin'
 
 const CONFIG_TTL_SECONDS = 120
 
@@ -64,7 +64,7 @@ interface AdminProduct {
 
 async function fetchProduct(
   backendUrl: string,
-  token: string,
+  authHeader: string,
   handle: string
 ): Promise<AdminProduct | null> {
   const url =
@@ -72,7 +72,7 @@ async function fetchProduct(
     `&fields=handle,metadata,*variants.prices,variants.title,variants.sku`
   try {
     const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: authHeader },
       cache: 'no-store',
     })
     if (!res.ok) return null
@@ -135,14 +135,14 @@ function ratesFrom(product: AdminProduct | null): BespokeRates {
 async function readConfig(currency: BespokeCurrency): Promise<BespokeConfig | null> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   if (!backendUrl) return null
-  const token = await getMedusaAdminToken()
-  if (!token) return null
+  const authHeader = getMedusaAdminAuthHeader()
+  if (!authHeader) return null
 
   const [base, bottle, inscription, cfg] = await Promise.all([
-    fetchProduct(backendUrl, token, 'bespoke-base'),
-    fetchProduct(backendUrl, token, 'bespoke-bottle'),
-    fetchProduct(backendUrl, token, 'bespoke-inscription'),
-    fetchProduct(backendUrl, token, 'bespoke-config'),
+    fetchProduct(backendUrl, authHeader, 'bespoke-base'),
+    fetchProduct(backendUrl, authHeader, 'bespoke-bottle'),
+    fetchProduct(backendUrl, authHeader, 'bespoke-inscription'),
+    fetchProduct(backendUrl, authHeader, 'bespoke-config'),
   ])
 
   const volumes = optionsFrom(base, VOLUME_SKUS, currency)

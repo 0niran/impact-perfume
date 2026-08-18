@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { buildOwnerAlertEmail, sendEmail, type AlertItem } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
-import { getMedusaAdminToken } from '@/lib/medusaAdmin'
+import { getMedusaAdminAuthHeader } from '@/lib/medusaAdmin'
 import { serverEnv } from '@/lib/env'
 
 /**
@@ -34,13 +34,13 @@ function isAuthorised(req: NextRequest): boolean {
 /** Every reference-like string recorded on Medusa orders created since `since`. */
 async function fulfilledReferences(since: Date): Promise<Set<string> | null> {
   const backend = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  const token = await getMedusaAdminToken()
-  if (!backend || !token) return null
+  const authHeader = getMedusaAdminAuthHeader()
+  if (!backend || !authHeader) return null
   const refs = new Set<string>()
   try {
     const res = await fetch(
       `${backend}/admin/orders?limit=100&order=-created_at&fields=id,created_at,metadata`,
-      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+      { headers: { Authorization: authHeader, 'Content-Type': 'application/json' } }
     )
     if (!res.ok) return null
     const { orders = [] } = (await res.json()) as {

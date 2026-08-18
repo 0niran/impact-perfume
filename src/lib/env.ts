@@ -77,6 +77,8 @@ const REQUIRED_SERVER_VARS = [
   'PAYSTACK_SECRET_KEY',
   'CRON_SECRET',
   'RESEND_API_KEY',
+  // Medusa admin secret API key (server-to-server admin auth). See lib/medusaAdmin.
+  'MEDUSA_ADMIN_API_KEY',
 ] as const
 
 export interface EnvValidation {

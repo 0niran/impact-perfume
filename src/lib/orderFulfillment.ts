@@ -24,7 +24,7 @@ import { claimPayment, releasePayment, recordMedusaOrderId, type PaymentSource }
 import { ngInclusiveVat } from '@/lib/tax'
 import { findLowStockAfterOrder, LOW_STOCK_THRESHOLD } from '@/lib/lowStock'
 import { createShipment, gigTrackingUrl as gigTrackingLink } from '@/lib/gig'
-import { getMedusaAdminToken } from '@/lib/medusaAdmin'
+import { getMedusaAdminAuthHeader } from '@/lib/medusaAdmin'
 
 export interface ShippingAddress {
   address1: string
@@ -98,11 +98,11 @@ async function persistGigWaybill(
 ): Promise<void> {
   const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   if (!backendUrl) return
-  const token = await getMedusaAdminToken()
-  if (!token) return
+  const authHeader = getMedusaAdminAuthHeader()
+  if (!authHeader) return
   try {
     const getRes = await fetch(`${backendUrl}/admin/orders/${orderId}?fields=metadata`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: authHeader },
     })
     const current = getRes.ok
       ? ((await getRes.json())?.order?.metadata as Record<string, unknown> | null) ?? {}
@@ -115,7 +115,7 @@ async function persistGigWaybill(
     }
     const res = await fetch(`${backendUrl}/admin/orders/${orderId}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
       body: JSON.stringify({ metadata }),
     })
     if (!res.ok) {
@@ -144,8 +144,8 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
     return null
   }
 
-  const token = await getMedusaAdminToken()
-  if (!token) return null
+  const authHeader = getMedusaAdminAuthHeader()
+  if (!authHeader) return null
 
   const nameParts = input.customerName.trim().split(' ')
   const firstName = nameParts[0] || '-'
@@ -228,7 +228,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
 
   const draftRes = await fetch(`${backendUrl}/admin/draft-orders`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
     body: JSON.stringify(draftBody),
   })
 
@@ -260,7 +260,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
     `${backendUrl}/admin/draft-orders/${draftId}/convert-to-order`,
     {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
       body: '{}',
     }
   )
@@ -291,7 +291,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
   const captureAmount = Math.round(input.totalKobo / 100)
   const pcRes = await fetch(`${backendUrl}/admin/payment-collections`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
     body: JSON.stringify({ order_id: orderId, amount: captureAmount }),
   })
 
@@ -323,7 +323,7 @@ async function createMedusaOrder(input: FulfillmentInput): Promise<string | null
     `${backendUrl}/admin/payment-collections/${paymentCollectionId}/mark-as-paid`,
     {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
       body: JSON.stringify({ order_id: orderId }),
     }
   )
@@ -466,9 +466,9 @@ export async function fulfillOrder(input: FulfillmentInput): Promise<{ ok: boole
   const lowStockAlert = (async () => {
     const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
     if (!backendUrl) return
-    const token = await getMedusaAdminToken()
-    if (!token) return
-    const alerts = await findLowStockAfterOrder({ backendUrl, token, orderId })
+    const authHeader = getMedusaAdminAuthHeader()
+    if (!authHeader) return
+    const alerts = await findLowStockAfterOrder({ backendUrl, authHeader, orderId })
     if (alerts.length === 0) return
     const plural = alerts.length > 1
     const { subject, html } = buildOwnerAlertEmail({

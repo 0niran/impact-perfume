@@ -5,7 +5,6 @@ import { sendEmail, buildCustomerEmail, buildBusinessEmail, buildOwnerAlertEmail
 import { createShipment, gigTrackingUrl } from '@/lib/gig'
 import { findLowStockAfterOrder } from '@/lib/lowStock'
 import { ngInclusiveVat } from '@/lib/tax'
-import { clearMedusaAdminToken } from '@/lib/medusaAdmin'
 
 /**
  * Tests for the shared post-payment money path (fulfillOrder). Covers the
@@ -69,7 +68,6 @@ function stubFetch(opts: { failDraft?: boolean } = {}) {
     const body = init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : undefined
     calls.push({ url: u, method, body })
 
-    if (u.endsWith('/auth/user/emailpass')) return json({ token: 'tok' })
     if (u.includes('/convert-to-order')) return json({ order: { id: 'order_1' } })
     if (u.endsWith('/admin/draft-orders')) {
       if (opts.failDraft) return json({ message: 'boom' }, 500)
@@ -111,12 +109,8 @@ const NG_PICKUP: FulfillmentInput = {
 
 beforeEach(() => {
   vi.resetAllMocks()
-  // medusaAdmin.ts caches the token at module scope; clear it so each test
-  // re-authenticates against its own fetch stub instead of a stale token.
-  clearMedusaAdminToken()
   vi.stubEnv('NEXT_PUBLIC_MEDUSA_BACKEND_URL', 'https://medusa.test')
-  vi.stubEnv('MEDUSA_ADMIN_EMAIL', 'admin@impact.test')
-  vi.stubEnv('MEDUSA_ADMIN_PASSWORD', 'secret')
+  vi.stubEnv('MEDUSA_ADMIN_API_KEY', 'sk_test_key')
   // Default happy behaviours; individual tests override.
   vi.mocked(claimPayment).mockResolvedValue(true)
   vi.mocked(releasePayment).mockResolvedValue(undefined as never)
