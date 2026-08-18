@@ -28,11 +28,9 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 
 if (!BACKEND) {
-  console.error('Missing NEXT_PUBLIC_MEDUSA_BACKEND_URL / MEDUSA_ADMIN_EMAIL / MEDUSA_ADMIN_PASSWORD in .env.local')
+  console.error('Missing NEXT_PUBLIC_MEDUSA_BACKEND_URL in .env.local')
   process.exit(1)
 }
 
@@ -97,12 +95,7 @@ const PRODUCTS: ProductSeed[] = [
     },
   },
 ]
-
-async function login(): Promise<string> {
-  return adminAuthHeader()
-}
-
-async function productExists(token: string, handle: string): Promise<boolean> {
+async function productExists(handle: string): Promise<boolean> {
   const res = await fetch(
     `${BACKEND}/admin/products?handle=${encodeURIComponent(handle)}&limit=1&fields=id,handle`,
     { headers: { Authorization: adminAuthHeader() } }
@@ -112,7 +105,7 @@ async function productExists(token: string, handle: string): Promise<boolean> {
   return (json.products?.length ?? 0) > 0
 }
 
-async function createProduct(token: string, seed: ProductSeed): Promise<void> {
+async function createProduct(seed: ProductSeed): Promise<void> {
   const body = {
     title: seed.title,
     handle: seed.handle,
@@ -139,14 +132,13 @@ async function createProduct(token: string, seed: ProductSeed): Promise<void> {
 }
 
 async function main() {
-  const token = await login()
   console.log('Authenticated. Seeding bespoke config products...\n')
   for (const seed of PRODUCTS) {
-    if (await productExists(token, seed.handle)) {
+    if (await productExists(seed.handle)) {
       console.log(`  skip   ${seed.handle} (already exists, not overwriting)`)
       continue
     }
-    await createProduct(token, seed)
+    await createProduct(seed)
     console.log(`  create ${seed.handle} (${seed.variants.length} variant${seed.variants.length === 1 ? '' : 's'})`)
   }
   console.log('\nDone. Edit prices/rates under Products in the Medusa admin.')

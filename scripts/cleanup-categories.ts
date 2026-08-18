@@ -17,8 +17,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
-const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
 
 interface CanonicalCategory {
   handle: string
@@ -84,14 +82,7 @@ const CANONICAL: CanonicalCategory[] = [
   },
 ]
 
-let _token: string | null = null
-
-async function getToken(): Promise<string> {
-  return adminAuthHeader()
-}
-
 async function adminRequest(p: string, options: RequestInit = {}) {
-  const token = await getToken()
   const res = await fetch(`${MEDUSA_BACKEND_URL}${p}`, {
     ...options,
     headers: {

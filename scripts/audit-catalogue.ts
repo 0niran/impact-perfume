@@ -24,16 +24,8 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 
-let token = ''
 let hardProblems = 0
-
-async function auth(): Promise<void> {
-  // Auth is applied per-request via adminAuthHeader() (secret API key).
-}
-
 interface Variant {
   calculated_price?: { calculated_amount?: number }
   inventory_quantity?: number
@@ -163,7 +155,6 @@ async function auditMarket(
 
 async function main() {
   if (!BACKEND) throw new Error('Missing Medusa admin env vars in .env.local')
-  await auth()
   const published = await adminPublished()
 
   await auditMarket('NG', process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY, process.env.NEXT_PUBLIC_MEDUSA_REGION_ID, published)

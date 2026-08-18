@@ -25,8 +25,6 @@ loadEnv() // fall back to .env for anything not in .env.local
 const BASE =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
   'https://impact-perfumes-medusa-production.up.railway.app'
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 const APPLY = process.env.APPLY === '1'
 const IMAGES_DIR = path.join(process.cwd(), 'public', 'images')
 
@@ -55,12 +53,7 @@ function mimeFor(file: string): string {
   if (ext === '.webp') return 'image/webp'
   return 'image/png'
 }
-
-async function getToken(): Promise<string> {
-  return adminAuthHeader()
-}
-
-async function fetchProducts(token: string): Promise<any[]> {
+async function fetchProducts(): Promise<any[]> {
   const res = await fetch(
     `${BASE}/admin/products?limit=500&fields=id,handle,title,status,thumbnail`,
     { headers: { Authorization: adminAuthHeader() } },
@@ -71,7 +64,7 @@ async function fetchProducts(token: string): Promise<any[]> {
 
 const uploadCache = new Map<string, string>()
 
-async function uploadFile(token: string, file: string): Promise<string> {
+async function uploadFile(file: string): Promise<string> {
   if (uploadCache.has(file)) return uploadCache.get(file)!
   const abs = path.join(IMAGES_DIR, file)
   const buf = fs.readFileSync(abs)
@@ -90,7 +83,7 @@ async function uploadFile(token: string, file: string): Promise<string> {
   return url
 }
 
-async function setImage(token: string, id: string, url: string): Promise<void> {
+async function setImage(id: string, url: string): Promise<void> {
   const res = await fetch(`${BASE}/admin/products/${id}`, {
     method: 'POST',
     headers: { Authorization: adminAuthHeader(), 'Content-Type': 'application/json' },
@@ -115,8 +108,7 @@ function resolveFile(p: any): { file: string; guessed: boolean } | null {
 async function main() {
   console.log(`Backend: ${BASE}`)
   console.log(`Mode:    ${APPLY ? 'APPLY (writing)' : 'DRY RUN (no writes)'}\n`)
-  const token = await getToken()
-  const products = await fetchProducts(token)
+  const products = await fetchProducts()
   console.log(`Fetched ${products.length} products\n`)
 
   const tasks: Task[] = []
@@ -168,8 +160,8 @@ async function main() {
   let ok = 0
   for (const t of tasks) {
     try {
-      const url = await uploadFile(token, t.file)
-      await setImage(token, t.id, url)
+      const url = await uploadFile(t.file)
+      await setImage(t.id, url)
       console.log(`  OK  ${t.handle.padEnd(26)} -> ${url}`)
       audit.push(`${t.handle}\t${t.file}\t${url}`)
       ok++

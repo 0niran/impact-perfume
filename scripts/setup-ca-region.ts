@@ -21,20 +21,12 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
-const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
 
 // Conversion: 1 NGN ≈ 0.0011 CAD. Both currencies use 2 decimals → smallest-unit
 // math is identical (kobo × rate = cents). Override with the CAD_RATE env var.
 const CAD_RATE = parseFloat(process.env.CAD_RATE ?? '0.0011')
 
-let _token: string | null = null
-async function getToken(): Promise<string> {
-  return adminAuthHeader()
-}
-
 async function admin(path: string, options: RequestInit = {}) {
-  const token = await getToken()
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {
     ...options,
     headers: {

@@ -9,7 +9,7 @@
  * Run it with the production env available (Stripe + Medusa admin + Sanity):
  *
  *   STRIPE_SECRET_KEY=sk_live_... \
- *   NEXT_PUBLIC_MEDUSA_BACKEND_URL=... MEDUSA_ADMIN_EMAIL=... MEDUSA_ADMIN_PASSWORD=... \
+ *   NEXT_PUBLIC_MEDUSA_BACKEND_URL=... MEDUSA_ADMIN_API_KEY=... \
  *   NEXT_PUBLIC_MEDUSA_REGION_ID_CA=... NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=... \
  *   NEXT_PUBLIC_SANITY_PROJECT_ID=... SANITY_API_WRITE_TOKEN=... RESEND_API_KEY=... \
  *   npx tsx scripts/recover-stripe-orders.ts

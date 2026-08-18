@@ -30,12 +30,10 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 const APPLY = process.env.APPLY === '1'
 
 if (!BACKEND) {
-  console.error('Missing NEXT_PUBLIC_MEDUSA_BACKEND_URL / MEDUSA_ADMIN_EMAIL / MEDUSA_ADMIN_PASSWORD in .env.local')
+  console.error('Missing NEXT_PUBLIC_MEDUSA_BACKEND_URL in .env.local')
   process.exit(1)
 }
 
@@ -63,12 +61,7 @@ interface Variant {
   title?: string
   prices?: Price[]
 }
-
-async function login(): Promise<string> {
-  return adminAuthHeader()
-}
-
-async function admin(token: string, p: string, options: RequestInit = {}) {
+async function admin(p: string, options: RequestInit = {}) {
   const res = await fetch(`${BACKEND}${p}`, {
     ...options,
     headers: {
@@ -82,9 +75,8 @@ async function admin(token: string, p: string, options: RequestInit = {}) {
   return body
 }
 
-async function getProduct(token: string, handle: string): Promise<{ id: string; variants: Variant[] } | null> {
+async function getProduct(handle: string): Promise<{ id: string; variants: Variant[] } | null> {
   const data = await admin(
-    token,
     `/admin/products?handle=${encodeURIComponent(handle)}&limit=1&fields=id,handle,*variants,*variants.prices`
   )
   const product = data.products?.[0]
@@ -93,7 +85,7 @@ async function getProduct(token: string, handle: string): Promise<{ id: string; 
 }
 
 /** Read-keep-append so the NGN price survives the REPLACE write. */
-async function setCadPrice(token: string, productId: string, v: Variant, cad: number): Promise<'set' | 'unchanged'> {
+async function setCadPrice(productId: string, v: Variant, cad: number): Promise<'set' | 'unchanged'> {
   const existing = v.prices ?? []
   const currentCad = existing.find((p) => p.currency_code === 'cad')?.amount
   if (currentCad === cad) return 'unchanged'
@@ -104,7 +96,7 @@ async function setCadPrice(token: string, productId: string, v: Variant, cad: nu
   const newPrices = [...otherPrices, { amount: cad, currency_code: 'cad' }]
 
   if (!APPLY) return 'set'
-  await admin(token, `/admin/products/${productId}/variants/${v.id}`, {
+  await admin(`/admin/products/${productId}/variants/${v.id}`, {
     method: 'POST',
     body: JSON.stringify({ prices: newPrices }),
   })
@@ -112,7 +104,6 @@ async function setCadPrice(token: string, productId: string, v: Variant, cad: nu
 }
 
 async function main() {
-  const token = await login()
   console.log(`${APPLY ? 'APPLYING' : 'DRY RUN'} — bespoke CAD prices\n`)
 
   let set = 0
@@ -120,7 +111,7 @@ async function main() {
   let missing = 0
 
   for (const handle of HANDLES) {
-    const product = await getProduct(token, handle)
+    const product = await getProduct(handle)
     if (!product) {
       console.log(`  MISSING product ${handle} — run seed-bespoke-config.ts first`)
       missing++
@@ -131,7 +122,7 @@ async function main() {
       if (!(sku in CAD_BY_SKU)) continue
       const cad = CAD_BY_SKU[sku]
       const ngn = (v.prices ?? []).find((p) => p.currency_code === 'ngn')?.amount ?? '—'
-      const result = await setCadPrice(token, product.id, v, cad)
+      const result = await setCadPrice(product.id, v, cad)
       if (result === 'unchanged') {
         unchanged++
         console.log(`  ok     ${sku} CAD ${cad} (already set; NGN ${ngn} kept)`)

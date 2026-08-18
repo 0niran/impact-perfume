@@ -6,8 +6,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
-const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
 
 // Signature Collection — Medusa v2 stores prices in MAJOR units (₦1 = 1).
 const SIGNATURE_PRODUCTS = [
@@ -73,14 +71,7 @@ const SIGNATURE_PRODUCTS = [
   },
 ]
 
-let _token: string | null = null
-
-async function getToken(): Promise<string> {
-  return adminAuthHeader()
-}
-
 async function adminRequest(path: string, options: RequestInit = {}) {
-  const token = await getToken()
   const res = await fetch(`${MEDUSA_BACKEND_URL}${path}`, {
     ...options,
     headers: {
@@ -209,13 +200,7 @@ async function main() {
   console.log('Impact Perfumes — Signature Collection Seed')
   console.log('============================================\n')
 
-  if (!MEDUSA_ADMIN_EMAIL) {
-    console.error('Missing MEDUSA_ADMIN_EMAIL or MEDUSA_ADMIN_PASSWORD in .env.local')
-    process.exit(1)
-  }
-
-  console.log(`Backend: ${MEDUSA_BACKEND_URL}`)
-  console.log(`Admin:   ${MEDUSA_ADMIN_EMAIL}\n`)
+  console.log(`Backend: ${MEDUSA_BACKEND_URL}\n`)
 
   // Ensure the "signature" category exists
   console.log('1. Getting/creating Signature category...')

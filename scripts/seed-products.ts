@@ -42,8 +42,6 @@ interface ProductData {
 
 // Configuration
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
-const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
 
 const SANITY_PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
 const SANITY_DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
@@ -61,19 +59,8 @@ const sanityClient = createClient({
   apiVersion: '2023-05-03'
 })
 
-// Authenticate with Medusa and return a JWT
-async function getMedusaToken(): Promise<string> {
-  return adminAuthHeader()
-}
-
-let _medusaToken: string | null = null
-async function getToken(): Promise<string> {
-  return adminAuthHeader()
-}
-
 // Utility functions
 async function makeRequest(url: string, options: RequestInit = {}) {
-  const token = await getToken()
   const response = await fetch(`${MEDUSA_BACKEND_URL}${url}`, {
     headers: {
       'Content-Type': 'application/json',

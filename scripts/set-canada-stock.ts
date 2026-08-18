@@ -14,19 +14,11 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 
 // The Canada stock location provisioned by scripts/setup-markets.ts.
 const CANADA_LOCATION_ID = 'sloc_01KWZKFF9NG2YPYG78Z8Y7YBPH'
 
 const QTY = Number.parseInt(process.argv[2] ?? '20', 10)
-
-let token = ''
-
-async function auth(): Promise<void> {
-  // Auth is applied per-request via adminAuthHeader() (secret API key).
-}
 
 function headers() {
   return { Authorization: adminAuthHeader(), 'Content-Type': 'application/json' }
@@ -59,7 +51,6 @@ async function main() {
   if (!BACKEND) throw new Error('Missing Medusa admin env vars in .env.local')
   if (!Number.isInteger(QTY) || QTY < 0) throw new Error(`Invalid quantity "${process.argv[2]}"`)
 
-  await auth()
   const items = await allInventoryItems()
   console.log(`Setting Canada stock to ${QTY} across ${items.length} inventory items…`)
 

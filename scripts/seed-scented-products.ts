@@ -18,8 +18,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BE = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 const APPLY = process.argv.includes('--apply')
 
 const NG = 'sc_01KQMBCSX02P4R54TFRC4XMYFY'
@@ -34,11 +32,6 @@ const CATS = [
   { kind: 'home', label: 'Home Diffuser', catHandle: 'home-diffusers', handlePrefix: 'home-diffuser-no-', size: '100ml Reed', image: '/images/Difusser.png', prices: [{ amount: 25000, currency_code: 'ngn' }, { amount: 30, currency_code: 'cad' }] },
   { kind: 'car', label: 'Car Diffuser', catHandle: 'car-diffusers', handlePrefix: 'car-diffuser-no-', size: '8ml Vent', image: '/images/car.png', prices: [{ amount: 25000, currency_code: 'ngn' }, { amount: 30, currency_code: 'cad' }] },
 ]
-
-let token = ''
-async function auth() {
-  // Auth is applied per-request via adminAuthHeader() (secret API key).
-}
 const H = () => ({ Authorization: adminAuthHeader(), 'Content-Type': 'application/json' })
 async function get(p: string) { const r = await fetch(`${BE}${p}`, { headers: H() }); if (!r.ok) throw new Error(`GET ${p} ${r.status}`); return r.json() }
 async function post(p: string, b: unknown) {
@@ -53,7 +46,6 @@ interface NumMeta { number: number; descriptor?: string; scent_family?: string; 
 async function main() {
   if (!BE) throw new Error('Missing Medusa admin env')
   console.log(APPLY ? 'APPLY MODE\n' : 'DRY RUN (pass --apply)\n')
-  await auth()
 
   const catId: Record<string, string> = {}
   for (const c of CATS) {
