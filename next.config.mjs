@@ -12,6 +12,8 @@ const mediaPattern = mediaHost
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Don't advertise the framework in response headers (audit F-3).
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.sanity.io" },
