@@ -3,6 +3,7 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 import fs from 'fs'
 import { createClient } from '@sanity/client'
@@ -62,23 +63,12 @@ const sanityClient = createClient({
 
 // Authenticate with Medusa and return a JWT
 async function getMedusaToken(): Promise<string> {
-  const res = await fetch(`${MEDUSA_BACKEND_URL}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: MEDUSA_ADMIN_EMAIL, password: MEDUSA_ADMIN_PASSWORD }),
-  })
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Medusa login failed: ${res.status} ${res.statusText} - ${err}`)
-  }
-  const { token } = await res.json()
-  return token
+  return adminAuthHeader()
 }
 
 let _medusaToken: string | null = null
 async function getToken(): Promise<string> {
-  if (!_medusaToken) _medusaToken = await getMedusaToken()
-  return _medusaToken
+  return adminAuthHeader()
 }
 
 // Utility functions
@@ -87,7 +77,7 @@ async function makeRequest(url: string, options: RequestInit = {}) {
   const response = await fetch(`${MEDUSA_BACKEND_URL}${url}`, {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': adminAuthHeader(),
       ...options.headers
     },
     ...options

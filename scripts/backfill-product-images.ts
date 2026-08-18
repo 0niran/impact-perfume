@@ -19,6 +19,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 loadEnv({ path: '.env.local' })
+import { adminAuthHeader } from './lib/medusaAdmin'
 loadEnv() // fall back to .env for anything not in .env.local
 
 const BASE =
@@ -56,23 +57,13 @@ function mimeFor(file: string): string {
 }
 
 async function getToken(): Promise<string> {
-  if (!EMAIL || !PASSWORD) {
-    throw new Error('MEDUSA_ADMIN_EMAIL / MEDUSA_ADMIN_PASSWORD missing from .env.local')
-  }
-  const res = await fetch(`${BASE}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
-  })
-  const data: any = await res.json()
-  if (!data.token) throw new Error(`Auth failed: ${JSON.stringify(data)}`)
-  return data.token
+  return adminAuthHeader()
 }
 
 async function fetchProducts(token: string): Promise<any[]> {
   const res = await fetch(
     `${BASE}/admin/products?limit=500&fields=id,handle,title,status,thumbnail`,
-    { headers: { Authorization: `Bearer ${token}` } },
+    { headers: { Authorization: adminAuthHeader() } },
   )
   const data: any = await res.json()
   return data.products || []
@@ -88,7 +79,7 @@ async function uploadFile(token: string, file: string): Promise<string> {
   form.append('files', new Blob([buf], { type: mimeFor(file) }), file)
   const res = await fetch(`${BASE}/admin/uploads`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: adminAuthHeader() },
     body: form,
   })
   if (!res.ok) throw new Error(`upload ${file} failed: HTTP ${res.status} ${await res.text()}`)
@@ -102,7 +93,7 @@ async function uploadFile(token: string, file: string): Promise<string> {
 async function setImage(token: string, id: string, url: string): Promise<void> {
   const res = await fetch(`${BASE}/admin/products/${id}`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: adminAuthHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ thumbnail: url, images: [{ url }] }),
   })
   if (!res.ok) throw new Error(`update ${id} failed: HTTP ${res.status} ${await res.text()}`)

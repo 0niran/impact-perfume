@@ -12,6 +12,7 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
@@ -47,16 +48,10 @@ const PRICES = [
 let token = ''
 
 async function auth() {
-  const res = await fetch(`${BACKEND}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
-  })
-  if (!res.ok) throw new Error(`auth failed ${res.status}`)
-  token = (await res.json()).token
+  // Auth is applied per-request via adminAuthHeader() (secret API key).
 }
 
-const H = () => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' })
+const H = () => ({ Authorization: adminAuthHeader(), 'Content-Type': 'application/json' })
 
 async function get(p: string) {
   const res = await fetch(`${BACKEND}${p}`, { headers: H() })
@@ -131,7 +126,7 @@ async function ensureProduct(set: (typeof SETS)[number], categoryId: string | nu
 }
 
 async function main() {
-  if (!BACKEND || !EMAIL || !PASSWORD) throw new Error('Missing Medusa admin env vars')
+  if (!BACKEND) throw new Error('Missing Medusa admin env vars')
   console.log(APPLY ? 'APPLY MODE\n' : 'DRY RUN (pass --apply to write)\n')
   await auth()
   for (const set of SETS) {

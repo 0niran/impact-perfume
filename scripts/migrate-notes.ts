@@ -8,6 +8,7 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 import fs from 'fs'
 
@@ -34,16 +35,7 @@ interface SeedProduct {
 let _token: string | null = null
 
 async function getToken(): Promise<string> {
-  if (_token) return _token
-  const res = await fetch(`${MEDUSA_BACKEND_URL}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: MEDUSA_ADMIN_EMAIL, password: MEDUSA_ADMIN_PASSWORD }),
-  })
-  if (!res.ok) throw new Error(`Auth failed: ${res.status} ${await res.text()}`)
-  const data = await res.json()
-  _token = data.token
-  return _token as string
+  return adminAuthHeader()
 }
 
 async function adminRequest(path: string, options: RequestInit = {}) {
@@ -52,7 +44,7 @@ async function adminRequest(path: string, options: RequestInit = {}) {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: adminAuthHeader(),
       ...(options.headers ?? {}),
     },
   })

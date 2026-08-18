@@ -25,12 +25,13 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
 const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 
-if (!BACKEND || !EMAIL || !PASSWORD) {
+if (!BACKEND) {
   console.error('Missing NEXT_PUBLIC_MEDUSA_BACKEND_URL / MEDUSA_ADMIN_EMAIL / MEDUSA_ADMIN_PASSWORD in .env.local')
   process.exit(1)
 }
@@ -98,23 +99,13 @@ const PRODUCTS: ProductSeed[] = [
 ]
 
 async function login(): Promise<string> {
-  const res = await fetch(`${BACKEND}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
-  })
-  if (!res.ok) {
-    throw new Error(`Admin login failed: ${res.status} ${await res.text().catch(() => '')}`)
-  }
-  const { token } = await res.json()
-  if (!token) throw new Error('Admin login returned no token')
-  return token
+  return adminAuthHeader()
 }
 
 async function productExists(token: string, handle: string): Promise<boolean> {
   const res = await fetch(
     `${BACKEND}/admin/products?handle=${encodeURIComponent(handle)}&limit=1&fields=id,handle`,
-    { headers: { Authorization: `Bearer ${token}` } }
+    { headers: { Authorization: adminAuthHeader() } }
   )
   if (!res.ok) throw new Error(`Lookup failed for ${handle}: ${res.status}`)
   const json = (await res.json()) as { products?: unknown[] }
@@ -139,7 +130,7 @@ async function createProduct(token: string, seed: ProductSeed): Promise<void> {
   }
   const res = await fetch(`${BACKEND}/admin/products`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: adminAuthHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
   if (!res.ok) {
