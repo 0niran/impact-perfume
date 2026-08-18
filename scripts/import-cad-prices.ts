@@ -19,16 +19,8 @@ import { adminAuthHeader } from './lib/medusaAdmin'
 import fs from 'fs'
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
-const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
-const MEDUSA_ADMIN_PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD || ''
-
-let _token: string | null = null
-async function getToken(): Promise<string> {
-  return adminAuthHeader()
-}
 
 async function admin(p: string, options: RequestInit = {}) {
-  const token = await getToken()
   const res = await fetch(`${MEDUSA_BACKEND_URL}${p}`, {
     ...options,
     headers: {

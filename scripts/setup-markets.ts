@@ -31,8 +31,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 
 const APPLY = process.argv.includes('--apply')
 
@@ -48,12 +46,6 @@ const CA_LOCATION_ADDRESS = {
 const CA_CHANNEL_NAME = 'Impact CA'
 const CA_KEY_TITLE = 'Storefront-CA'
 const CA_INITIAL_QTY = 0 // stock the Canada location separately once inventory lands
-
-let token = ''
-
-async function auth(): Promise<void> {
-  // Auth is applied per-request via adminAuthHeader() (secret API key).
-}
 
 function headers() {
   return { Authorization: adminAuthHeader(), 'Content-Type': 'application/json' }
@@ -92,7 +84,6 @@ async function listAll(pathname: string, key: string): Promise<Record<string, un
 async function main() {
   if (!BACKEND) throw new Error('Missing Medusa admin env vars')
   console.log(APPLY ? 'APPLY MODE — changes will be written.\n' : 'DRY RUN — no changes. Re-run with --apply to execute.\n')
-  await auth()
 
   // 1) Canada stock location
   console.log('== Stock location ==')

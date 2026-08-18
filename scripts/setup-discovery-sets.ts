@@ -15,8 +15,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 const APPLY = process.argv.includes('--apply')
 
 const NG_CHANNEL = 'sc_01KQMBCSX02P4R54TFRC4XMYFY'
@@ -44,12 +42,6 @@ const PRICES = [
   { amount: 150000, currency_code: 'ngn' },
   { amount: 200, currency_code: 'cad' },
 ]
-
-let token = ''
-
-async function auth() {
-  // Auth is applied per-request via adminAuthHeader() (secret API key).
-}
 
 const H = () => ({ Authorization: adminAuthHeader(), 'Content-Type': 'application/json' })
 
@@ -128,7 +120,6 @@ async function ensureProduct(set: (typeof SETS)[number], categoryId: string | nu
 async function main() {
   if (!BACKEND) throw new Error('Missing Medusa admin env vars')
   console.log(APPLY ? 'APPLY MODE\n' : 'DRY RUN (pass --apply to write)\n')
-  await auth()
   for (const set of SETS) {
     console.log(`== ${set.title} ==`)
     const catId = await ensureCategory(set.categoryName, `${set.handle}`)

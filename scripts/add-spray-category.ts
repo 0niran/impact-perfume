@@ -13,17 +13,9 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
-const PASSWORD = process.env.MEDUSA_ADMIN_PASSWORD
 
 const SPRAY_CATEGORY_ID = 'pcat_01KR1F65F2NT210W8WWPHN5E7Y' // Spray Perfumes
 const TARGET_TITLES = ['Mystikal', 'Prestige']
-
-let token = ''
-
-async function auth(): Promise<void> {
-  // Auth is applied per-request via adminAuthHeader() (secret API key).
-}
 
 function headers() {
   return { Authorization: adminAuthHeader(), 'Content-Type': 'application/json' }
@@ -47,7 +39,6 @@ async function findProduct(title: string): Promise<Product | null> {
 
 async function main() {
   if (!BACKEND) throw new Error('Missing Medusa admin env vars in .env.local')
-  await auth()
 
   const toAdd: string[] = []
   for (const title of TARGET_TITLES) {
