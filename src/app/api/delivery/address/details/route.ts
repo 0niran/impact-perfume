@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       address1: details.address1,
       city: details.city,
       state: details.state,
+      postalCode: details.postalCode,
       formattedAddress: details.formattedAddress,
     },
   })

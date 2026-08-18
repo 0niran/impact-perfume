@@ -30,6 +30,8 @@ export interface PlaceDetails {
   address1: string
   city: string
   state: string
+  /** Postal/ZIP code — present for CA (and other postal countries); '' for NG. */
+  postalCode: string
 }
 
 function key(): string | null {
@@ -161,6 +163,7 @@ export async function placeDetails(
       // NG addresses land the city on locality/sublocality/admin-2; fall through.
       city: component(comps, ['locality', 'sublocality', 'administrative_area_level_2']),
       state: component(comps, ['administrative_area_level_1']),
+      postalCode: component(comps, ['postal_code']),
     }
   } catch (err) {
     console.error('[places] details threw', err instanceof Error ? err.message : err)

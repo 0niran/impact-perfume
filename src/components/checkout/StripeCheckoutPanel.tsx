@@ -16,6 +16,7 @@ import { countryOptions } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
 import { SITE_CONFIG } from '@/lib/config'
 import CartLineItem from '@/components/cart/CartLineItem'
+import AddressAutocomplete from '@/components/checkout/AddressAutocomplete'
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
@@ -221,8 +222,24 @@ function DetailsForm({ draft, setDraft, countries, onSubmit, loading, error }: D
           <div className="mt-4 flex flex-col gap-4">
             <div>
               <label htmlFor="address1" className={FORM_STYLES.label}>Street address *</label>
-              <input id="address1" type="text" autoComplete="address-line1" required value={draft.address1}
-                onChange={(e) => set('address1', e.target.value)} className={FORM_STYLES.input} placeholder="123 King St W" />
+              <AddressAutocomplete
+                regionCode="ca"
+                inputId="address1"
+                inputClassName={FORM_STYLES.input}
+                placeholder="123 King St W"
+                value={draft.address1}
+                onInputChange={(text) => set('address1', text)}
+                onSelect={(a) =>
+                  setDraft({
+                    ...draft,
+                    address1: a.address1,
+                    city: a.city || draft.city,
+                    state: a.state || draft.state,
+                    postalCode: a.postalCode || draft.postalCode,
+                  })
+                }
+              />
+              <p className="mt-1.5 text-label text-stone">Pick your address from the list so it fills in accurately.</p>
             </div>
             <div>
               <label htmlFor="address2" className={FORM_STYLES.label}>
