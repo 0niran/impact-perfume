@@ -13,6 +13,8 @@ export interface SelectedAddress {
   address1: string
   city: string
   state: string
+  /** Postal/ZIP code — populated for CA; '' for NG. */
+  postalCode: string
   placeId: string
   formattedAddress: string
 }
@@ -111,6 +113,7 @@ export default function AddressAutocomplete({
           address1: data.address.address1 || s.primary,
           city: data.address.city || '',
           state: data.address.state || '',
+          postalCode: data.address.postalCode || '',
           placeId: s.placeId,
           formattedAddress: data.address.formattedAddress || `${s.primary}, ${s.secondary}`,
         })
