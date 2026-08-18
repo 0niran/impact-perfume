@@ -338,6 +338,63 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
   return { subject, html: baseTemplate(subject, body, preheader) }
 }
 
+/**
+ * Branded confirmation sent to the customer when a refund is issued. The refund
+ * itself is issued manually in the Stripe/Paystack dashboard; this fires off the
+ * corresponding webhook event so the customer gets a store-branded confirmation
+ * rather than only the payment provider's generic notice.
+ */
+export function buildRefundEmail(data: {
+  customerName?: string
+  reference: string
+  /** Refunded amount in MINOR units (kobo/cents). */
+  amountMinor: number
+  currency: string
+}): { subject: string; html: string } {
+  const firstName = data.customerName?.trim().split(' ')[0] ?? ''
+  const amount = formatPrice(data.amountMinor, data.currency)
+  const subject = `Refund processed · ${data.reference}`
+  const preheader = `Your refund of ${amount} has been processed.`
+
+  const body = `
+    ${sectionLabel('Refund Processed')}
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;color:${PALETTE.ink};line-height:1.2;letter-spacing:-0.005em;">
+      ${firstName ? `Your refund is on its way, ${esc(firstName)}.` : 'Your refund is on its way.'}
+    </h1>
+    <p style="margin:0 0 32px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      We've processed a refund of <strong style="color:${PALETTE.ink};">${amount}</strong> for your order.
+      Depending on your bank or card issuer, it can take a few business days to appear on your statement.
+    </p>
+
+    <div style="height:1px;background:${PALETTE.gold};margin:0 0 28px;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td width="48%" valign="top">
+          ${sectionLabel('Amount Refunded')}
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:${PALETTE.ink};line-height:1.6;">
+            ${amount}
+          </p>
+        </td>
+        <td width="4%"></td>
+        <td width="48%" valign="top">
+          ${sectionLabel('Reference')}
+          <p style="margin:0;font-family:'Courier New',monospace;font-size:13px;color:${PALETTE.ink};letter-spacing:0.04em;">
+            ${esc(data.reference)}
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:32px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.7;">
+      Questions about your refund? Reply to this email or reach us at
+      <a href="mailto:${SITE_CONFIG.contact.email}" style="color:${PALETTE.slate};">${SITE_CONFIG.contact.email}</a>.
+    </p>
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader) }
+}
+
 /* ----------------------------------------------------------------------------
  * Business / owner notification
  * ------------------------------------------------------------------------- */

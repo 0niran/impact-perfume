@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { fulfillOrder, type CartLine, type ShippingAddress } from '@/lib/orderFulfillment'
 import { claimPayment } from '@/lib/processedPayment'
 import { unpackStripeLines } from '@/lib/stripeMetadata'
-import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
+import { buildOwnerAlertEmail, buildRefundEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { recordTaxTransaction } from '@/lib/tax'
 import { serverEnv } from '@/lib/env'
@@ -165,6 +165,20 @@ export async function POST(req: NextRequest) {
         ],
       }),
     }).catch((err) => console.error('[stripe-webhook] refund alert failed', err))
+
+    // Branded confirmation to the customer, when Stripe has their email.
+    const customerEmail = charge.billing_details?.email ?? charge.receipt_email ?? ''
+    if (customerEmail) {
+      await sendEmail({
+        to: customerEmail,
+        ...buildRefundEmail({
+          customerName: charge.billing_details?.name ?? undefined,
+          reference: charge.metadata?.reference ?? charge.id,
+          amountMinor: charge.amount_refunded ?? 0,
+          currency: charge.currency ?? 'cad',
+        }),
+      }).catch((err) => console.error('[stripe-webhook] customer refund email failed', err))
+    }
   } else if (event.type === 'charge.dispute.created') {
     const dispute = event.data.object as Stripe.Dispute
     const amount = ((dispute.amount ?? 0) / 100).toFixed(2)
