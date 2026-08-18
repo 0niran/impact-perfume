@@ -43,13 +43,14 @@ const VARIANT_INV_FIELDS = [
 
 export async function findLowStockAfterOrder(opts: {
   backendUrl: string
-  token: string
+  /** Full Authorization header value (e.g. `Basic <key>`) for the admin API. */
+  authHeader: string
   orderId: string
   threshold?: number
 }): Promise<AlertItem[]> {
-  const { backendUrl, token, orderId } = opts
+  const { backendUrl, authHeader, orderId } = opts
   const threshold = opts.threshold ?? LOW_STOCK_THRESHOLD
-  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+  const headers = { Authorization: authHeader, 'Content-Type': 'application/json' }
 
   const orderRes = await fetch(
     `${backendUrl}/admin/orders/${orderId}?fields=display_id,items.variant_id,items.product_id`,
