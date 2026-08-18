@@ -21,6 +21,7 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BACKEND = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
@@ -30,13 +31,7 @@ let token = ''
 let hardProblems = 0
 
 async function auth(): Promise<void> {
-  const res = await fetch(`${BACKEND}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
-  })
-  if (!res.ok) throw new Error(`admin auth failed ${res.status}`)
-  token = (await res.json()).token
+  // Auth is applied per-request via adminAuthHeader() (secret API key).
 }
 
 interface Variant {
@@ -69,7 +64,7 @@ async function adminPublished(): Promise<Map<string, Product>> {
   for (;;) {
     const res = await fetch(
       `${BACKEND}/admin/products?status[]=published&limit=200&offset=${offset}&fields=id,handle,title,status`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: adminAuthHeader() } }
     )
     if (!res.ok) throw new Error(`admin products ${res.status}`)
     const { products } = (await res.json()) as { products: Product[] }
@@ -167,7 +162,7 @@ async function auditMarket(
 }
 
 async function main() {
-  if (!BACKEND || !EMAIL || !PASSWORD) throw new Error('Missing Medusa admin env vars in .env.local')
+  if (!BACKEND) throw new Error('Missing Medusa admin env vars in .env.local')
   await auth()
   const published = await adminPublished()
 

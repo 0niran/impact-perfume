@@ -15,6 +15,7 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 const BE = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 const EMAIL = process.env.MEDUSA_ADMIN_EMAIL
@@ -36,11 +37,9 @@ const CATS = [
 
 let token = ''
 async function auth() {
-  const r = await fetch(`${BE}/auth/user/emailpass`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: EMAIL, password: PASSWORD }) })
-  if (!r.ok) throw new Error(`auth ${r.status}`)
-  token = (await r.json()).token
+  // Auth is applied per-request via adminAuthHeader() (secret API key).
 }
-const H = () => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' })
+const H = () => ({ Authorization: adminAuthHeader(), 'Content-Type': 'application/json' })
 async function get(p: string) { const r = await fetch(`${BE}${p}`, { headers: H() }); if (!r.ok) throw new Error(`GET ${p} ${r.status}`); return r.json() }
 async function post(p: string, b: unknown) {
   if (!APPLY) { console.log(`  [dry-run] POST ${p}`); return null }
@@ -52,7 +51,7 @@ async function post(p: string, b: unknown) {
 interface NumMeta { number: number; descriptor?: string; scent_family?: string; top_notes?: string; heart_notes?: string; base_notes?: string; signature_color?: string }
 
 async function main() {
-  if (!BE || !EMAIL || !PASSWORD) throw new Error('Missing Medusa admin env')
+  if (!BE) throw new Error('Missing Medusa admin env')
   console.log(APPLY ? 'APPLY MODE\n' : 'DRY RUN (pass --apply)\n')
   await auth()
 

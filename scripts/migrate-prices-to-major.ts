@@ -20,6 +20,7 @@
 import * as dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
+import { adminAuthHeader } from './lib/medusaAdmin'
 
 const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
 const MEDUSA_ADMIN_EMAIL = process.env.MEDUSA_ADMIN_EMAIL || ''
@@ -29,16 +30,7 @@ const APPLY = process.argv.includes('--apply')
 
 let _token: string | null = null
 async function getToken(): Promise<string> {
-  if (_token) return _token
-  const res = await fetch(`${MEDUSA_BACKEND_URL}/auth/user/emailpass`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: MEDUSA_ADMIN_EMAIL, password: MEDUSA_ADMIN_PASSWORD }),
-  })
-  if (!res.ok) throw new Error(`Auth failed: ${res.status} ${await res.text()}`)
-  const data = await res.json()
-  _token = data.token as string
-  return _token
+  return adminAuthHeader()
 }
 
 async function admin(p: string, options: RequestInit = {}) {
@@ -47,7 +39,7 @@ async function admin(p: string, options: RequestInit = {}) {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: adminAuthHeader(),
       ...(options.headers ?? {}),
     },
   })
@@ -98,7 +90,7 @@ async function updateVariantPrices(productId: string, variantId: string, prices:
 }
 
 async function main() {
-  if (!MEDUSA_ADMIN_EMAIL || !MEDUSA_ADMIN_PASSWORD) {
+  if (!MEDUSA_ADMIN_EMAIL) {
     console.error('Missing MEDUSA_ADMIN_EMAIL or MEDUSA_ADMIN_PASSWORD in .env.local')
     process.exit(1)
   }
