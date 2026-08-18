@@ -10,7 +10,7 @@
  *
  *   npx tsx scripts/verify-medusa-admin-key.ts
  *
- * It only reads; it makes a single harmless GET /admin/users/me. The key value
+ * It only reads; it makes a single harmless GET /admin/products?limit=1. The key value
  * is never printed.
  */
 
@@ -37,7 +37,9 @@ const raw = `Basic ${KEY}`
 
 async function probe(label: string, authHeader: string): Promise<boolean> {
   try {
-    const res = await fetch(`${BACKEND}/admin/users/me`, {
+    // Use a real admin data endpoint, not /admin/users/me: a secret API key is
+    // not a user, so the "me" route 404s even for a valid key.
+    const res = await fetch(`${BACKEND}/admin/products?limit=1&fields=id`, {
       headers: { Authorization: authHeader },
     })
     const ok = res.ok
