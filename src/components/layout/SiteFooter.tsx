@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import RegionSwitcher from './RegionSwitcher'
 import Image from 'next/image'
 import Container from './Container'
 import { SITE_CONFIG } from '@/lib/config'
@@ -236,6 +237,7 @@ export default function SiteFooter() {
             © {year} {name}
           </p>
           <div className="flex items-center gap-6">
+            <RegionSwitcher />
             <Link href="/privacy" className="text-label text-stone hover:text-bone transition-colors duration-150">
               Privacy
             </Link>

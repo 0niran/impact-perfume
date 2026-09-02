@@ -6,6 +6,7 @@ import "./globals.css";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
 import CartDrawer from "@/components/cart/CartDrawer";
+import RegionMismatchBanner from "@/components/layout/RegionMismatchBanner";
 import BackToTop from "@/components/layout/BackToTop";
 import RouteProgressBar from "@/components/layout/RouteProgressBar";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
@@ -77,6 +78,7 @@ export default function RootLayout({
           <CartDrawer />
           <BackToTop />
           <WhatsAppFAB />
+          <RegionMismatchBanner />
         </RegionProvider>
       </body>
     </html>
