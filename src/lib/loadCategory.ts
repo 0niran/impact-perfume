@@ -23,7 +23,6 @@ export async function loadCategoryProducts(
       tagline: s.tagline,
       priceMinor: 0,
       currency: region.currency,
-      priceKobo: 0,
       imageUrl: null,
       productId: s.handle,
       variantId: s.handle,

@@ -250,11 +250,6 @@ export function getPrice(
   return { amount: 0, currency: cur.toUpperCase() }
 }
 
-/** @deprecated Use getPrice(product, currency) instead */
-export function getNGNPrice(product: MedusaProduct): number {
-  return getPrice(product, 'NGN').amount
-}
-
 /** Map a product's metadata to a TileEnrichment for the shop wall */
 export function toTileEnrichment(
   p: MedusaProduct,
@@ -281,8 +276,6 @@ export function toTileEnrichment(
     variantId: variant?.id ?? p.handle,
     priceMinor: price.amount,
     currency: price.currency,
-    // legacy alias for any not-yet-migrated callers
-    priceKobo: price.amount,
     inStock: variantInStock(variant),
   }
 }
@@ -335,8 +328,6 @@ export interface CategoryProduct {
   imageUrl: string | null
   productId: string
   variantId: string
-  /** @deprecated retained while call sites migrate */
-  priceKobo: number
   /** Undefined is treated as in stock by consumers */
   inStock?: boolean
 }
@@ -360,7 +351,6 @@ export function toCategoryProduct(
     imageUrl: getProductImage(p),
     productId: p.id,
     variantId: variant?.id ?? p.handle ?? p.id,
-    priceKobo: price.amount,
     inStock: variantInStock(variant),
   }
 }
