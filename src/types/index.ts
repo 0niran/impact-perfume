@@ -80,8 +80,6 @@ export interface TileEnrichment {
   priceMinor?: number
   /** ISO currency code in uppercase, e.g. NGN, CAD */
   currency?: string
-  /** @deprecated retained while call sites migrate */
-  priceKobo?: number
   /** Whether the variant can be purchased (in stock / backorder / untracked) */
   inStock?: boolean
 }

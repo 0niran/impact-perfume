@@ -25,7 +25,7 @@ export default function NumberTile({
   fallbackImage = DEFAULT_FALLBACK,
 }: NumberTileProps) {
   const { number, descriptor, signatureColor, imageUrl, productId, variantId, priceMinor, currency } = tile
-  const priceAmount = priceMinor ?? tile.priceKobo
+  const priceAmount = priceMinor ?? 0
   const lineCurrency = currency ?? 'NGN'
   const { add, setOpen } = useCartStore()
   const [added, setAdded] = useState(false)

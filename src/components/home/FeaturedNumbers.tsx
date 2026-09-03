@@ -26,7 +26,7 @@ export default async function FeaturedNumbers() {
         descriptor: enrichment.descriptor,
         signatureColor: enrichment.signatureColor ?? FALLBACK_COLOR,
         tagline: enrichment.tagline,
-        priceKobo: price.amount,
+        priceMinor: price.amount,
         currency: price.currency,
         imageUrl: getProductImage(p),
       }
@@ -107,8 +107,8 @@ export default async function FeaturedNumbers() {
                     </p>
                   )}
                   <p className="text-small text-accent mt-2">
-                    {product.priceKobo > 0
-                      ? formatPrice(product.priceKobo, product.currency)
+                    {product.priceMinor > 0
+                      ? formatPrice(product.priceMinor, product.currency)
                       : 'Price on request'}
                   </p>
 
@@ -116,7 +116,7 @@ export default async function FeaturedNumbers() {
                     productId={product.productId}
                     variantId={product.variantId}
                     productName={`Impact No. ${product.number}`}
-                    priceKobo={product.priceKobo}
+                    priceKobo={product.priceMinor}
                     currency={product.currency}
                     signatureColor={product.signatureColor}
                     imageUrl={product.imageUrl ?? undefined}
