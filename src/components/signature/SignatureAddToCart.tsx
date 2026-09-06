@@ -7,7 +7,7 @@ interface SignatureAddToCartProps {
   productId: string
   variantId: string
   productName: string
-  priceKobo: number
+  priceMinor: number
   currency?: string
   imageUrl?: string
   className?: string
@@ -19,7 +19,7 @@ export default function SignatureAddToCart({
   productId,
   variantId,
   productName,
-  priceKobo,
+  priceMinor,
   currency = 'NGN',
   imageUrl,
   className = '',
@@ -37,7 +37,7 @@ export default function SignatureAddToCart({
       productId,
       name: productName,
       variantLabel: '100ml EDP',
-      unitPriceKobo: priceKobo,
+      unitPriceKobo: priceMinor,
       currency,
       qty: 1,
       thumbnail: imageUrl,

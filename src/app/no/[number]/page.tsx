@@ -114,7 +114,7 @@ export default async function PDPPage({
           sillage={enrichment.sillage}
           productId={product.id}
           variantId={variant?.id ?? product.handle}
-          priceKobo={price.amount}
+          priceMinor={price.amount}
           currency={price.currency}
           imageUrl={imageUrl ?? '/images/no_series.png'}
           shippingCopy={shippingCopyFor(region)}
