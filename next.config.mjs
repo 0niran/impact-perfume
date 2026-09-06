@@ -28,21 +28,42 @@ const nextConfig = {
     ],
   },
   async headers() {
-    // Defence-in-depth headers applied to every response. CSP starts in
-    // report-only so we can tighten the directives after a week or two of
-    // real traffic before enforcing.
+    // Defence-in-depth headers applied to every response.
+    //
+    // CSP ENFORCEMENT is gated on the CSP_ENFORCE env var (default: off).
+    // Set CSP_ENFORCE=true in Vercel and redeploy to switch from report-only
+    // to blocking; unset it and redeploy to roll straight back. Do NOT flip it
+    // until /api/csp-report has been quiet for a few days of real traffic —
+    // a missing directive in enforce mode silently blocks Stripe/Paystack on
+    // checkout, which costs orders with no error anyone would notice.
+    const enforceCsp = process.env.CSP_ENFORCE === 'true'
+
     const csp = [
       "default-src 'self'",
       "img-src 'self' https: data: blob:",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://js.stripe.com https://*.vercel-scripts.com",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
+      // next/font self-hosts Google Fonts at build time, so no external font
+      // origin is needed here.
       "frame-src https://*.paystack.com https://*.paystack.co https://js.stripe.com https://*.stripe.com https://*.stripe.network",
-      "connect-src 'self' https://api.paystack.co https://api.stripe.com https://*.up.railway.app https://cdn.sanity.io https://*.apicdn.sanity.io https://*.api.sanity.io https://*.sanity.io https://api.resend.com",
+      // *.stripe.network: Stripe.js posts fraud/telemetry signals there, and it
+      // was missing — under enforcement that degrades Stripe's risk checks.
+      // wss://*.sanity.io: the embedded Sanity Studio (/studio) opens a
+      // realtime socket; without it the CMS breaks once enforced.
+      "connect-src 'self' https://api.paystack.co https://api.stripe.com https://*.stripe.com https://*.stripe.network https://*.up.railway.app https://cdn.sanity.io https://*.apicdn.sanity.io https://*.api.sanity.io https://*.sanity.io wss://*.sanity.io https://api.resend.com",
+      // The Sanity Studio bundle spawns web workers from blob: URLs.
+      "worker-src 'self' blob:",
       "form-action 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
+      "object-src 'none'",
+      // Collector for violations. Without one, report-only mode reports to
+      // nobody — see src/app/api/csp-report/route.ts.
+      'report-uri /api/csp-report',
+      'report-to csp-endpoint',
     ].join('; ')
+
     return [
       {
         source: '/(.*)',
@@ -52,7 +73,15 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
-          { key: 'Content-Security-Policy-Report-Only', value: csp },
+          // Named endpoint for the modern Reporting API; report-uri above is
+          // the fallback for browsers that still only support the old form.
+          { key: 'Reporting-Endpoints', value: 'csp-endpoint="/api/csp-report"' },
+          {
+            key: enforceCsp
+              ? 'Content-Security-Policy'
+              : 'Content-Security-Policy-Report-Only',
+            value: csp,
+          },
         ],
       },
     ]
