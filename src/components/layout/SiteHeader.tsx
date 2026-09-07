@@ -76,9 +76,21 @@ export default function SiteHeader() {
         <div
           className={cn(
             'container-px mx-auto max-w-container relative flex items-center justify-between transition-[height] duration-200',
-            scrolled ? 'h-16' : 'h-20'
+            scrolled ? 'h-16' : 'h-24'
           )}
         >
+          {/* Menu, mobile only. It holds the left edge opposite the search/cart
+              cluster so the centred medallion sits between balanced weights,
+              which is also where a thumb expects the menu on a phone. */}
+          <button
+            aria-label="Open menu"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(true)}
+            className="lg:hidden flex items-center justify-center w-8 h-8 text-bone"
+          >
+            <HamburgerIcon />
+          </button>
+
           {/* Left nav, desktop (3 items max to give logo breathing room) */}
           <nav className="hidden lg:flex items-center gap-6" aria-label="Primary navigation">
             <NavItem
@@ -103,26 +115,56 @@ export default function SiteHeader() {
             </Link>
           </nav>
 
-          {/* Logo, left-aligned on mobile, absolutely centered on desktop */}
-          <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+          {/* Logo medallion, left-aligned on mobile, absolutely centered on desktop.
+              The mark is a circular crest whose wordmark sits in a band across the
+              middle, so it only becomes readable at size — hence the larger
+              footprint and the taller unscrolled bar that makes room for it. */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+            <Flourish side="left" hidden={scrolled} />
+
             <Link
               href="/"
-              className="block transition-opacity duration-150 hover:opacity-80"
+              className="group relative block"
               aria-label="Impact Perfumes, home"
             >
+              {/* Warm aura, so the crest reads as lit rather than pasted on */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -inset-3 rounded-full opacity-70 blur-md transition-opacity duration-500 group-hover:opacity-100"
+                style={{
+                  background:
+                    'radial-gradient(circle, rgba(228,178,80,0.25) 0%, transparent 70%)',
+                }}
+              />
+              {/* Hairline gold ring, picking up the crest's own border */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -inset-[3px] rounded-full border border-accent/25 transition-colors duration-300 group-hover:border-accent/60"
+              />
               <Image
-                src="/images/Logo.png"
+                src="/images/logo.svg"
                 alt="Impact Perfumes"
                 width={240}
-                height={161}
+                height={240}
                 priority
-                className="h-11 w-auto sm:h-12 lg:h-14"
+                // Vector: nothing for the optimizer to do, and this avoids
+                // having to enable dangerouslyAllowSVG for every remote image.
+                unoptimized
+                className={cn(
+                  'relative w-auto rounded-full transition-[height] duration-300',
+                  scrolled ? 'h-12' : 'h-16 sm:h-[4.5rem] lg:h-20'
+                )}
               />
             </Link>
+
+            <Flourish side="right" hidden={scrolled} />
           </div>
 
-          {/* Right side, desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger */}
-          <div className="flex items-center gap-4 lg:gap-6">
+          {/* Right side, desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger.
+              ml-auto keeps this hard right: the medallion is absolutely centred at
+              every breakpoint, so on mobile this is the only in-flow child and
+              justify-between alone would pull it to the left. */}
+          <div className="ml-auto flex items-center gap-4 lg:gap-6">
             <NavItem
               label="Home & Gifts"
               href="/gifts"
@@ -162,15 +204,6 @@ export default function SiteHeader() {
                 </span>
               )}
             </button>
-
-            <button
-              aria-label="Open menu"
-              aria-expanded={drawerOpen}
-              onClick={() => setDrawerOpen(true)}
-              className="lg:hidden flex items-center justify-center w-8 h-8 text-bone"
-            >
-              <HamburgerIcon />
-            </button>
           </div>
         </div>
 
@@ -186,7 +219,7 @@ export default function SiteHeader() {
       <div
         className={cn(
           'transition-[height] duration-300',
-          isHomepage ? 'h-0' : scrolled ? 'h-16' : 'h-[80px]'
+          isHomepage ? 'h-0' : scrolled ? 'h-16' : 'h-24'
         )}
         aria-hidden
       />
@@ -240,6 +273,45 @@ function NavItem({
         />
       )}
     </div>
+  )
+}
+
+/**
+ * Hairline rule tapering into a small gold lozenge, flanking the crest so the
+ * medallion reads as a deliberate centrepiece rather than a floating sticker.
+ * Desktop only, and it retracts on scroll so the condensed bar stays clean.
+ */
+function Flourish({ side, hidden }: { side: 'left' | 'right'; hidden: boolean }) {
+  const rule = (
+    <span
+      className={cn(
+        'h-px flex-1 bg-gradient-to-r',
+        side === 'left' ? 'from-transparent to-accent/45' : 'from-accent/45 to-transparent'
+      )}
+    />
+  )
+  const lozenge = <span className="mx-2 h-1 w-1 shrink-0 rotate-45 bg-accent/60" />
+
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'hidden lg:flex items-center overflow-hidden transition-[width,opacity] duration-300',
+        hidden ? 'w-0 opacity-0' : 'w-14 opacity-100'
+      )}
+    >
+      {side === 'left' ? (
+        <>
+          {rule}
+          {lozenge}
+        </>
+      ) : (
+        <>
+          {lozenge}
+          {rule}
+        </>
+      )}
+    </span>
   )
 }
 

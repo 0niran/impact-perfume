@@ -85,10 +85,11 @@ export default function SiteFooter() {
           {/* Brand */}
           <div className="w-[200px] shrink-0">
             <Image
-              src="/images/Logo.png"
+              src="/images/logo.svg"
               alt="Impact Perfumes"
               width={181}
-              height={121}
+              height={181}
+              unoptimized
               className="h-12 w-auto"
             />
             <p className="mt-4 text-small text-stone leading-relaxed">
@@ -172,10 +173,11 @@ export default function SiteFooter() {
         {/* Mobile: brand + accordion */}
         <div className="md:hidden">
           <Image
-            src="/images/Logo.png"
+            src="/images/logo.svg"
             alt="Impact Perfumes"
             width={181}
-            height={121}
+            height={181}
+            unoptimized
             className="h-11 w-auto"
           />
           <p className="mt-4 text-small text-stone leading-relaxed max-w-[260px]">
