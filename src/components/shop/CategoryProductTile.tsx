@@ -22,7 +22,7 @@ export default function CategoryProductTile({
 }: CategoryProductTileProps) {
   const { add, setOpen } = useCartStore()
   const [added, setAdded] = useState(false)
-  const priceAmount = product.priceMinor ?? product.priceKobo
+  const priceAmount = product.priceMinor ?? 0
   const currency = product.currency ?? 'NGN'
   // Undefined inStock is treated as available (static/legacy items).
   const inStock = product.inStock !== false
