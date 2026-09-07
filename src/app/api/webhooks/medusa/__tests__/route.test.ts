@@ -28,6 +28,7 @@ vi.mock('@/lib/env', () => ({
 
 import { POST } from '../route'
 import { CATALOGUE_CACHE_TAG } from '@/lib/medusa'
+import { BESPOKE_CACHE_TAG } from '@/lib/bespokeConfig'
 
 function req(body: unknown, auth: string | null = `Bearer ${SECRET}`) {
   return {
@@ -46,6 +47,13 @@ describe('POST /api/webhooks/medusa', () => {
     const res = await POST(req({ type: 'product.updated', data: { handle: 'no-5' } }))
     expect(res.status).toBe(200)
     expect(revalidateTagMock).toHaveBeenCalledWith(CATALOGUE_CACHE_TAG)
+  })
+
+  it('also flushes the bespoke config tag', async () => {
+    // Bespoke prices sit on separate draft products under their own tag, so a
+    // catalogue-only flush would leave an edited bespoke price stale.
+    await POST(req({ type: 'product.updated', data: { handle: 'bespoke-base' } }))
+    expect(revalidateTagMock).toHaveBeenCalledWith(BESPOKE_CACHE_TAG)
   })
 
   it('still flushes the tag when the payload carries no handle', async () => {

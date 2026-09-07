@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
 import { CATALOGUE_CACHE_TAG } from '@/lib/medusa'
+import { BESPOKE_CACHE_TAG } from '@/lib/bespokeConfig'
 
 /**
  * Receives product lifecycle events from Medusa and revalidates the affected
@@ -111,6 +112,10 @@ export async function POST(req: NextRequest) {
   // data until the 120s TTL lapsed. That is the "my edit doesn't show until I
   // refresh" bug. Flush the tag on any authorised product event.
   revalidateTag(CATALOGUE_CACHE_TAG)
+  // Bespoke prices live on their own draft products under a separate tag, so
+  // the catalogue flush above does not touch them. Without this, editing a
+  // bespoke price in the admin stays invisible until its TTL lapses.
+  revalidateTag(BESPOKE_CACHE_TAG)
 
   // Path flushing is now belt-and-braces for rendered routes. A missing handle
   // is no longer fatal: the tag flush above has already done the work that
@@ -124,7 +129,7 @@ export async function POST(req: NextRequest) {
     ok: true,
     type: body.type ?? null,
     handle: handle ?? null,
-    revalidatedTag: CATALOGUE_CACHE_TAG,
+    revalidatedTags: [CATALOGUE_CACHE_TAG, BESPOKE_CACHE_TAG],
     revalidated: paths,
   })
 }

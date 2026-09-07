@@ -25,6 +25,17 @@ import { getMedusaAdminAuthHeader } from '@/lib/medusaAdmin'
 
 const CONFIG_TTL_SECONDS = 120
 
+/**
+ * Cache tag for the bespoke config.
+ *
+ * Exported for the same reason the catalogue tag is: invalidation happens
+ * elsewhere (the Medusa webhook, /api/revalidate) and those callers have to
+ * flush THIS tag too. The bespoke prices live on their own draft products, so
+ * flushing the catalogue tag alone leaves an edited bespoke price stale until
+ * the TTL lapses.
+ */
+export const BESPOKE_CACHE_TAG = 'bespoke-config'
+
 /** Currencies the bespoke config can price in; matches Medusa currency codes. */
 export type BespokeCurrency = 'ngn' | 'cad'
 
@@ -178,5 +189,5 @@ async function readConfig(currency: BespokeCurrency): Promise<BespokeConfig | nu
 export const getBespokeConfig = unstable_cache(
   (currency: BespokeCurrency = 'ngn') => readConfig(currency),
   ['bespoke-config'],
-  { revalidate: CONFIG_TTL_SECONDS, tags: ['bespoke-config'] }
+  { revalidate: CONFIG_TTL_SECONDS, tags: [BESPOKE_CACHE_TAG] }
 )
