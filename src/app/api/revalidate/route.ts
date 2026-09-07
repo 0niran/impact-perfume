@@ -43,8 +43,17 @@ export async function GET(req: NextRequest) {
   }
 
   const url = req.nextUrl
-  const paths = url.searchParams.getAll('path')
-  const tags = url.searchParams.getAll('tag')
+  // Bound both the count and the length. getAll() is unbounded, so without this
+  // a single request could ask for thousands of invalidations and turn a cheap
+  // call into an expensive one — and every flush pushes traffic past the Data
+  // Cache to a single upstream container.
+  const MAX_ENTRIES = 20
+  const MAX_LENGTH = 200
+  const clamp = (values: string[]) =>
+    values.filter((v) => v.length > 0 && v.length <= MAX_LENGTH).slice(0, MAX_ENTRIES)
+
+  const paths = clamp(url.searchParams.getAll('path'))
+  const tags = clamp(url.searchParams.getAll('tag'))
 
   if (paths.length === 0 && tags.length === 0) {
     return NextResponse.json({ ok: false, message: 'Provide ?path= or ?tag= (repeatable).' }, { status: 400 })

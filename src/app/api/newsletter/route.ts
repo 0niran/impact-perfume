@@ -23,12 +23,17 @@ export async function POST(req: NextRequest) {
     const { message, field } = formatZodError(parsed.error)
     return NextResponse.json({ ok: false, message, field }, { status: 400 })
   }
-  const { email } = parsed.data
+  // parsed.data is intentionally unused: the address is validated above, and
+  // there is nowhere to send it until a provider is wired up.
 
   // TODO: integrate with Mailchimp / Klaviyo / Brevo when ready.
   // Until then this is a deferred-signup placeholder — the storefront
   // form should NOT show a confirmed-subscribed state (audit L-3).
-  console.log('[newsletter] signup deferred (provider not configured):', email)
+  // The address is deliberately NOT logged. Function logs are retained and
+  // widely readable, and a subscriber list is personal data — logging it makes
+  // every log reader a recipient of it. The count is enough to tell that the
+  // form is being used while a provider is still unconfigured.
+  console.log('[newsletter] signup deferred (provider not configured)')
   return NextResponse.json({
     ok: true,
     deferred: true,
