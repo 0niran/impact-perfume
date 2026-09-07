@@ -3,6 +3,13 @@
 import { createClient } from '@sanity/client'
 import { getBespokeConfig } from '@/lib/bespokeConfig'
 import { computeBespokeEstimate } from '@/lib/bespokePricing'
+import {
+  buildBespokeCustomerEmail,
+  buildBespokeTeamEmail,
+  sendEmail,
+  type BespokeEmailData,
+} from '@/lib/email'
+import { SITE_CONFIG } from '@/lib/config'
 import { REGIONS, type RegionId } from '@/lib/region'
 
 const writeClient = createClient({
@@ -99,6 +106,62 @@ export async function submitBespoke(data: BespokeFormData): Promise<BespokeSubmi
         currency: region.currency,
       },
     })
+
+    // Tell someone. Until now a bespoke request landed in Sanity and nothing
+    // else happened, so a customer could design a bottle — and pay a deposit —
+    // with the only trace being a Studio document nobody had reason to open.
+    const emailData: BespokeEmailData = {
+      inquiryId: doc._id,
+      customerName: data.name,
+      customerEmail: data.email,
+      customerPhone: data.phone,
+      currency: region.currency,
+      quantity: data.quantity,
+      volumeLabel: `${data.volumeKey}ml`,
+      bottleTypeLabel: data.bottleTypeLabel || data.bottleTypeKey,
+      inscriptionLabel: hasInscription
+        ? data.inscriptionLabel || data.inscriptionKey || undefined
+        : undefined,
+      engravingLine1: data.engravingLine1,
+      engravingLine2: data.engravingLine2,
+      colorName: data.colorName,
+      inspiration: data.inspiration,
+      timeline: data.timeline,
+      city: data.city,
+      notes: data.notes,
+      totalMinor: estimatePriceMinor,
+      depositMinor,
+      needsQuote: Boolean(estimate?.needsQuote),
+    }
+
+    // The team notification is the one that must land: the inquiry is only
+    // actionable if a human learns about it. A failure here is reported, so the
+    // customer can retry rather than believe a request was received that nobody
+    // will ever see.
+    const team = buildBespokeTeamEmail(emailData)
+    try {
+      await sendEmail({
+        to: SITE_CONFIG.contact.email,
+        subject: team.subject,
+        html: team.html,
+      })
+    } catch (err) {
+      console.error('[bespoke] team notification failed', err)
+      return {
+        ok: false,
+        error:
+          'We saved your design but could not alert our team. Please email us so we do not miss it.',
+      }
+    }
+
+    // The customer acknowledgement is best-effort: the request is already with
+    // the team by this point, so a mail failure must not report a failed submit.
+    try {
+      const ack = buildBespokeCustomerEmail(emailData)
+      await sendEmail({ to: data.email, subject: ack.subject, html: ack.html })
+    } catch (err) {
+      console.error('[bespoke] customer acknowledgement failed', err)
+    }
 
     return { ok: true, inquiryId: doc._id, depositMinor, currency: region.currency }
   } catch (err) {
