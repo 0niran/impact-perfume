@@ -105,7 +105,7 @@ export default function SiteHeader() {
               The mark is a circular crest whose wordmark sits in a band across the
               middle, so it only becomes readable at size — hence the larger
               footprint and the taller unscrolled bar that makes room for it. */}
-          <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex items-center">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
             <Flourish side="left" hidden={scrolled} />
 
             <Link
@@ -146,8 +146,11 @@ export default function SiteHeader() {
             <Flourish side="right" hidden={scrolled} />
           </div>
 
-          {/* Right side, desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger */}
-          <div className="flex items-center gap-4 lg:gap-6">
+          {/* Right side, desktop: Home & Gifts + Our Story + icons, mobile: cart + hamburger.
+              ml-auto keeps this hard right: the medallion is absolutely centred at
+              every breakpoint, so on mobile this is the only in-flow child and
+              justify-between alone would pull it to the left. */}
+          <div className="ml-auto flex items-center gap-4 lg:gap-6">
             <NavItem
               label="Home & Gifts"
               href="/gifts"
