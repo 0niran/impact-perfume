@@ -9,7 +9,7 @@ import CartDrawer from "@/components/cart/CartDrawer";
 import BackToTop from "@/components/layout/BackToTop";
 import RouteProgressBar from "@/components/layout/RouteProgressBar";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
-import { SITE_CONFIG } from "@/lib/config";
+import { SITE_CONFIG, IS_CANONICAL_DOMAIN } from "@/lib/config";
 import { RegionProvider } from "@/lib/regionContext";
 import type { RegionId } from "@/lib/region";
 
@@ -42,6 +42,10 @@ export const metadata: Metadata = {
   description:
     "A luxury house of fragrance composing scents that leave impact. Oud, oriental, and bespoke creations.",
   metadataBase: new URL(SITE_CONFIG.url),
+  // robots.txt is only a crawl hint — a page linked from elsewhere can still be
+  // indexed. noindex is the actual guarantee, so pre-launch and preview builds
+  // emit it too. Clears itself once the canonical domain is live.
+  robots: IS_CANONICAL_DOMAIN ? undefined : { index: false, follow: false },
   openGraph: {
     type: "website",
     siteName: SITE_CONFIG.name,

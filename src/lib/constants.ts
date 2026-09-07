@@ -1,5 +1,6 @@
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://impactperfumes.com'
+// Re-exported so absolute URLs have exactly one definition (lib/config.ts).
+// A second copy of the origin is how a domain cutover half-lands.
+export { SITE_URL } from '@/lib/config'
 
 export const FALLBACK_COLOR = '#1A1612'
 export const FALLBACK_SWATCH_COLOR = '#C9C2B5'
