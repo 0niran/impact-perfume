@@ -146,6 +146,11 @@ export default function CartDrawer() {
 
               {/* Free-shipping progress */}
               {(() => {
+                // Only a carrier market has a delivery fee to waive. In Canada
+                // collection is free and shipping is quoted per order, so a
+                // "spend more for free delivery" nudge promises a service that
+                // does not exist.
+                if (region.deliveryModel !== 'carrier') return null
                 const threshold = getShippingThreshold(currency)
                 if (threshold <= 0) return null
                 const remaining = Math.max(0, threshold - subtotal)

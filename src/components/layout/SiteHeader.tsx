@@ -65,8 +65,12 @@ export default function SiteHeader() {
           )}
         >
           <div className="container-px mx-auto max-w-container flex items-center justify-between h-9 border-b border-stone/20">
+            {/* Only a carrier market can promise free delivery. Canada is
+                collection or a per-order quote, so it gets what is true there. */}
             <p className="text-label text-stone">
-              Free delivery on orders over {freeDeliveryDisplay}
+              {region.deliveryModel === 'carrier'
+                ? `Free delivery on orders over ${freeDeliveryDisplay}`
+                : 'Free collection in Brantford · Canada-wide shipping quoted per order'}
             </p>
             <RegionSwitcher />
           </div>

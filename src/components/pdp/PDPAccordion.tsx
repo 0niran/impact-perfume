@@ -33,11 +33,15 @@ function AccordionItem({ title, children }: AccordionItemProps) {
 interface PDPAccordionProps {
   descriptor: string
   tagline?: string
-  shippingCopy?: string
+  /** Region-aware copy from shippingCopyFor(region). Required so a market
+   *  never inherits another market's delivery terms. */
+  shippingCopy: string
 }
 
-const DEFAULT_NG_SHIPPING =
-  'Free delivery on orders over ₦200,000. Standard delivery 3–5 business days within the city; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.'
+// No default shipping copy on purpose. It used to fall back to the Nigerian
+// text (hardcoded ₦200,000), which would silently show naira delivery terms to
+// a Canadian shopper if a caller ever forgot the prop. Callers pass
+// shippingCopyFor(region) instead, so the copy always matches the market.
 
 export default function PDPAccordion({ descriptor, tagline, shippingCopy }: PDPAccordionProps) {
   return (
@@ -52,7 +56,7 @@ export default function PDPAccordion({ descriptor, tagline, shippingCopy }: PDPA
       </AccordionItem>
 
       <AccordionItem title="Shipping & Returns">
-        <p>{shippingCopy ?? DEFAULT_NG_SHIPPING}</p>
+        <p>{shippingCopy}</p>
       </AccordionItem>
 
       <AccordionItem title="B2B & Gifting Enquiries">

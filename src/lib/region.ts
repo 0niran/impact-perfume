@@ -40,6 +40,20 @@ export interface Region {
   checkoutEnabled: boolean
   /** Free-delivery threshold expressed in the smallest currency unit */
   freeDeliveryThresholdMinor: number
+  /**
+   * How orders actually reach the customer in this market. Drives customer-facing
+   * promises, so it must describe what we can genuinely do today.
+   *
+   * 'carrier'        — we ship, and waive the fee above freeDeliveryThresholdMinor
+   *                    (Nigeria, via GIG).
+   * 'pickup-or-quote'— collection is free, and shipping is priced per order and
+   *                    quoted before payment (Canada). A market on this model has
+   *                    no shipping service to promise, so "free delivery over X"
+   *                    must not be shown — the threshold below is still used to
+   *                    waive any fee that does get charged, but it is not a
+   *                    customer promise.
+   */
+  deliveryModel: 'carrier' | 'pickup-or-quote'
 }
 
 export const REGIONS: Record<RegionId, Region> = {
@@ -56,6 +70,7 @@ export const REGIONS: Record<RegionId, Region> = {
     paymentProvider: 'paystack',
     checkoutEnabled: true,
     freeDeliveryThresholdMinor: 20_000_000, // ₦200,000
+    deliveryModel: 'carrier',
   },
   CA: {
     id: 'CA',
@@ -75,6 +90,9 @@ export const REGIONS: Record<RegionId, Region> = {
     paymentProvider: 'stripe',
     checkoutEnabled: true,
     freeDeliveryThresholdMinor: 15_000, // CA$150
+    // Collection in Brantford, or shipping quoted per order. No carrier service
+    // to promise, so no free-delivery threshold is advertised.
+    deliveryModel: 'pickup-or-quote',
   },
 }
 

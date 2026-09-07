@@ -1,22 +1,23 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { useCartStore, type CartLine } from '@/store/cartStore'
 
-// Mock the region context so we don't need a provider.
-// Free-delivery threshold mirrors the real NG region (see lib/region.ts).
-vi.mock('@/lib/regionContext', () => ({
-  useRegion: () => ({
-    region: {
-      id: 'NG',
-      name: 'Nigeria',
-      currency: 'NGN',
-      freeDeliveryThresholdMinor: 20_000_000,
-    },
-    regionId: 'NG',
-    setRegion: vi.fn(),
-    availableRegions: [],
-  }),
-}))
+// Mock the region context so we don't need a provider, but serve the REAL
+// region objects: a hand-written copy of the config drifts (this mock lacked
+// deliveryModel and silently disagreed with lib/region.ts).
+const mockRegion = vi.hoisted(() => ({ id: 'NG' as 'NG' | 'CA' }))
+
+vi.mock('@/lib/regionContext', async () => {
+  const { REGIONS } = await vi.importActual<typeof import('@/lib/region')>('@/lib/region')
+  return {
+    useRegion: () => ({
+      region: REGIONS[mockRegion.id],
+      regionId: mockRegion.id,
+      setRegion: vi.fn(),
+      availableRegions: [],
+    }),
+  }
+})
 
 import CartDrawer from '../CartDrawer'
 
@@ -128,5 +129,27 @@ describe('CartDrawer', () => {
     })
     render(<CartDrawer />)
     expect(screen.getByText(/free delivery unlocked/i)).toBeInTheDocument()
+  })
+
+  // Canada is collection or a per-order shipping quote, so there is no delivery
+  // fee to waive. Promising "free delivery" there advertises a service we do
+  // not run — see Region.deliveryModel.
+  describe('in a market without a carrier service (CA)', () => {
+    beforeEach(() => {
+      mockRegion.id = 'CA'
+    })
+    afterEach(() => {
+      mockRegion.id = 'NG'
+    })
+
+    it('hides the free-delivery progress entirely', () => {
+      useCartStore.setState({
+        lines: [line({ unitPriceKobo: 5_000, qty: 1, currency: 'CAD' })],
+        isOpen: true,
+      })
+      render(<CartDrawer />)
+      expect(screen.queryByText(/for free delivery/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/free delivery unlocked/i)).not.toBeInTheDocument()
+    })
   })
 })

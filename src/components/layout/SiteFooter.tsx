@@ -47,7 +47,7 @@ function buildContactLinks(regionId: RegionId): FooterLink[] {
 }
 
 /* Payment method icons as inline SVGs */
-function PaymentIcons() {
+function PaymentIcons({ regionId }: { regionId: RegionId }) {
   return (
     <div className="flex items-center gap-2 mt-4" aria-label="Accepted payment methods">
       {/* Visa */}
@@ -65,14 +65,23 @@ function PaymentIcons() {
           <path d="M19 7.3A7 7 0 0121.7 12 7 7 0 0119 16.7 7 7 0 0116.3 12 7 7 0 0119 7.3z" fill="#FF5F00"/>
         </svg>
       </div>
-      {/* Paystack badge */}
-      <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
-        <span className="text-[9px] font-medium text-stone tracking-wide">PAYSTACK</span>
-      </div>
-      {/* Bank Transfer */}
-      <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
-        <span className="text-[9px] font-medium text-stone tracking-wide">BANK</span>
-      </div>
+      {/* Processor / local methods, per market. Paystack and bank transfer are
+          Nigeria-only rails — advertising them to a Canadian customer offers a
+          payment method they cannot use at checkout. */}
+      {regionId === 'NG' ? (
+        <>
+          <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
+            <span className="text-[9px] font-medium text-stone tracking-wide">PAYSTACK</span>
+          </div>
+          <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
+            <span className="text-[9px] font-medium text-stone tracking-wide">BANK</span>
+          </div>
+        </>
+      ) : (
+        <div className="flex h-6 items-center justify-center rounded border border-stone/30 bg-stone/10 px-2">
+          <span className="text-[9px] font-medium text-stone tracking-wide">STRIPE</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -106,7 +115,7 @@ export default function SiteFooter() {
               Composed for character.
             </p>
 
-            <PaymentIcons />
+            <PaymentIcons regionId={region.id} />
           </div>
 
           {/* Shop · Company, equal flex columns */}
@@ -237,7 +246,7 @@ export default function SiteFooter() {
             ))}
           </div>
 
-          <PaymentIcons />
+          <PaymentIcons regionId={region.id} />
         </div>
       </Container>
 
