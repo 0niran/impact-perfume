@@ -77,6 +77,18 @@ export default function SiteHeader() {
             scrolled ? 'h-16' : 'h-24'
           )}
         >
+          {/* Menu, mobile only. It holds the left edge opposite the search/cart
+              cluster so the centred medallion sits between balanced weights,
+              which is also where a thumb expects the menu on a phone. */}
+          <button
+            aria-label="Open menu"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(true)}
+            className="lg:hidden flex items-center justify-center w-8 h-8 text-bone"
+          >
+            <HamburgerIcon />
+          </button>
+
           {/* Left nav, desktop (3 items max to give logo breathing room) */}
           <nav className="hidden lg:flex items-center gap-6" aria-label="Primary navigation">
             <NavItem
@@ -189,15 +201,6 @@ export default function SiteHeader() {
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
-            </button>
-
-            <button
-              aria-label="Open menu"
-              aria-expanded={drawerOpen}
-              onClick={() => setDrawerOpen(true)}
-              className="lg:hidden flex items-center justify-center w-8 h-8 text-bone"
-            >
-              <HamburgerIcon />
             </button>
           </div>
         </div>
