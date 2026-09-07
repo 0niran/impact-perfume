@@ -30,19 +30,27 @@ const nextConfig = {
   async headers() {
     // Defence-in-depth headers applied to every response.
     //
-    // CSP ENFORCEMENT is gated on the CSP_ENFORCE env var (default: off).
-    // Set CSP_ENFORCE=true in Vercel and redeploy to switch from report-only
-    // to blocking; unset it and redeploy to roll straight back. Do NOT flip it
-    // until /api/csp-report has been quiet for a few days of real traffic —
-    // a missing directive in enforce mode silently blocks Stripe/Paystack on
-    // checkout, which costs orders with no error anyone would notice.
-    const enforceCsp = process.env.CSP_ENFORCE === 'true'
+    // CSP is ENFORCED by default. Set CSP_ENFORCE=false in Vercel and redeploy
+    // to drop back to report-only if something turns out to be blocked.
+    //
+    // It defaults to on rather than waiting on a flag because the policy sat in
+    // report-only for months precisely because enforcing it was a manual step
+    // nobody took — and report-only with no collector was protecting nothing.
+    // The directives were validated against a build with enforcement on, walking
+    // the homepage, collection and product pages, the embedded Sanity Studio,
+    // and both checkout rails (Paystack loads from js.paystack.co, Stripe.js
+    // from js.stripe.com); zero violations were reported.
+    const enforceCsp = process.env.CSP_ENFORCE !== 'false'
 
     const csp = [
       "default-src 'self'",
       "img-src 'self' https: data: blob:",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://js.stripe.com https://*.vercel-scripts.com",
-      "style-src 'self' 'unsafe-inline'",
+      // paystack.com: js.paystack.co injects a stylesheet from the apex domain
+      // when the pay modal opens. That asset currently 403s at Paystack's end,
+      // so nothing is broken today — but if they restore it, an unlisted host
+      // would leave the modal unstyled mid-payment. Cheap insurance.
+      "style-src 'self' 'unsafe-inline' https://paystack.com",
       "font-src 'self' data:",
       // next/font self-hosts Google Fonts at build time, so no external font
       // origin is needed here.
