@@ -69,25 +69,15 @@ export function normaliseImageUrl(url: string | null | undefined): string | null
 }
 
 /**
- * Local image overrides by product handle. Medusa stores admin uploads on its
- * own container filesystem (`/static/...`), which is ephemeral on Railway and
- * gets wiped on every redeploy — so those images 404 after a deploy. For the
- * named products we serve the image straight from the app's /public/images
- * (bundled with the Vercel build, so it always resolves and survives redeploys).
+ * Returns the first usable product image URL, normalised for the browser.
+ *
+ * This used to consult a hardcoded per-handle map of images bundled into
+ * /public/images, because Medusa wrote uploads to its Railway container disk,
+ * which is wiped on redeploy. Uploads now go to durable object storage (R2), so
+ * the override is unnecessary — and harmful: it shadowed the real Medusa image,
+ * meaning changing those products' images in the admin had no visible effect.
  */
-const LOCAL_PRODUCT_IMAGES: Record<string, string> = {
-  enigma: '/images/Enigma.png',
-  'oud-osmosis-unlimited': '/images/OUD Osmosis Unlimited.png',
-  'royale-silver': '/images/Royale_Product.png',
-  'solid-oud': '/images/Solid Oud.png',
-  mystikal: '/images/Mystikal.jpg',
-  prestige: '/images/prestige.png',
-}
-
-/** Returns the first usable product image URL, normalised for the browser */
 export function getProductImage(product: MedusaProduct): string | null {
-  const local = product.handle ? LOCAL_PRODUCT_IMAGES[product.handle] : undefined
-  if (local) return local
   const raw = product.images?.[0]?.url ?? product.thumbnail ?? null
   return normaliseImageUrl(raw)
 }
