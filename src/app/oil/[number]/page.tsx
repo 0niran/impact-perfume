@@ -112,7 +112,7 @@ export default async function OilPDPPage({
           sillage={enrichment.sillage}
           productId={product.id}
           variantId={variant?.id ?? product.handle}
-          priceKobo={price.amount}
+          priceMinor={price.amount}
           currency={price.currency}
           imageUrl={imageUrl ?? '/images/Oil_perfume.png'}
           shippingCopy={shippingCopyFor(region)}

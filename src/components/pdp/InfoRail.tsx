@@ -17,7 +17,7 @@ interface InfoRailProps {
   sillage?: number
   productId: string
   variantId: string
-  priceKobo: number
+  priceMinor: number
   currency?: string
   imageUrl?: string
   /** Configurable per product line (Numbers vs Oils etc.) */
@@ -47,7 +47,7 @@ export default function InfoRail({
   sillage,
   productId,
   variantId,
-  priceKobo,
+  priceMinor,
   currency = 'NGN',
   imageUrl,
   collectionLabel = 'Number Series',
@@ -111,7 +111,7 @@ export default function InfoRail({
           productId={productId}
           variantId={variantId}
           productName={`${titlePrefix} ${number}`}
-          priceKobo={priceKobo}
+          priceMinor={priceMinor}
           currency={currency}
           signatureColor={signatureColor}
           imageUrl={imageUrl}

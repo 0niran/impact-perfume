@@ -16,7 +16,7 @@ describe('AddToCart (PDP)', () => {
         productId="p1"
         variantId="v1"
         productName="Impact No. 5"
-        priceKobo={5_000_000}
+        priceMinor={5_000_000}
         currency="NGN"
       />
     )
@@ -32,7 +32,7 @@ describe('AddToCart (PDP)', () => {
         productId="p1"
         variantId="v1"
         productName="Impact No. 5"
-        priceKobo={5_000_000}
+        priceMinor={5_000_000}
         currency="NGN"
         signatureColor="#A8137C"
         imageUrl="/images/no_series.png"
@@ -66,7 +66,7 @@ describe('AddToCart (PDP)', () => {
         productId="p1"
         variantId="v1"
         productName="Impact No. 5"
-        priceKobo={5_000_000}
+        priceMinor={5_000_000}
         currency="NGN"
       />
     )
@@ -81,7 +81,7 @@ describe('AddToCart (PDP)', () => {
         productId="p1"
         variantId="v1"
         productName="Impact No. 5"
-        priceKobo={5_000_000}
+        priceMinor={5_000_000}
         handle="no-5"
         href="/no/5"
       />
@@ -98,7 +98,7 @@ describe('AddToCart (PDP)', () => {
         productId="p1"
         variantId="v1"
         productName="Bespoke"
-        priceKobo={0}
+        priceMinor={0}
         currency="NGN"
       />
     )

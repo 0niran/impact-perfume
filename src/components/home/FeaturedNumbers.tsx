@@ -116,7 +116,7 @@ export default async function FeaturedNumbers() {
                     productId={product.productId}
                     variantId={product.variantId}
                     productName={`Impact No. ${product.number}`}
-                    priceKobo={product.priceMinor}
+                    priceMinor={product.priceMinor}
                     currency={product.currency}
                     signatureColor={product.signatureColor}
                     imageUrl={product.imageUrl ?? undefined}

@@ -23,7 +23,7 @@ interface RelatedItem {
   scentFamily?: string
   signatureColor: string
   tagline?: string
-  priceKobo: number
+  priceMinor: number
   currency: string
   imageUrl: string | null
 }
@@ -49,7 +49,7 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
       scentFamily: enrichment.scentFamily,
       signatureColor: enrichment.signatureColor ?? FALLBACK_COLOR,
       tagline: enrichment.tagline,
-      priceKobo: price.amount,
+      priceMinor: price.amount,
       currency: price.currency,
       imageUrl: getProductImage(p),
     })
@@ -119,7 +119,7 @@ export default async function RelatedProducts({ currentNumber }: RelatedProducts
                 <p className="text-small text-stone line-clamp-1">{item.tagline}</p>
               )}
               <p className="mt-1 text-small text-accent">
-                {item.priceKobo > 0 ? formatPrice(item.priceKobo, item.currency) : 'Price on request'}
+                {item.priceMinor > 0 ? formatPrice(item.priceMinor, item.currency) : 'Price on request'}
               </p>
             </div>
           </Link>

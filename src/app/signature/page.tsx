@@ -116,7 +116,7 @@ export default async function SignaturePage() {
                             productId={product.id}
                             variantId={variantId}
                             productName={product.title}
-                            priceKobo={priceInfo.amount}
+                            priceMinor={priceInfo.amount}
                             currency={priceInfo.currency}
                             imageUrl={imageUrl ?? undefined}
                             handle={product.handle}

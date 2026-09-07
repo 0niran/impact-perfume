@@ -8,7 +8,7 @@ interface AddToCartProps {
   productId: string
   variantId: string
   productName: string
-  priceKobo: number
+  priceMinor: number
   currency?: string
   signatureColor?: string
   imageUrl?: string
@@ -22,7 +22,7 @@ export default function AddToCart({
   productId,
   variantId,
   productName,
-  priceKobo,
+  priceMinor,
   currency = 'NGN',
   signatureColor,
   imageUrl,
@@ -54,7 +54,7 @@ export default function AddToCart({
       productId,
       name: productName,
       variantLabel,
-      unitPriceKobo: priceKobo,
+      unitPriceKobo: priceMinor,
       currency,
       qty: 1,
       color: signatureColor,
@@ -73,7 +73,7 @@ export default function AddToCart({
       <div ref={primaryRef} className="flex flex-col gap-4">
         <div>
           <p className="font-display text-h1 leading-none text-bone">
-            {priceKobo > 0 ? formatPrice(priceKobo, currency) : 'Price on request'}
+            {priceMinor > 0 ? formatPrice(priceMinor, currency) : 'Price on request'}
           </p>
           <p className="mt-1.5 text-small text-bone/50">{variantLabel}</p>
         </div>
@@ -101,7 +101,7 @@ export default function AddToCart({
         <div>
           <p className="text-small text-stone">{productName}</p>
           <p className="text-body font-medium text-bone">
-            {priceKobo > 0 ? formatPrice(priceKobo, currency) : 'Price on request'}
+            {priceMinor > 0 ? formatPrice(priceMinor, currency) : 'Price on request'}
           </p>
         </div>
         <button
