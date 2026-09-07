@@ -40,6 +40,38 @@ export const SITE_CONFIG = {
 
 export type SiteConfig = typeof SITE_CONFIG
 
+/** Canonical absolute origin. Single source of truth for absolute URLs. */
+export const SITE_URL = SITE_CONFIG.url
+
+/**
+ * The domain the store will ultimately be served from, once DNS is cut over
+ * from the legacy WordPress host to Vercel.
+ */
+export const CANONICAL_HOST = 'impactperfumes.com'
+
+/**
+ * Whether this deployment is the real, public storefront.
+ *
+ * Derived from NEXT_PUBLIC_SITE_URL rather than a separate "is live" flag, on
+ * purpose: the domain cutover already changes that variable, so search-engine
+ * visibility flips as a natural consequence of the switch instead of being a
+ * second step somebody has to remember. Preview and vercel.app deployments are
+ * never the canonical host, so they are never indexable.
+ *
+ * Search visibility is one-way in practice — getting the pre-launch domain
+ * indexed creates duplicate content that competes with the real domain and
+ * takes weeks for Google to drop — so the safe default is "not indexable", and
+ * only an exact canonical-host match opts in.
+ */
+export const IS_CANONICAL_DOMAIN: boolean = (() => {
+  try {
+    const host = new URL(SITE_CONFIG.url).host.toLowerCase()
+    return host === CANONICAL_HOST || host === `www.${CANONICAL_HOST}`
+  } catch {
+    return false
+  }
+})()
+
 /**
  * Nigerian in-store pickup points. A customer choosing "pickup" at checkout
  * selects one of these instead of entering a delivery address. `address` is
