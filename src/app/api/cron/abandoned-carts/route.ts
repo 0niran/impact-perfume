@@ -3,6 +3,7 @@ import { createClient } from '@sanity/client'
 import { buildAbandonedCartEmail, sendEmail } from '@/lib/email'
 import { serverEnv } from '@/lib/env'
 import { bearerMatches } from '@/lib/bearerAuth'
+import { rateLimit } from '@/lib/rateLimit'
 
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -46,6 +47,17 @@ function isAuthorised(req: NextRequest): boolean {
 }
 
 export async function GET(req: NextRequest) {
+  // Throttled BEFORE the auth check, so token guessing is limited too and not
+  // just authenticated traffic. The limiter keys on client IP, so a flood from
+  // one source cannot consume the real caller's allowance.
+  const limit = await rateLimit(req, 'cron-abandoned-carts', { limit: 5, window: '1 h' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   if (!isAuthorised(req)) {
     return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }

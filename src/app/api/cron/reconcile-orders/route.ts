@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '@/lib/config'
 import { getMedusaAdminAuthHeader } from '@/lib/medusaAdmin'
 import { serverEnv } from '@/lib/env'
 import { bearerMatches } from '@/lib/bearerAuth'
+import { rateLimit } from '@/lib/rateLimit'
 
 /**
  * Payment/order reconciliation. Catches the "paid but no Medusa order" class of
@@ -62,6 +63,17 @@ async function fulfilledReferences(since: Date): Promise<Set<string> | null> {
 }
 
 export async function GET(req: NextRequest) {
+  // Throttled BEFORE the auth check, so token guessing is limited too and not
+  // just authenticated traffic. The limiter keys on client IP, so a flood from
+  // one source cannot consume the real caller's allowance.
+  const limit = await rateLimit(req, 'cron-reconcile-orders', { limit: 5, window: '1 h' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   if (!isAuthorised(req)) {
     return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }
