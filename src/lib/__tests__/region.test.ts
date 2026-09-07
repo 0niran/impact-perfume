@@ -33,7 +33,7 @@ describe('getRegion', () => {
 
 describe('getShippingThreshold', () => {
   it('returns the NGN threshold', () => {
-    expect(getShippingThreshold('NGN')).toBe(20_000_000)
+    expect(getShippingThreshold('NGN')).toBe(30_000_000)
   })
 
   it('returns the CAD threshold', () => {
@@ -41,7 +41,7 @@ describe('getShippingThreshold', () => {
   })
 
   it('is case-insensitive', () => {
-    expect(getShippingThreshold('ngn')).toBe(20_000_000)
+    expect(getShippingThreshold('ngn')).toBe(30_000_000)
     expect(getShippingThreshold('cad')).toBe(15_000)
   })
 
