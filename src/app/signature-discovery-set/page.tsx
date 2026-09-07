@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { Container } from '@/components/layout'
 import { getServerRegion } from '@/lib/serverRegion'
-import { getSignatureProducts, getMedusaProduct, getPrice } from '@/lib/medusa'
+import { getSignatureProducts, getMedusaProduct, getPrice, getProductImage } from '@/lib/medusa'
 import { SIGNATURE_PLACEHOLDERS } from '@/data/products'
 import { formatPrice } from '@/lib/format'
 import AddDiscoverySetButton from '@/components/shop/AddDiscoverySetButton'
@@ -79,6 +79,7 @@ export default async function SignatureDiscoverySetPage() {
                     currency={price.currency}
                     handle="signature-discovery-set"
                     href="/signature-discovery-set"
+                    imageUrl={getProductImage(setProduct) ?? BOX_IMAGE}
                   />
                 </div>
                 <p className="mt-3 text-small text-stone">Ships in signature packaging.</p>

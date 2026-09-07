@@ -13,6 +13,8 @@ interface AddDiscoverySetButtonProps {
   currency: string
   handle: string
   href: string
+  /** Set's own image. Without it the cart line has no thumbnail at all. */
+  imageUrl?: string
 }
 
 /** Add a fixed (curated) set to the cart as a single line. */
@@ -25,6 +27,7 @@ export default function AddDiscoverySetButton({
   currency,
   handle,
   href,
+  imageUrl,
 }: AddDiscoverySetButtonProps) {
   const { add, setOpen } = useCartStore()
   const [added, setAdded] = useState(false)
@@ -39,6 +42,7 @@ export default function AddDiscoverySetButton({
       currency,
       qty: 1,
       color: '#E4B250',
+      thumbnail: imageUrl,
       handle,
       href,
     })

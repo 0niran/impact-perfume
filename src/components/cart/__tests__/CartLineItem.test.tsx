@@ -72,10 +72,25 @@ describe('CartLineItem', () => {
     expect(img).toBeInTheDocument()
   })
 
-  it('renders the default thumbnail when none provided', () => {
-    render(<CartLineItem line={line({ thumbnail: undefined })} />)
-    const img = screen.getByAltText('Impact No. 5') as HTMLImageElement
-    expect(img).toBeInTheDocument()
-    expect(img.src).toMatch(/no_series\.png/)
+  // This previously asserted a fallback to /images/no_series.png — which is a
+  // photo of an actual product. Any line without its own image (the discovery
+  // sets, for one) therefore showed a picture of something the customer had not
+  // bought. Showing no photo is correct; showing the wrong one is not.
+  it('shows a neutral placeholder, not another product’s photo, when no thumbnail', () => {
+    render(<CartLineItem line={line({ name: 'Signature Discovery Set', thumbnail: undefined })} />)
+    expect(screen.queryByAltText('Signature Discovery Set')).not.toBeInTheDocument()
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    // Falls back to the item's own initial.
+    expect(screen.getByText('S')).toBeInTheDocument()
+  })
+
+  it('renders the line’s own thumbnail when it has one', () => {
+    render(
+      <CartLineItem
+        line={line({ name: 'Signature Discovery Set', thumbnail: '/images/set.png' })}
+      />
+    )
+    const img = screen.getByAltText('Signature Discovery Set') as HTMLImageElement
+    expect(img.src).toMatch(/set\.png/)
   })
 })
