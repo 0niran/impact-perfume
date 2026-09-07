@@ -21,6 +21,9 @@ interface SetLine {
   priceMinor: number
   currency: string
   handle: string
+  /** The set's own image, for the cart line. Without it the line has no
+   *  thumbnail, and the cart used to substitute a Number Series bottle. */
+  imageUrl?: string
 }
 
 interface DiscoverySetBuilderProps {
@@ -71,6 +74,7 @@ export default function DiscoverySetBuilder({
       currency: setLine.currency,
       qty: 1,
       color: '#E4B250',
+      thumbnail: setLine.imageUrl,
       handle: setLine.handle,
       href: '/number-discovery-set',
     })

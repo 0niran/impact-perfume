@@ -4,30 +4,38 @@ import Image from 'next/image'
 import { useCartStore, type CartLine } from '@/store/cartStore'
 import { formatPrice } from '@/lib/format'
 
-const DEFAULT_THUMBNAIL = '/images/no_series.png'
-
 interface CartLineItemProps {
   line: CartLine
 }
 
 export default function CartLineItem({ line }: CartLineItemProps) {
   const { remove, setQty } = useCartStore()
-  const thumbnail = line.thumbnail || DEFAULT_THUMBNAIL
 
   return (
     <div className="flex gap-4">
-      {/* Thumbnail */}
+      {/* Thumbnail. There is deliberately no photo fallback: this used to fall
+          back to the Number Series bottle, so any line without its own image —
+          the discovery sets, for one — showed a picture of a different product.
+          A neutral mark says "no photo" instead of misrepresenting the item. */}
       <div
         className="relative h-24 w-[68px] shrink-0 overflow-hidden bg-ink"
         aria-hidden="true"
       >
-        <Image
-          src={thumbnail}
-          alt={line.name}
-          fill
-          sizes="68px"
-          className="object-contain p-1"
-        />
+        {line.thumbnail ? (
+          <Image
+            src={line.thumbnail}
+            alt={line.name}
+            fill
+            sizes="68px"
+            className="object-contain p-1"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center border border-stone/20">
+            <span className="font-display text-[22px] leading-none text-bone/35 select-none">
+              {line.name.trim().charAt(0).toUpperCase() || '·'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Details */}

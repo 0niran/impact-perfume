@@ -6,6 +6,7 @@ import {
   getAllNumberSeriesProducts,
   getMedusaProduct,
   getPrice,
+  getProductImage,
   toTileEnrichment,
 } from '@/lib/medusa'
 import { formatPrice } from '@/lib/format'
@@ -105,6 +106,10 @@ export default async function NumberDiscoverySetPage() {
                 priceMinor: price.amount,
                 currency: price.currency,
                 handle: 'number-discovery-set',
+                // The set's own photo. Falls back to the local box art only if
+                // Medusa has no image yet.
+                imageUrl:
+                  getProductImage(setProduct) ?? '/images/No Series Discovery Set.jpeg',
               }}
             />
           ) : (

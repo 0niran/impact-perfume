@@ -126,24 +126,31 @@ export default function SiteHeader() {
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
             <Flourish side="left" hidden={scrolled} />
 
+            {/* `isolate` scopes the z-indices below to this link, so the
+                decoration can never be stacked against anything outside it. */}
             <Link
               href="/"
-              className="group relative block"
+              className="group relative isolate block"
               aria-label="Impact Perfumes, home"
             >
-              {/* Warm aura, so the crest reads as lit rather than pasted on */}
+              {/* Warm aura, so the crest reads as lit rather than pasted on.
+                  No blur filter on purpose: a filter forces its own compositing
+                  layer, and the logo sat above it only by paint order, with no
+                  z-index. Mobile browsers composite filtered layers differently,
+                  which let the gold haze render OVER the mark and grey it out.
+                  The radial gradient is soft enough on its own. */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute -inset-3 rounded-full opacity-70 blur-md transition-opacity duration-500 group-hover:opacity-100"
+                className="pointer-events-none absolute -inset-3 z-0 rounded-full opacity-70 transition-opacity duration-500 group-hover:opacity-100"
                 style={{
                   background:
-                    'radial-gradient(circle, rgba(228,178,80,0.25) 0%, transparent 70%)',
+                    'radial-gradient(circle, rgba(228,178,80,0.28) 0%, transparent 70%)',
                 }}
               />
               {/* Hairline gold ring, picking up the crest's own border */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute -inset-[3px] rounded-full border border-accent/25 transition-colors duration-300 group-hover:border-accent/60"
+                className="pointer-events-none absolute -inset-[3px] z-0 rounded-full border border-accent/25 transition-colors duration-300 group-hover:border-accent/60"
               />
               <Image
                 src="/images/logo.svg"
@@ -154,8 +161,10 @@ export default function SiteHeader() {
                 // Vector: nothing for the optimizer to do, and this avoids
                 // having to enable dangerouslyAllowSVG for every remote image.
                 unoptimized
+                // Explicit z-index: the mark must sit above the decoration by
+                // rule, not by DOM order.
                 className={cn(
-                  'relative w-auto rounded-full transition-[height] duration-300',
+                  'relative z-10 w-auto rounded-full transition-[height] duration-300',
                   scrolled ? 'h-12' : 'h-16 sm:h-[4.5rem] lg:h-20'
                 )}
               />
