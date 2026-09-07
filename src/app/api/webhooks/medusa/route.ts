@@ -12,8 +12,7 @@ import { rateLimit } from '@/lib/rateLimit'
  * refresh" problem any time the owner touches a product.
  *
  * Auth: Authorization: Bearer ${MEDUSA_WEBHOOK_SECRET}
- *  (falls back to CRON_SECRET if the dedicated webhook secret isn't set, so
- *  the owner can start with one shared key and split later).
+ *  Dedicated secret, no fallback — see expectedSecret() below for why.
  *
  * Payload (small, owner-controlled — see docs/medusa-webhook-setup.md):
  *  {
@@ -30,8 +29,21 @@ interface MedusaEventPayload {
   }
 }
 
+/**
+ * MEDUSA_WEBHOOK_SECRET only — deliberately no CRON_SECRET fallback.
+ *
+ * CRON_SECRET also authenticates /api/cron/abandoned-carts (which emails
+ * customers) and /api/cron/reconcile-orders (which lists Stripe payment
+ * intents). This endpoint is called by the Medusa backend, so its token has to
+ * live in that system's environment and logs — a separate deployment with its
+ * own access control. Falling back to CRON_SECRET meant putting a key that can
+ * mail your customer list and read payment data into a box that only needs to
+ * flush a cache.
+ *
+ * Fails closed: with no MEDUSA_WEBHOOK_SECRET set, nothing authenticates here.
+ */
 function expectedSecret(): string | undefined {
-  return serverEnv.medusaWebhookSecret || serverEnv.cronSecret
+  return serverEnv.medusaWebhookSecret
 }
 
 // Fails CLOSED when no secret is configured — refusing the webhook is
