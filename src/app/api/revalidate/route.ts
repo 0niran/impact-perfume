@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
+import { bearerMatches } from '@/lib/bearerAuth'
+import { rateLimit } from '@/lib/rateLimit'
 
 /**
  * On-demand ISR invalidation. Use whenever Medusa data changes outside of
@@ -18,6 +20,17 @@ import { serverEnv } from '@/lib/env'
  * Returns the list of paths that were flushed.
  */
 export async function GET(req: NextRequest) {
+  // Throttled BEFORE the auth check, so token guessing is limited too and not
+  // just authenticated traffic. The limiter keys on client IP, so a flood from
+  // one source cannot consume the real caller's allowance.
+  const limit = await rateLimit(req, 'revalidate', { limit: 60, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   // Fails CLOSED when CRON_SECRET is unset — refusing to flush is better
   // than letting anyone trigger cache regeneration when env vars are
   // misconfigured (audit H-2).
@@ -25,8 +38,7 @@ export async function GET(req: NextRequest) {
   if (!secret) {
     return NextResponse.json({ ok: false, message: 'Revalidation not configured.' }, { status: 503 })
   }
-  const auth = req.headers.get('authorization')
-  if (auth !== `Bearer ${secret}`) {
+  if (!bearerMatches(req.headers.get('authorization'), secret)) {
     return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }
 

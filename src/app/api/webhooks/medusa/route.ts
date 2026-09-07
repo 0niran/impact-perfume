@@ -3,6 +3,8 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
 import { CATALOGUE_CACHE_TAG } from '@/lib/medusa'
 import { BESPOKE_CACHE_TAG } from '@/lib/bespokeConfig'
+import { bearerMatches } from '@/lib/bearerAuth'
+import { rateLimit } from '@/lib/rateLimit'
 
 /**
  * Receives product lifecycle events from Medusa and revalidates the affected
@@ -37,7 +39,7 @@ function expectedSecret(): string | undefined {
 function isAuthorised(req: NextRequest): boolean {
   const secret = expectedSecret()
   if (!secret) return false
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  return bearerMatches(req.headers.get('authorization'), secret)
 }
 
 /**
@@ -88,6 +90,17 @@ function pathsFor(handle: string, categories: string[] = []): string[] {
 }
 
 export async function POST(req: NextRequest) {
+  // Throttled BEFORE the auth check, so token guessing is limited too and not
+  // just authenticated traffic. The limiter keys on client IP, so a flood from
+  // one source cannot consume the real caller's allowance.
+  const limit = await rateLimit(req, 'medusa-webhook', { limit: 60, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   const secret = expectedSecret()
   if (!secret) {
     return NextResponse.json(
