@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@sanity/client'
 import { buildAbandonedCartEmail, sendEmail } from '@/lib/email'
 import { serverEnv } from '@/lib/env'
+import { bearerMatches } from '@/lib/bearerAuth'
 
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -41,7 +42,7 @@ function isAuthorised(req: NextRequest): boolean {
   const secret = serverEnv.cronSecret
   if (!secret) return false
   const auth = req.headers.get('authorization')
-  return auth === `Bearer ${secret}`
+  return bearerMatches(auth, secret)
 }
 
 export async function GET(req: NextRequest) {

@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
 import { CATALOGUE_CACHE_TAG } from '@/lib/medusa'
 import { BESPOKE_CACHE_TAG } from '@/lib/bespokeConfig'
+import { bearerMatches } from '@/lib/bearerAuth'
 
 /**
  * Receives product lifecycle events from Medusa and revalidates the affected
@@ -37,7 +38,7 @@ function expectedSecret(): string | undefined {
 function isAuthorised(req: NextRequest): boolean {
   const secret = expectedSecret()
   if (!secret) return false
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  return bearerMatches(req.headers.get('authorization'), secret)
 }
 
 /**

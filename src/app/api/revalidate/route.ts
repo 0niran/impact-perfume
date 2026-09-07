@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
+import { bearerMatches } from '@/lib/bearerAuth'
 
 /**
  * On-demand ISR invalidation. Use whenever Medusa data changes outside of
@@ -25,8 +26,7 @@ export async function GET(req: NextRequest) {
   if (!secret) {
     return NextResponse.json({ ok: false, message: 'Revalidation not configured.' }, { status: 503 })
   }
-  const auth = req.headers.get('authorization')
-  if (auth !== `Bearer ${secret}`) {
+  if (!bearerMatches(req.headers.get('authorization'), secret)) {
     return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }
 

@@ -4,6 +4,7 @@ import { buildOwnerAlertEmail, sendEmail, type AlertItem } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { getMedusaAdminAuthHeader } from '@/lib/medusaAdmin'
 import { serverEnv } from '@/lib/env'
+import { bearerMatches } from '@/lib/bearerAuth'
 
 /**
  * Payment/order reconciliation. Catches the "paid but no Medusa order" class of
@@ -28,7 +29,7 @@ import { serverEnv } from '@/lib/env'
 function isAuthorised(req: NextRequest): boolean {
   const secret = serverEnv.cronSecret
   if (!secret) return false
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  return bearerMatches(req.headers.get('authorization'), secret)
 }
 
 /** Every reference-like string recorded on Medusa orders created since `since`. */
