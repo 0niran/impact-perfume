@@ -84,7 +84,9 @@ export default function AddToCart({
           className={`inline-flex w-full sm:w-fit items-center justify-center px-10 text-label uppercase tracking-[0.1em] transition-all duration-300 ${
             inStock
               ? 'bg-accent text-ink hover:opacity-90 hover:-translate-y-px'
-              : 'cursor-not-allowed border border-stone/30 bg-transparent text-stone'
+              // Out of stock reads as a state, not a disabled button: red text
+              // and border, so it is obvious at a glance why nothing happens.
+              : 'cursor-not-allowed border border-error/50 bg-transparent text-error'
           }`}
           style={{ height: 52 }}
         >
@@ -110,7 +112,7 @@ export default function AddToCart({
           className={`shrink-0 flex items-center justify-center px-6 text-label uppercase tracking-[0.1em] transition-opacity ${
             inStock
               ? 'bg-accent text-ink hover:opacity-90'
-              : 'cursor-not-allowed border border-stone/30 text-stone'
+              : 'cursor-not-allowed border border-error/50 text-error'
           }`}
           style={{ height: 48 }}
         >

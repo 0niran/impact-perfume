@@ -88,7 +88,7 @@ export default function NumberTile({
         </div>
 
         {!inStock && (
-          <span className="absolute left-3 top-3 z-10 bg-ink/80 px-2.5 py-1 text-label uppercase tracking-[0.08em] text-bone/80 backdrop-blur-sm">
+          <span className="absolute left-3 top-3 z-10 border border-error/40 bg-ink/85 px-2.5 py-1 text-label uppercase tracking-[0.08em] text-error backdrop-blur-sm">
             Out of stock
           </span>
         )}
