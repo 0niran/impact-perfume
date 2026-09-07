@@ -2,7 +2,9 @@ import Link from 'next/link'
 import RegionSwitcher from './RegionSwitcher'
 import Image from 'next/image'
 import Container from './Container'
-import { SITE_CONFIG } from '@/lib/config'
+import { SITE_CONFIG, REGION_PRESENCE } from '@/lib/config'
+import { getServerRegion } from '@/lib/serverRegion'
+import type { RegionId } from '@/lib/region'
 
 const { contact, social, name } = SITE_CONFIG
 
@@ -29,17 +31,20 @@ const linkColumns: { heading: string; links: FooterLink[] }[] = [
   },
 ]
 
-const contactLinks: FooterLink[] = [
-  { label: contact.email, href: `mailto:${contact.email}` },
-  { label: contact.phoneDisplay, href: `tel:${contact.phone}` },
-  { label: contact.address.line1, href: '/house-story' },
-  { label: contact.address.line2, href: '/house-story' },
-]
-
-const allMobileColumns = [
-  ...linkColumns,
-  { heading: 'Contact', links: contactLinks },
-]
+/**
+ * Contact block for the market being shopped. A Canadian visitor should see the
+ * Brantford address they can actually collect from, not the Lagos head office.
+ * Built per-request rather than at module scope because the region comes from a
+ * cookie.
+ */
+function buildContactLinks(regionId: RegionId): FooterLink[] {
+  const presence = REGION_PRESENCE[regionId] ?? REGION_PRESENCE.NG
+  return [
+    { label: contact.email, href: `mailto:${contact.email}` },
+    { label: presence.phoneDisplay, href: `tel:${presence.phone}` },
+    ...presence.addressLines.map((line) => ({ label: line, href: '/house-story' })),
+  ]
+}
 
 /* Payment method icons as inline SVGs */
 function PaymentIcons() {
@@ -73,6 +78,10 @@ function PaymentIcons() {
 }
 
 export default function SiteFooter() {
+  const region = getServerRegion()
+  const contactLinks = buildContactLinks(region.id)
+  const allMobileColumns = [...linkColumns, { heading: 'Contact', links: contactLinks }]
+
   const year = new Date().getFullYear()
 
   return (
