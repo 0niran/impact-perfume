@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
-import { SITE_CONFIG } from '@/lib/config'
+import { SITE_CONFIG, getRegionPresence } from '@/lib/config'
+import { getServerRegion } from '@/lib/serverRegion'
 
 export const metadata: Metadata = {
   title: 'House Story | Impact Perfumes',
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
 }
 
 export default function HouseStoryPage() {
+  // Same reasoning as the footer: show the market the visitor is shopping.
+  const presence = getRegionPresence(getServerRegion().id)
+
   return (
     <main className="bg-ink text-bone">
 
@@ -167,8 +171,7 @@ export default function HouseStoryPage() {
                 Corporate Office
               </p>
               <p className="text-body text-stone">
-                {SITE_CONFIG.contact.address.line1},{' '}
-                {SITE_CONFIG.contact.address.line2}
+                {presence.addressLines.join(', ')}
               </p>
             </div>
             <div className="flex flex-col gap-1">
@@ -179,10 +182,10 @@ export default function HouseStoryPage() {
                 {SITE_CONFIG.contact.email}
               </a>
               <a
-                href={`tel:${SITE_CONFIG.contact.phone}`}
+                href={`tel:${presence.phone}`}
                 className="text-body text-stone hover:text-bone transition-colors"
               >
-                {SITE_CONFIG.contact.phoneDisplay}
+                {presence.phoneDisplay}
               </a>
             </div>
           </div>

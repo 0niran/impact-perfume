@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
-import { SITE_CONFIG } from '@/lib/config'
+import { getRegionPresence } from '@/lib/config'
+import { useRegion } from '@/lib/regionContext'
 
 /** Where the panel leaves the address for this page to echo back. */
 export const QUOTE_EMAIL_KEY = 'impact_quote_email'
@@ -21,6 +22,8 @@ export const QUOTE_EMAIL_KEY = 'impact_quote_email'
  */
 export default function QuoteRequested() {
   const clear = useCartStore((s) => s.clear)
+  const { regionId } = useRegion()
+  const presence = getRegionPresence(regionId)
   const [email, setEmail] = useState<string | null>(null)
 
   useEffect(() => {
@@ -91,7 +94,7 @@ export default function QuoteRequested() {
           Continue shopping
         </Link>
         <Link
-          href={SITE_CONFIG.social.whatsapp}
+          href={presence.whatsapp}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center border border-stone/30 px-8 text-label uppercase tracking-[0.1em] text-bone/80 transition-colors hover:border-bone hover:text-bone"

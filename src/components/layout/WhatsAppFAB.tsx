@@ -1,10 +1,16 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { SITE_CONFIG } from '@/lib/config'
+import { getRegionPresence } from '@/lib/config'
+import { useRegion } from '@/lib/regionContext'
 
 export default function WhatsAppFAB() {
   const pathname = usePathname() ?? ''
+  // Chat should reach the market the visitor is shopping. The provider seeds
+  // the region from the server on first paint and re-reads the cookie on mount,
+  // so switching market updates the button without a reload.
+  const { regionId } = useRegion()
+  const presence = getRegionPresence(regionId)
   // PDPs render a sticky add-to-cart bar at the bottom on mobile; lift the FAB
   // above it on small screens so the two don't visually collide.
   const onPDP = pathname.startsWith('/no/') || pathname.startsWith('/oil/') || pathname.startsWith('/signature/')
@@ -14,7 +20,7 @@ export default function WhatsAppFAB() {
 
   return (
     <a
-      href={SITE_CONFIG.social.whatsapp}
+      href={presence.whatsapp}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"

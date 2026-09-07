@@ -15,7 +15,7 @@ import { toCartLinePayload } from '@/lib/cartPayload'
 import { formatPrice } from '@/lib/format'
 import { countryOptions } from '@/lib/constants'
 import { FORM_STYLES } from '@/lib/shopUtils'
-import { SITE_CONFIG, CA_PICKUP_LOCATIONS } from '@/lib/config'
+import { CA_PICKUP_LOCATIONS, getRegionPresence } from '@/lib/config'
 import CartLineItem from '@/components/cart/CartLineItem'
 import AddressAutocomplete from '@/components/checkout/AddressAutocomplete'
 import { QUOTE_EMAIL_KEY } from '@/components/checkout/QuoteRequested'
@@ -103,7 +103,7 @@ export default function StripeCheckoutPanel() {
         <p className="text-body text-bone">
           Stripe is not yet configured. Please contact us to complete your order.
         </p>
-        <Link href={SITE_CONFIG.social.whatsapp} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink" style={{ height: 48 }}>
+        <Link href={getRegionPresence('CA').whatsapp} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center bg-accent px-8 text-label uppercase tracking-[0.1em] text-ink" style={{ height: 48 }}>
           Chat on WhatsApp
         </Link>
       </Container>
