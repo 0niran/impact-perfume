@@ -109,11 +109,14 @@ export default function SiteHeader() {
               aria-label="Impact Perfumes, home"
             >
               <Image
-                src="/images/Logo.png"
+                src="/images/logo.svg"
                 alt="Impact Perfumes"
                 width={240}
-                height={161}
+                height={240}
                 priority
+                // Vector: nothing for the optimizer to do, and this avoids
+                // having to enable dangerouslyAllowSVG for every remote image.
+                unoptimized
                 className="h-11 w-auto sm:h-12 lg:h-14"
               />
             </Link>
