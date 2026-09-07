@@ -26,7 +26,9 @@ const SITE =
 
 const TOKEN = process.env.CRON_SECRET
 
-const CATALOGUE_TAG = 'medusa-catalogue'
+// Both caches the admin can affect: the product catalogue, and the bespoke
+// pricing config (which lives on its own draft products under its own tag).
+const TAGS = ['medusa-catalogue', 'bespoke-config']
 
 async function main() {
   if (!TOKEN) {
@@ -38,8 +40,10 @@ async function main() {
     process.exit(1)
   }
 
-  const url = `${SITE.replace(/\/$/, '')}/api/revalidate?tag=${CATALOGUE_TAG}`
-  console.log(`flushing ${CATALOGUE_TAG} on ${SITE} …`)
+  // /api/revalidate takes a repeatable ?tag=
+  const query = TAGS.map((t) => `tag=${encodeURIComponent(t)}`).join('&')
+  const url = `${SITE.replace(/\/$/, '')}/api/revalidate?${query}`
+  console.log(`flushing ${TAGS.join(', ')} on ${SITE} …`)
 
   const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } })
   const body = await res.text()
