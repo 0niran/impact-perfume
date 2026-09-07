@@ -12,7 +12,11 @@ export function shippingCopyFor(region: Region): string {
     return `Free delivery on orders over ${threshold}. Standard delivery 3–5 business days within the city; 5–10 days nationwide. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.`
   }
   if (region.id === 'CA') {
-    return `Free delivery across Canada on orders over ${threshold}. Standard shipping 5–10 business days. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.`
+    // Canada has no carrier service to promise: it is free collection in
+    // Brantford, or shipping priced per order and quoted before payment. The
+    // previous copy advertised free Canada-wide delivery over a threshold and a
+    // 5–10 day transit time, neither of which we can honour.
+    return `Collect free from our Brantford, Ontario location, or ask us to ship: Canadian delivery is priced per order by weight and destination, and we email you the cost before any payment is taken. Returns accepted within 7 days of delivery on unopened, sealed products. Contact us to initiate a return.`
   }
   return `Free delivery on orders over ${threshold}. Returns accepted within 7 days of delivery on unopened, sealed products.`
 }

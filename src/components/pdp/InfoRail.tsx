@@ -28,7 +28,9 @@ interface InfoRailProps {
   prevHref?: (n: number) => string
   nextHref?: (n: number) => string
   maxNumber?: number
-  shippingCopy?: string
+  /** Region-aware copy from shippingCopyFor(region); required so a market
+   *  never inherits another market's delivery terms. */
+  shippingCopy: string
   handle?: string
   href?: string
   inStock?: boolean
