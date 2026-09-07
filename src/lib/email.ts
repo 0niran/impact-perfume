@@ -1,4 +1,4 @@
-import { SITE_CONFIG } from '@/lib/config'
+import { SITE_CONFIG, getPresenceForCurrency } from '@/lib/config'
 import { formatPrice } from '@/lib/format'
 import { serverEnv } from '@/lib/env'
 
@@ -173,7 +173,8 @@ function header(): string {
   </tr>`
 }
 
-function footer(): string {
+function footer(currency?: string): string {
+  const presence = getPresenceForCurrency(currency)
   return `
   <tr>
     <td style="background:${PALETTE.ink};padding:32px 40px;text-align:center;">
@@ -184,10 +185,10 @@ function footer(): string {
         Composed for character. Worn the world over.
       </p>
       <p style="margin:0;font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:${PALETTE.stone};">
-        ${SITE_CONFIG.contact.address.line1}, ${SITE_CONFIG.contact.address.line2}<br/>
+        ${presence.addressLines.join(', ')}<br/>
         <a href="mailto:${SITE_CONFIG.contact.email}" style="color:${PALETTE.bone};text-decoration:none;">${SITE_CONFIG.contact.email}</a>
         &nbsp;&middot;&nbsp;
-        <a href="tel:${SITE_CONFIG.contact.phone}" style="color:${PALETTE.bone};text-decoration:none;">${SITE_CONFIG.contact.phoneDisplay}</a>
+        <a href="tel:${presence.phone}" style="color:${PALETTE.bone};text-decoration:none;">${presence.phoneDisplay}</a>
       </p>
     </td>
   </tr>`
@@ -243,7 +244,7 @@ function itemRows(items: OrderItem[], currency: string): string {
  * Base template
  * ------------------------------------------------------------------------- */
 
-function baseTemplate(title: string, body: string, preheader?: string): string {
+function baseTemplate(title: string, body: string, preheader?: string, currency?: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -264,7 +265,7 @@ function baseTemplate(title: string, body: string, preheader?: string): string {
       <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="background:${PALETTE.cream};max-width:600px;width:100%;border:1px solid ${PALETTE.border};">
         ${header()}
         <tr><td style="padding:44px 40px 40px;">${body}</td></tr>
-        ${footer()}
+        ${footer(currency)}
       </table>
     </td></tr>
   </table>
@@ -335,7 +336,7 @@ export function buildCustomerEmail(data: OrderEmailData): { subject: string; htm
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader) }
+  return { subject, html: baseTemplate(subject, body, preheader, currency) }
 }
 
 /**
@@ -392,7 +393,7 @@ export function buildRefundEmail(data: {
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader) }
+  return { subject, html: baseTemplate(subject, body, preheader, data.currency) }
 }
 
 /**
@@ -467,7 +468,7 @@ export function buildShippingQuoteRequestEmail(data: {
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader) }
+  return { subject, html: baseTemplate(subject, body, preheader, data.currency) }
 }
 
 /* ----------------------------------------------------------------------------
@@ -617,7 +618,7 @@ export function buildBespokeCustomerEmail(d: BespokeEmailData): {
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader) }
+  return { subject, html: baseTemplate(subject, body, preheader, d.currency) }
 }
 
 /**
@@ -693,7 +694,7 @@ export function buildBespokeTeamEmail(d: BespokeEmailData): {
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader(d)) }
+  return { subject, html: baseTemplate(subject, body, preheader(d), d.currency) }
 }
 
 function preheader(d: BespokeEmailData): string {
@@ -760,7 +761,7 @@ export function buildBusinessEmail(data: OrderEmailData): { subject: string; htm
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader) }
+  return { subject, html: baseTemplate(subject, body, preheader, currency) }
 }
 
 /* ----------------------------------------------------------------------------
@@ -888,7 +889,7 @@ export function buildAbandonedCartEmail(data: AbandonedCartData): { subject: str
     </p>
   `
 
-  return { subject, html: baseTemplate(subject, body, preheader) }
+  return { subject, html: baseTemplate(subject, body, preheader, data.currency) }
 }
 
 /* ----------------------------------------------------------------------------

@@ -21,7 +21,9 @@ export const SITE_CONFIG = {
 
   social: {
     instagram: 'https://instagram.com/impact_perfumes',
-    whatsapp: 'https://wa.me/2349015900134',
+    // WhatsApp is per-market and lives in REGION_PRESENCE below. A second copy
+    // here would drift the moment one market's number changes, which is exactly
+    // how the free-delivery threshold went stale.
   },
 
   commerce: {
@@ -46,6 +48,10 @@ export type SiteConfig = typeof SITE_CONFIG
  * head office in every case — a Canadian customer told to collect in Anthony
  * Village is a support ticket at best.
  *
+ * `whatsapp` is part of this for the same reason the phone number is: a
+ * Canadian tapping the chat button should reach the Canadian line, not an
+ * international number that costs them to dial and answers in another timezone.
+ *
  * Keyed by RegionId. Kept here rather than in lib/region.ts so region.ts stays
  * a pure commerce/currency description with no presentational content.
  */
@@ -54,14 +60,40 @@ export const REGION_PRESENCE = {
     addressLines: ['1st Floor, 18 Oseni Street', 'Anthony Village, Lagos, Nigeria'],
     phone: '+2349015900134',
     phoneDisplay: '+234 (0) 901 590 0134',
+    whatsapp: 'https://wa.me/2349015900134',
   },
   CA: {
     addressLines: ['123 Longboat Run W', 'Brantford, ON N3T 0R8, Canada'],
-    // No separate Canadian line yet; the Lagos number is monitored on WhatsApp.
-    phone: '+2349015900134',
-    phoneDisplay: '+234 (0) 901 590 0134',
+    phone: '+12269666779',
+    phoneDisplay: '+1 (226) 966 6779',
+    whatsapp: 'https://wa.me/12269666779',
   },
 } as const
+
+export type RegionPresence = (typeof REGION_PRESENCE)[keyof typeof REGION_PRESENCE]
+
+/**
+ * Presence for a market, falling back to Nigeria (the head office) for anything
+ * unrecognised. Callers should never index REGION_PRESENCE directly: the region
+ * can arrive from a cookie, so it is not guaranteed to be a valid key.
+ */
+export function getRegionPresence(regionId: string | undefined | null): RegionPresence {
+  if (regionId === 'CA') return REGION_PRESENCE.CA
+  return REGION_PRESENCE.NG
+}
+
+/**
+ * Presence inferred from an order's currency.
+ *
+ * Transactional emails are built off an order, which carries a currency but no
+ * region id, and threading a region through every template would duplicate a
+ * fact the currency already settles: a CAD order is a Canadian order. Anything
+ * that is not CAD gets the Lagos details, so a missing or odd currency degrades
+ * to the head office rather than to the wrong market.
+ */
+export function getPresenceForCurrency(currency: string | undefined | null): RegionPresence {
+  return currency?.toUpperCase() === 'CAD' ? REGION_PRESENCE.CA : REGION_PRESENCE.NG
+}
 
 /** Canonical absolute origin. Single source of truth for absolute URLs. */
 export const SITE_URL = SITE_CONFIG.url

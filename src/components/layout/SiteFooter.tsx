@@ -2,7 +2,7 @@ import Link from 'next/link'
 import RegionSwitcher from './RegionSwitcher'
 import Image from 'next/image'
 import Container from './Container'
-import { SITE_CONFIG, REGION_PRESENCE } from '@/lib/config'
+import { SITE_CONFIG, getRegionPresence } from '@/lib/config'
 import { getServerRegion } from '@/lib/serverRegion'
 import type { RegionId } from '@/lib/region'
 
@@ -38,7 +38,7 @@ const linkColumns: { heading: string; links: FooterLink[] }[] = [
  * cookie.
  */
 function buildContactLinks(regionId: RegionId): FooterLink[] {
-  const presence = REGION_PRESENCE[regionId] ?? REGION_PRESENCE.NG
+  const presence = getRegionPresence(regionId)
   return [
     { label: contact.email, href: `mailto:${contact.email}` },
     { label: presence.phoneDisplay, href: `tel:${presence.phone}` },
@@ -88,6 +88,7 @@ function PaymentIcons({ regionId }: { regionId: RegionId }) {
 
 export default function SiteFooter() {
   const region = getServerRegion()
+  const presence = getRegionPresence(region.id)
   const contactLinks = buildContactLinks(region.id)
   const allMobileColumns = [...linkColumns, { heading: 'Contact', links: contactLinks }]
 
@@ -159,7 +160,7 @@ export default function SiteFooter() {
 
             {/* WhatsApp CTA, outlined button */}
             <Link
-              href={social.whatsapp}
+              href={presence.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-5 inline-flex items-center gap-2 border border-stone/30 px-4 text-label uppercase tracking-[0.08em] text-bone/70 hover:border-bone hover:text-bone transition-colors duration-150"
@@ -205,7 +206,7 @@ export default function SiteFooter() {
           {/* WhatsApp CTA mobile */}
           <div className="mt-6 mb-6">
             <Link
-              href={social.whatsapp}
+              href={presence.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 border border-stone/30 px-5 text-label uppercase tracking-[0.08em] text-bone/70 hover:border-bone hover:text-bone transition-colors duration-150"
