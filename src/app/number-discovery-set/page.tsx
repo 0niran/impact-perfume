@@ -23,7 +23,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Number Discovery Set · Impact Perfumes',
     description: 'Pick 12 from the Number Series and fill your own discovery box.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

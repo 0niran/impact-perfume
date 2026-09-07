@@ -11,6 +11,11 @@ import BackToTop from "@/components/layout/BackToTop";
 import RouteProgressBar from "@/components/layout/RouteProgressBar";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
 import { SITE_CONFIG, IS_CANONICAL_DOMAIN } from "@/lib/config";
+import {
+  jsonLdScript,
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+} from "@/lib/jsonLd";
 import { RegionProvider } from "@/lib/regionContext";
 import type { RegionId } from "@/lib/region";
 
@@ -72,6 +77,17 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        {/* House identity, emitted once for the whole site. Ties the name,
+            logo, socials and both markets' contact details to this domain so a
+            search engine has an entity to attach the brand to. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(buildOrganizationJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(buildWebSiteJsonLd()) }}
+        />
         <RegionProvider initialRegionId={initialRegionId}>
           <Suspense fallback={null}>
             <RouteProgressBar />

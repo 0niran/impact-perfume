@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'House Story | Impact Perfumes',
     description: 'Composed for character.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

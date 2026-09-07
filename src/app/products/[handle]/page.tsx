@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: { handle: string } 
   return {
     title: product.title,
     description: (product as { description?: string }).description ?? undefined,
-    openGraph: { title: `${product.title} · Impact Perfumes`, images: [{ url: '/og-default.jpg', width: 1200, height: 630 }] },
+    openGraph: { title: `${product.title} · Impact Perfumes` },
   }
 }
 

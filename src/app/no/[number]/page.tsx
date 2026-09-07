@@ -1,11 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { getMedusaProduct, getPrice, toEnrichment, getProductImage, variantInStock } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { shippingCopyFor } from '@/lib/shippingCopy'
-import { SITE_URL } from '@/lib/constants'
-import { jsonLdScript } from '@/lib/jsonLd'
+import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
 import RelatedProducts from '@/components/pdp/RelatedProducts'
@@ -34,10 +32,13 @@ export async function generateMetadata({
     description:
       enrichment.tagline ??
       `No. ${num} from the Impact Number Series. A ${enrichment.descriptor.toLowerCase()} Eau de Parfum.`,
+    // The page is one product at one URL. Declaring it stops any query-string
+    // variant (a campaign tag, a referrer param) being treated as a separate
+    // page competing with this one.
+    alternates: { canonical: `/no/${num}` },
     openGraph: {
       title: `Impact No. ${num} | ${enrichment.descriptor}`,
       description: enrichment.tagline ?? `No. ${num} · Impact Perfumes`,
-      images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
     },
   }
 }
@@ -64,33 +65,34 @@ export default async function PDPPage({
   const price = getPrice(product, region.currency)
   const imageUrl = getProductImage(product)
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+  const jsonLd = buildProductJsonLd({
     name: `Impact No. ${enrichment.number}`,
     description:
       enrichment.tagline ??
       `A ${enrichment.descriptor} Eau de Parfum from the Impact Number Series.`,
-    url: `${SITE_URL}/no/${enrichment.number}`,
-    brand: { '@type': 'Brand', name: 'Impact Perfumes & Oils' },
+    path: `/no/${enrichment.number}`,
     category: 'Fragrance',
-    ...(price.amount > 0 && {
-      offers: {
-        '@type': 'Offer',
-        price: (price.amount / 100).toFixed(2),
-        priceCurrency: price.currency,
-        availability: 'https://schema.org/InStock',
-        url: `${SITE_URL}/no/${enrichment.number}`,
-      },
-    }),
-  }
+    imageUrl,
+    sku: variant?.sku,
+    priceMinor: price.amount,
+    currency: price.currency,
+    inStock: variantInStock(variant),
+  })
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Number Series', path: '/no-series' },
+    { name: `No. ${enrichment.number}`, path: `/no/${enrichment.number}` },
+  ])
 
   return (
     <>
-      <Script
-        id={`json-ld-product-${enrichment.number}`}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
       />
       <div className="lg:grid lg:grid-cols-2">
         <ColorPanel

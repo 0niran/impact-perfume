@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Home & Car · Impact Perfumes',
     description: 'Home diffusers, scent candles, scenting machines, and car diffusers from Impact Perfumes.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

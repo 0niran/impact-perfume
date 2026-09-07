@@ -18,7 +18,12 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/studio/', '/checkout', '/api/'],
+        // Studio and the API are not content. /order-confirmed is a
+        // per-customer terminal page: thin, duplicated across orders, and
+        // reachable only after a transaction, so it earns nothing in an index
+        // and can carry an order reference in its query string.
+        // The /checkout prefix already covers /checkout/quote-requested.
+        disallow: ['/studio/', '/checkout', '/api/', '/order-confirmed'],
       },
     ],
     sitemap: `${SITE_CONFIG.url}/sitemap.xml`,

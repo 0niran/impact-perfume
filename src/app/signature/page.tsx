@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Signature Scents · Impact Perfumes',
     description: 'Named, not numbered. Composed for character.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

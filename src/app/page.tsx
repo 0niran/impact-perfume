@@ -14,20 +14,11 @@ export const metadata: Metadata = {
     title: 'Impact Perfumes | Composed for character.',
     description:
       'A luxury house of fragrance. EDPs, Signature Scents, concentrated oils, and home scents, built for those who make an impression.',
-    images: [
-      {
-        url: '/og-default.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Impact Perfumes & Oils',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Impact Perfumes',
     description: 'Fragrances that leave a mark. A house built for those who make an impression.',
-    images: ['/og-default.jpg'],
   },
 }
 

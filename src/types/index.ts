@@ -6,6 +6,8 @@ export interface MedusaCalculatedPrice {
 
 export interface MedusaVariant {
   id: string
+  /** Medusa returns this on store reads; used as the Product sku in JSON-LD. */
+  sku?: string | null
   calculated_price?: MedusaCalculatedPrice
   /** @deprecated Use calculated_price when region_id is passed */
   prices?: Array<{ amount: number; currency_code: string }>

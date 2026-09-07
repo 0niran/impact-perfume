@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Bespoke · Impact Perfumes',
     description: 'Design your own Impact fragrance bottle. Bespoke composition, signature presentation.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 
