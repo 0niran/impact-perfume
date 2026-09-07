@@ -395,6 +395,81 @@ export function buildRefundEmail(data: {
   return { subject, html: baseTemplate(subject, body, preheader) }
 }
 
+/**
+ * Acknowledgement for a Canadian shipping-quote request.
+ *
+ * This email carries an unusual burden: the customer has just been through a
+ * checkout and NOT been charged. If that is not stated plainly they will either
+ * assume the order failed, or wait for a dispatch that is not coming. So it
+ * says what we have, what happens next, and that no money has moved.
+ */
+export function buildShippingQuoteRequestEmail(data: {
+  customerName?: string
+  deliveryLines: string[]
+  itemsTotalMinor: number
+  currency: string
+}): { subject: string; html: string } {
+  const firstName = data.customerName?.trim().split(' ')[0] ?? ''
+  const itemsTotal = formatPrice(data.itemsTotalMinor, data.currency)
+  const subject = 'We are preparing your shipping quote'
+  const preheader = 'We have your order. Your shipping cost follows within one business day.'
+
+  const body = `
+    ${sectionLabel('Shipping Quote Requested')}
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;color:${PALETTE.ink};line-height:1.2;letter-spacing:-0.005em;">
+      ${firstName ? `Thank you, ${esc(firstName)}.` : 'Thank you.'}
+    </h1>
+    <p style="margin:0 0 32px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      We have your order and where it is going. Canadian delivery is priced per order,
+      by weight and destination, so we are working out the best rate for you now.
+      <strong style="color:${PALETTE.ink};">No payment has been taken.</strong>
+    </p>
+
+    <div style="height:1px;background:${PALETTE.gold};margin:0 0 28px;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td width="48%" valign="top">
+          ${sectionLabel('Delivering To')}
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.ink};line-height:1.6;">
+            ${data.deliveryLines.map((l) => esc(l)).join('<br />')}
+          </p>
+        </td>
+        <td width="4%"></td>
+        <td width="48%" valign="top">
+          ${sectionLabel('Items')}
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:16px;color:${PALETTE.ink};line-height:1.6;">
+            ${itemsTotal}
+          </p>
+          <p style="margin:6px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.6;">
+            excluding shipping and tax
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    <div style="height:1px;background:${PALETTE.border};margin:28px 0;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel('What Happens Next')}
+    <p style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      1. We email you the shipping cost and your full total within one business day.
+    </p>
+    <p style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      2. That email includes a secure payment link. Nothing is charged until you use it.
+    </p>
+    <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      3. Once paid, we pack, dispatch and send you tracking.
+    </p>
+
+    <p style="margin:32px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.7;">
+      Need to change the address or add to your order? Just reply to this email, or write to
+      <a href="mailto:${SITE_CONFIG.contact.email}" style="color:${PALETTE.slate};">${SITE_CONFIG.contact.email}</a>.
+    </p>
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader) }
+}
+
 /* ----------------------------------------------------------------------------
  * Business / owner notification
  * ------------------------------------------------------------------------- */

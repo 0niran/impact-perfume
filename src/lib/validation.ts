@@ -126,6 +126,35 @@ export const intlShippingAddressSchema = z.object({
 
 // --- Endpoint payloads ---
 
+/**
+ * Canadian shipping-quote request. No payment is involved, so there is no
+ * amount to verify — but the addresses and contact details still have to be
+ * clean, because they are pasted straight into an operational email.
+ */
+export const shippingQuoteBodySchema = z.object({
+  customerName: customerNameSchema,
+  customerEmail: emailSchema,
+  customerPhone: phoneSchema.optional().or(z.literal('')),
+  currency: z.string().trim().toUpperCase().min(3).max(3),
+  contactAddress: intlShippingAddressSchema,
+  deliverySameAsContact: z.boolean(),
+  /** Present only when the parcel goes somewhere other than the contact address. */
+  deliveryAddress: z
+    .object({
+      address1: safeText(200),
+      address2: optionalSafeText(200).optional(),
+      city: safeText(100),
+      state: safeText(100),
+      postalCode: z.string().trim().toUpperCase().min(2).max(12),
+      country: safeText(100),
+    })
+    .nullable()
+    .optional(),
+  lines: z.array(cartLineInputSchema).min(1, 'Your cart is empty').max(50),
+})
+
+export type ShippingQuoteBody = z.infer<typeof shippingQuoteBodySchema>
+
 export const verifyPaymentBodySchema = z.object({
   reference: z.string().trim().min(1).max(200).regex(/^[a-zA-Z0-9_-]+$/, 'Invalid reference'),
   amountKobo: z.number().int().min(1).max(10_000_000_000),

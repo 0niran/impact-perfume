@@ -14,7 +14,7 @@ function matchNgState(name: string): string | null {
   const norm = name.trim().replace(/\s+state$/i, '').toLowerCase()
   return NIGERIAN_STATES.find((s) => s.toLowerCase() === norm) ?? null
 }
-import { SITE_CONFIG, NG_PICKUP_LOCATIONS, getPickupLocation } from '@/lib/config'
+import { SITE_CONFIG, NG_PICKUP_LOCATIONS, getNgPickupLocation } from '@/lib/config'
 import { cn } from '@/lib/cn'
 import CartLineItem from '@/components/cart/CartLineItem'
 import Link from 'next/link'
@@ -195,7 +195,7 @@ export default function CheckoutForm() {
   /** Resolve the current selection into an order-ready fulfilment, or null if incomplete. */
   function buildFulfilment(): Fulfilment | null {
     if (method === 'pickup') {
-      const loc = getPickupLocation(pickupId)
+      const loc = getNgPickupLocation(pickupId)
       if (!loc) return null
       return {
         shippingAddress: { ...loc.address },

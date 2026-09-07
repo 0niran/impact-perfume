@@ -40,6 +40,29 @@ export const SITE_CONFIG = {
 
 export type SiteConfig = typeof SITE_CONFIG
 
+/**
+ * Per-market presence. The footer, pickup instructions and confirmation emails
+ * must show the address of the market the visitor is shopping, not the Lagos
+ * head office in every case — a Canadian customer told to collect in Anthony
+ * Village is a support ticket at best.
+ *
+ * Keyed by RegionId. Kept here rather than in lib/region.ts so region.ts stays
+ * a pure commerce/currency description with no presentational content.
+ */
+export const REGION_PRESENCE = {
+  NG: {
+    addressLines: ['1st Floor, 18 Oseni Street', 'Anthony Village, Lagos, Nigeria'],
+    phone: '+2349015900134',
+    phoneDisplay: '+234 (0) 901 590 0134',
+  },
+  CA: {
+    addressLines: ['123 Longboat Run W', 'Brantford, ON N3T 0R8, Canada'],
+    // No separate Canadian line yet; the Lagos number is monitored on WhatsApp.
+    phone: '+2349015900134',
+    phoneDisplay: '+234 (0) 901 590 0134',
+  },
+} as const
+
 /** Canonical absolute origin. Single source of truth for absolute URLs. */
 export const SITE_URL = SITE_CONFIG.url
 
@@ -72,13 +95,15 @@ export const IS_CANONICAL_DOMAIN: boolean = (() => {
   }
 })()
 
+export type PickupCountry = 'Nigeria' | 'Canada'
+
 /**
- * Nigerian in-store pickup points. A customer choosing "pickup" at checkout
- * selects one of these instead of entering a delivery address. `address` is
- * recorded on the order (it satisfies ngShippingAddressSchema); `displayLines`
- * are what the storefront and confirmation emails show.
+ * Parameterised on country so each market's list stays narrowly typed. The NG
+ * checkout builds an order whose address must be `country: 'Nigeria'`, and
+ * keeping that in the type stops a Canadian collection point being handed to
+ * the Nigerian rail.
  */
-export interface PickupLocation {
+export interface PickupLocation<C extends PickupCountry = PickupCountry> {
   id: string
   name: string
   displayLines: string[]
@@ -87,11 +112,19 @@ export interface PickupLocation {
     address2?: string
     city: string
     state: string
-    country: 'Nigeria'
+    country: C
   }
+  /** Shown under the address so a customer knows when they can actually collect. */
+  collectionNote?: string
 }
 
-export const NG_PICKUP_LOCATIONS: PickupLocation[] = [
+/**
+ * Nigerian in-store pickup points. A customer choosing "pickup" at checkout
+ * selects one of these instead of entering a delivery address. `address` is
+ * recorded on the order (it satisfies ngShippingAddressSchema); `displayLines`
+ * are what the storefront and confirmation emails show.
+ */
+export const NG_PICKUP_LOCATIONS: PickupLocation<'Nigeria'>[] = [
   {
     id: 'anthony-village',
     name: 'Anthony Village',
@@ -105,7 +138,46 @@ export const NG_PICKUP_LOCATIONS: PickupLocation[] = [
   },
 ]
 
+/**
+ * Canadian collection point. This is the same Brantford address that acts as
+ * the CA stock location and tax origin, so what a customer is told matches
+ * where the inventory actually is.
+ */
+export const CA_PICKUP_LOCATIONS: PickupLocation<'Canada'>[] = [
+  {
+    id: 'brantford',
+    name: 'Brantford, Ontario',
+    displayLines: ['123 Longboat Run W', 'Brantford, ON N3T 0R8'],
+    address: {
+      address1: '123 Longboat Run W',
+      city: 'Brantford',
+      state: 'ON',
+      country: 'Canada',
+    },
+    collectionNote:
+      'We will email you as soon as your order is ready, and arrange a collection time that suits you.',
+  },
+]
+
+export const PICKUP_LOCATIONS_BY_REGION = {
+  NG: NG_PICKUP_LOCATIONS,
+  CA: CA_PICKUP_LOCATIONS,
+} as const
+
+/** Any market's collection point, for display and order records. */
 export function getPickupLocation(id: string | undefined | null): PickupLocation | undefined {
+  if (!id) return undefined
+  return [...NG_PICKUP_LOCATIONS, ...CA_PICKUP_LOCATIONS].find((l) => l.id === id)
+}
+
+/**
+ * Nigeria-only lookup. The NG checkout composes an address that must be
+ * `country: 'Nigeria'`, so it resolves through this rather than the generic
+ * helper, and the compiler enforces it.
+ */
+export function getNgPickupLocation(
+  id: string | undefined | null
+): PickupLocation<'Nigeria'> | undefined {
   if (!id) return undefined
   return NG_PICKUP_LOCATIONS.find((l) => l.id === id)
 }
