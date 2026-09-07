@@ -39,9 +39,10 @@ interface PDPAccordionProps {
 }
 
 // No default shipping copy on purpose. It used to fall back to the Nigerian
-// text (hardcoded ₦200,000), which would silently show naira delivery terms to
-// a Canadian shopper if a caller ever forgot the prop. Callers pass
-// shippingCopyFor(region) instead, so the copy always matches the market.
+// text with the threshold hardcoded, which both went stale whenever the
+// threshold moved and would silently show naira delivery terms to a Canadian
+// shopper if a caller ever forgot the prop. Callers pass shippingCopyFor(region)
+// instead, so the copy always matches the market and the current threshold.
 
 export default function PDPAccordion({ descriptor, tagline, shippingCopy }: PDPAccordionProps) {
   return (

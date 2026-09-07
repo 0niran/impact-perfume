@@ -69,7 +69,7 @@ export const REGIONS: Record<RegionId, Region> = {
     salesChannelId: process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID,
     paymentProvider: 'paystack',
     checkoutEnabled: true,
-    freeDeliveryThresholdMinor: 20_000_000, // ₦200,000
+    freeDeliveryThresholdMinor: 30_000_000, // ₦300,000
     deliveryModel: 'carrier',
   },
   CA: {

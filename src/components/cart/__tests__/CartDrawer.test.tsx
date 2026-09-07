@@ -124,7 +124,7 @@ describe('CartDrawer', () => {
 
   it('shows "free delivery unlocked" when at or above threshold', () => {
     useCartStore.setState({
-      lines: [line({ unitPriceKobo: 20_000_000, qty: 1 })], // exactly threshold (₦200,000)
+      lines: [line({ unitPriceKobo: 30_000_000, qty: 1 })], // exactly threshold (₦300,000)
       isOpen: true,
     })
     render(<CartDrawer />)
