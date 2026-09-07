@@ -91,6 +91,17 @@ export function getProductImage(product: MedusaProduct): string | null {
 const CATALOGUE_TTL_SECONDS = 120
 
 /**
+ * Cache tag for every catalogue read below.
+ *
+ * Exported because invalidation lives elsewhere (the Medusa webhook and the
+ * manual /api/revalidate route) and those callers MUST flush by this tag.
+ * revalidatePath() does not clear unstable_cache entries — flushing paths
+ * alone leaves the catalogue stale until the TTL expires, which is exactly
+ * the "I have to wait/refresh before my edit shows" bug.
+ */
+export const CATALOGUE_CACHE_TAG = 'medusa-catalogue'
+
+/**
  * Cached GET against the Medusa store API. Wrapped in unstable_cache so the
  * parsed JSON is served from Vercel's Data Cache, keyed by the full URL and the
  * region's publishable key — each region / category / limit caches on its own.
@@ -110,7 +121,7 @@ const cachedStoreGet = unstable_cache(
     }
   },
   ['medusa-store-get'],
-  { revalidate: CATALOGUE_TTL_SECONDS, tags: ['medusa-catalogue'] }
+  { revalidate: CATALOGUE_TTL_SECONDS, tags: [CATALOGUE_CACHE_TAG] }
 )
 
 export async function getMedusaProduct(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { serverEnv } from '@/lib/env'
+import { CATALOGUE_CACHE_TAG } from '@/lib/medusa'
 
 /**
  * Receives product lifecycle events from Medusa and revalidates the affected
@@ -66,8 +67,20 @@ function pathsFor(handle: string, categories: string[] = []): string[] {
   if (categories.includes('gifts') || categories.includes('discovery')) {
     paths.add('/gifts')
   }
-  if (categories.some((c) => ['home-diffusers', 'scent-candles', 'scenting-machines', 'car-diffusers'].includes(c))) {
-    paths.add('/home')
+  // Each of these categories has its own route. Mapping them all to /home left
+  // the actual collection pages (/home-diffusers, /car-diffusers, …) stale.
+  const CATEGORY_ROUTES: Record<string, string> = {
+    'home-diffusers': '/home-diffusers',
+    'car-diffusers': '/car-diffusers',
+    'scent-candles': '/scent-candles',
+    'scenting-machines': '/scenting-machines',
+  }
+  for (const c of categories) {
+    const route = CATEGORY_ROUTES[c]
+    if (route) {
+      paths.add(route)
+      paths.add('/home') // the combined Home & Gifts landing lists them too
+    }
   }
 
   return [...paths]
@@ -92,18 +105,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, message: 'Invalid JSON.' }, { status: 400 })
   }
 
-  const handle = body.data?.handle
-  if (!body.type || !handle) {
-    return NextResponse.json({ ok: false, message: 'Missing type or data.handle.' }, { status: 400 })
-  }
+  // THE important line. Catalogue reads are memoised in unstable_cache under
+  // CATALOGUE_CACHE_TAG, and revalidatePath does NOT clear tagged entries — so
+  // the previous path-only flush left every product grid and PDP serving stale
+  // data until the 120s TTL lapsed. That is the "my edit doesn't show until I
+  // refresh" bug. Flush the tag on any authorised product event.
+  revalidateTag(CATALOGUE_CACHE_TAG)
 
-  const paths = pathsFor(handle, body.data?.categories ?? [])
+  // Path flushing is now belt-and-braces for rendered routes. A missing handle
+  // is no longer fatal: the tag flush above has already done the work that
+  // matters, and rejecting the event would throw away a good invalidation just
+  // because the payload shape differs from what we expected.
+  const handle = body.data?.handle
+  const paths = handle ? pathsFor(handle, body.data?.categories ?? []) : []
   for (const p of paths) revalidatePath(p)
 
   return NextResponse.json({
     ok: true,
-    type: body.type,
-    handle,
+    type: body.type ?? null,
+    handle: handle ?? null,
+    revalidatedTag: CATALOGUE_CACHE_TAG,
     revalidated: paths,
   })
 }

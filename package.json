@@ -22,6 +22,8 @@
     "import-cad-prices": "tsx scripts/import-cad-prices.ts",
     "seed-cad-fx": "tsx scripts/seed-cad-prices-fx.ts",
     "qa-audit": "tsx scripts/qa-audit-medusa.ts",
+    "refresh-storefront": "tsx scripts/refresh-storefront.ts",
+    "new-product": "tsx scripts/new-product.ts",
     "migrate-prices": "tsx scripts/migrate-prices-to-major.ts",
     "seed-reviews": "tsx scripts/seed-reviews.ts"
   },
