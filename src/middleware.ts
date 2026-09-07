@@ -1,65 +1,69 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
- * Geo auto-detect. The market is derived entirely from the visitor's location:
- * there is no manual market switcher in the UI anymore, so geo governs.
+ * Region resolution. The market drives currency, pricing and checkout, so it
+ * has to be both auto-detected AND user-correctable.
  *
  * Cookies:
- *   - impact_region        : NG | CA          (active region)
- *   - impact_region_manual : "1"              (honoured if ever present, but
- *                                              nothing sets it today — kept so a
- *                                              future explicit override still
- *                                              wins over geo)
+ *   - impact_region        : NG | CA   the ACTIVE region (what the site renders)
+ *   - impact_region_manual : "1"       set when the visitor picks a region by
+ *                                       hand; an explicit choice always wins
+ *   - impact_geo           : NG | CA   the region geo-IP detected on THIS
+ *                                       request. Not authoritative — it exists
+ *                                       so the client can offer to switch when
+ *                                       the detected location disagrees with the
+ *                                       active region (a traveller who came back
+ *                                       home, or a stale manual choice).
  *
  * On every request:
- *   - If impact_region_manual is set, do nothing — an explicit choice wins.
- *   - Otherwise read x-vercel-ip-country. NG → NG, anything else → CA.
- *     If the geo result differs from the existing cookie, update it.
+ *   - Detect the region from x-vercel-ip-country (Vercel injects this in prod).
+ *   - Publish it as impact_geo so the mismatch banner can compare, ALWAYS —
+ *     even when a manual choice is in force, so a wrong choice stays recoverable.
+ *   - If there is NO manual choice, keep the active region in sync with geo
+ *     (this is what flips a returning Canadian's NG cookie back to CA).
+ *   - If there IS a manual choice, leave the active region alone.
  *
- * That way:
- *   - First visit gets the geo-correct region.
- *   - A VPN switch from US to NG flips the cookie on the next request.
- *
- * Vercel exposes the geo info via the `x-vercel-ip-country` request header
- * (also `request.geo` in Edge/Node middleware). Local dev has neither, so
- * the cookie stays at whatever it was.
+ * Local dev has no geo header, so nothing changes there and getServerRegion
+ * falls back to NG.
  */
 export function middleware(request: NextRequest) {
   const manual = request.cookies.get('impact_region_manual')?.value === '1'
-  const existing = request.cookies.get('impact_region')?.value
-
-  // Honour an explicit manual choice — don't second-guess the visitor.
-  if (manual) return NextResponse.next()
+  const existingRegion = request.cookies.get('impact_region')?.value
+  const existingGeo = request.cookies.get('impact_geo')?.value
 
   const country = (
     request.headers.get('x-vercel-ip-country') ??
     request.geo?.country ??
     ''
   ).toUpperCase()
+  const detected: 'NG' | 'CA' | null = country ? (country === 'NG' ? 'NG' : 'CA') : null
 
-  // No country info (local dev, anonymizing proxy): leave any existing cookie
-  // alone. With no cookie at all, getServerRegion already defaults to NG, so
-  // there's nothing to set here.
-  if (!country) return NextResponse.next()
+  const cookieUpdates: { name: string; value: string }[] = []
 
-  const regionId = country === 'NG' ? 'NG' : 'CA'
+  // Keep the active region in sync with geo — auto mode only. Writing it onto
+  // the incoming request too means THIS render is already correct (no one-nav
+  // lag), and onto the response persists it in the browser.
+  if (!manual && detected && existingRegion !== detected) {
+    request.cookies.set('impact_region', detected)
+    cookieUpdates.push({ name: 'impact_region', value: detected })
+  }
 
-  // If the cookie already matches the geo result, no-op to avoid churn.
-  if (existing === regionId) return NextResponse.next()
+  // Publish the detected region for the client-side mismatch banner, regardless
+  // of manual choice. Only write when it changed, to avoid response churn.
+  if (detected && existingGeo !== detected) {
+    cookieUpdates.push({ name: 'impact_geo', value: detected })
+  }
 
-  // Write the region onto the *incoming* request too, then forward those
-  // headers. Without this, getServerRegion() reads the pre-existing (or absent)
-  // cookie on the very first visit and renders the wrong currency — e.g. a UK
-  // visitor with no cookie yet defaults to NG/NGN, and only flips to CA/CAD on
-  // the next navigation. Setting it on the request makes the first render use
-  // the geo-correct region; setting it on the response persists it in the browser.
-  request.cookies.set('impact_region', regionId)
+  if (cookieUpdates.length === 0) return NextResponse.next()
+
   const response = NextResponse.next({ request: { headers: request.headers } })
-  response.cookies.set('impact_region', regionId, {
-    maxAge: 60 * 60 * 24 * 180, // 180 days
-    path: '/',
-    sameSite: 'lax',
-  })
+  for (const c of cookieUpdates) {
+    response.cookies.set(c.name, c.value, {
+      maxAge: 60 * 60 * 24 * 180, // 180 days
+      path: '/',
+      sameSite: 'lax',
+    })
+  }
   return response
 }
 
