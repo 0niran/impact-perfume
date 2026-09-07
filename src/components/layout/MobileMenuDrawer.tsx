@@ -100,10 +100,10 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
             aria-label="Impact Perfumes, home"
           >
             <Image
-              src="/images/logo-wordmark.svg"
+              src="/images/logo.svg"
               alt="Impact Perfumes"
               width={240}
-              height={111}
+              height={240}
               unoptimized
               className="h-10 w-auto"
             />
