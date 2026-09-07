@@ -471,6 +471,238 @@ export function buildShippingQuoteRequestEmail(data: {
 }
 
 /* ----------------------------------------------------------------------------
+ * Bespoke
+ * ------------------------------------------------------------------------- */
+
+export interface BespokeEmailData {
+  inquiryId: string
+  customerName: string
+  customerEmail: string
+  customerPhone?: string
+  /** ISO currency of the amounts below (NGN / CAD). */
+  currency: string
+  quantity: number
+  volumeLabel: string
+  bottleTypeLabel: string
+  inscriptionLabel?: string
+  engravingLine1?: string
+  engravingLine2?: string
+  colorName?: string
+  inspiration?: string
+  timeline?: string
+  city?: string
+  notes?: string
+  /** Order total in MINOR units. 0 when the order is large enough to need a quote. */
+  totalMinor: number
+  /** Deposit in MINOR units, when one is due. */
+  depositMinor?: number
+  /** Large orders are quoted by hand rather than priced live. */
+  needsQuote: boolean
+}
+
+/** Definition row used by both bespoke emails. Every value is escaped. */
+function specRow(label: string, value: string | undefined | null): string {
+  if (!value || !String(value).trim()) return ''
+  return `
+    <tr>
+      <td style="padding:9px 0;border-bottom:1px solid ${PALETTE.border};font-family:Arial,sans-serif;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:${PALETTE.stone};white-space:nowrap;vertical-align:top;width:42%;">
+        ${esc(label)}
+      </td>
+      <td style="padding:9px 0;border-bottom:1px solid ${PALETTE.border};font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.ink};vertical-align:top;">
+        ${esc(String(value))}
+      </td>
+    </tr>`
+}
+
+function bespokeSpecTable(d: BespokeEmailData): string {
+  const engraving = [d.engravingLine1, d.engravingLine2].filter(Boolean).join(' / ')
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 8px;">
+      ${specRow('Quantity', String(d.quantity))}
+      ${specRow('Volume', d.volumeLabel)}
+      ${specRow('Bottle', d.bottleTypeLabel)}
+      ${specRow('Inscription', d.inscriptionLabel || 'None')}
+      ${specRow('Engraving', engraving)}
+      ${specRow('Colour', d.colorName)}
+      ${specRow('Inspiration', d.inspiration)}
+      ${specRow('Timeline', d.timeline)}
+      ${specRow('City', d.city)}
+      ${specRow('Notes', d.notes)}
+    </table>`
+}
+
+/**
+ * Confirmation to the customer who submitted a bespoke design.
+ *
+ * A bespoke request is not an order: nothing has been charged at this point, and
+ * a person has to review the design before it can be made. The email has to say
+ * both of those plainly, or the customer is left wondering whether they have
+ * bought something.
+ */
+export function buildBespokeCustomerEmail(d: BespokeEmailData): {
+  subject: string
+  html: string
+} {
+  const firstName = d.customerName?.trim().split(' ')[0] ?? ''
+  const subject = 'We have your bespoke request'
+  const preheader = d.needsQuote
+    ? 'Our perfumer will come back to you with a tailored quote.'
+    : 'Our perfumer is reviewing your design.'
+
+  const money = d.needsQuote
+    ? `
+      <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+        For an order of this size we price each commission individually, so we will
+        send you a tailored quote rather than an automatic estimate.
+      </p>`
+    : `
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td width="48%" valign="top">
+            ${sectionLabel('Estimate')}
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:${PALETTE.ink};line-height:1.5;">
+              ${formatPrice(d.totalMinor, d.currency)}
+            </p>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" valign="top">
+            ${sectionLabel('Deposit to begin')}
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:${PALETTE.ink};line-height:1.5;">
+              ${d.depositMinor ? formatPrice(d.depositMinor, d.currency) : '—'}
+            </p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:14px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.7;">
+        An estimate, not a charge. We confirm the final figure with you before anything is taken.
+      </p>`
+
+  const body = `
+    ${sectionLabel('Bespoke Request Received')}
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;color:${PALETTE.ink};line-height:1.2;letter-spacing:-0.005em;">
+      ${firstName ? `Thank you, ${esc(firstName)}.` : 'Thank you.'}
+    </h1>
+    <p style="margin:0 0 32px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      Your design is with our perfumer. Bespoke pieces are composed to order, so a
+      person reviews every request before we begin.
+      <strong style="color:${PALETTE.ink};">Nothing has been charged.</strong>
+    </p>
+
+    <div style="height:1px;background:${PALETTE.gold};margin:0 0 24px;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel('Your Design')}
+    ${bespokeSpecTable(d)}
+
+    <div style="height:1px;background:${PALETTE.border};margin:24px 0;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${money}
+
+    <div style="height:1px;background:${PALETTE.border};margin:24px 0;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${sectionLabel('What Happens Next')}
+    <p style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      1. Our perfumer reviews your design and confirms it can be made as specified.
+    </p>
+    <p style="margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      2. We reply with the final figure${d.needsQuote ? '' : ' and a secure link for the deposit'}.
+    </p>
+    <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      3. Once confirmed, composition begins and we keep you posted through to delivery.
+    </p>
+
+    <p style="margin:32px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.7;">
+      Reference <span style="font-family:'Courier New',monospace;color:${PALETTE.slate};">${esc(d.inquiryId)}</span>.
+      Reply to this email to change anything, or write to
+      <a href="mailto:${SITE_CONFIG.contact.email}" style="color:${PALETTE.slate};">${SITE_CONFIG.contact.email}</a>.
+    </p>
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader) }
+}
+
+/**
+ * The same request, for whoever picks it up.
+ *
+ * Written to be actioned from the inbox: contact details and the full spec are
+ * in the mail, so nobody has to open the Studio to know what was asked for or
+ * how to reply.
+ */
+export function buildBespokeTeamEmail(d: BespokeEmailData): {
+  subject: string
+  html: string
+} {
+  const summary = `${d.quantity} x ${d.volumeLabel}`
+  const subject =
+    `${d.needsQuote ? 'Bespoke QUOTE needed' : 'New bespoke inquiry'} · ${d.customerName} · ${summary}`
+      .replace(/[\r\n]/g, '')
+
+  const money = d.needsQuote
+    ? `
+      <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.ink};line-height:1.7;">
+        Quantity is at or above the quote threshold, so no automatic price was shown
+        to the customer. They are expecting a tailored quote.
+      </p>`
+    : `
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td width="48%" valign="top">
+            ${sectionLabel('Estimate shown')}
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:${PALETTE.ink};line-height:1.5;">
+              ${formatPrice(d.totalMinor, d.currency)}
+            </p>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" valign="top">
+            ${sectionLabel('Deposit due')}
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:${PALETTE.ink};line-height:1.5;">
+              ${d.depositMinor ? formatPrice(d.depositMinor, d.currency) : '—'}
+            </p>
+          </td>
+        </tr>
+      </table>`
+
+  const body = `
+    ${sectionLabel(d.needsQuote ? 'Bespoke · Quote Required' : 'Bespoke Inquiry')}
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;color:${PALETTE.ink};line-height:1.25;">
+      ${esc(d.customerName)} — ${esc(summary)}
+    </h1>
+    <p style="margin:0 0 28px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${PALETTE.slate};line-height:1.7;">
+      A bespoke design was submitted${d.city ? ` from ${esc(d.city)}` : ''}. No payment has
+      been taken yet.
+    </p>
+
+    ${sectionLabel('Contact')}
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 24px;">
+      ${specRow('Email', d.customerEmail)}
+      ${specRow('Phone', d.customerPhone)}
+    </table>
+
+    ${sectionLabel('Specification')}
+    ${bespokeSpecTable(d)}
+
+    <div style="height:1px;background:${PALETTE.border};margin:24px 0;line-height:1px;font-size:1px;">&nbsp;</div>
+
+    ${money}
+
+    <p style="margin:28px 0 0;font-family:Arial,sans-serif;font-size:12px;color:${PALETTE.stone};line-height:1.7;">
+      Inquiry <span style="font-family:'Courier New',monospace;color:${PALETTE.slate};">${esc(d.inquiryId)}</span>
+      — open it in the Studio at
+      <a href="${SITE_CONFIG.url}/studio" style="color:${PALETTE.slate};">${SITE_CONFIG.url}/studio</a>.
+      Replying to this email does not reach the customer; write to
+      <a href="mailto:${esc(d.customerEmail)}" style="color:${PALETTE.slate};">${esc(d.customerEmail)}</a>.
+    </p>
+  `
+
+  return { subject, html: baseTemplate(subject, body, preheader(d)) }
+}
+
+function preheader(d: BespokeEmailData): string {
+  return d.needsQuote
+    ? `Quote needed — ${d.quantity} units, ${d.customerName}`
+    : `${d.quantity} x ${d.volumeLabel}, deposit ${d.depositMinor ? formatPrice(d.depositMinor, d.currency) : 'n/a'}`
+}
+
+/* ----------------------------------------------------------------------------
  * Business / owner notification
  * ------------------------------------------------------------------------- */
 
