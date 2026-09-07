@@ -20,6 +20,8 @@
     "audit:catalogue": "tsx scripts/audit-catalogue.ts",
     "export-prices": "tsx scripts/export-prices.ts",
     "import-cad-prices": "tsx scripts/import-cad-prices.ts",
+    "seed-cad-fx": "tsx scripts/seed-cad-prices-fx.ts",
+    "qa-audit": "tsx scripts/qa-audit-medusa.ts",
     "migrate-prices": "tsx scripts/migrate-prices-to-major.ts",
     "seed-reviews": "tsx scripts/seed-reviews.ts"
   },
