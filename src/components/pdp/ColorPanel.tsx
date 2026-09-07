@@ -52,8 +52,18 @@ export default function ColorPanel({
         />
       </div>
 
-      {/* Bottom label */}
-      <div className="absolute bottom-8 flex flex-col items-center gap-1 text-center text-bone">
+      {/* Bottom label.
+          It used to be `absolute bottom-8` at every size with no z-index, while
+          the bottle sits at z-10. On a phone the panel is only min-h-[50vh], so
+          the 280px bottle and the bottom-pinned label overlapped — and the
+          image won the stack, painting straight over the descriptor. Desktop
+          never showed it because the panel is min-h-screen there.
+
+          So it stays in normal flow (the parent is a centred flex column, which
+          places it under the bottle with real spacing) and is only pinned to the
+          bottom from lg up, where there is room. z-20 keeps the text above the
+          bottle whatever the height. */}
+      <div className="relative z-20 mt-6 flex flex-col items-center gap-1 px-6 text-center text-bone lg:absolute lg:bottom-8 lg:mt-0">
         <p className="text-label uppercase tracking-[0.12em] text-stone">
           {titlePrefix} {number}
         </p>

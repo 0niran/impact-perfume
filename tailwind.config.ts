@@ -14,7 +14,11 @@ const config: Config = {
         mist: "#1D1B16",      // dark warm surface — section alternation against ink
         slate: "#5C4E38",     // warm dark — body text, subdued elements
         success: "#2E5D3A",
-        error: "#8B2E2E",
+        // Legible on the ink ground. The previous #8B2E2E scored about 2.4:1
+        // against #0A0A08 — below AA — so form errors, checkout errors and
+        // "Sold out" were all technically red but effectively invisible.
+        // This is ~5.5:1 and still reads warm against the gold palette.
+        error: "#D9614F",
         no: {
           1: "#1FA84F",  2: "#A8137C",  3: "#C18A1F",  4: "#C9281D",
           5: "#1E64A4",  6: "#A8B125",  7: "#C81273",  8: "#0E5F58",
