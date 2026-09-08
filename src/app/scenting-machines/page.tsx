@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ScentingMachinesPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const products = await loadCategoryProducts('scenting-machines', region)
   return (
     <CollectionPage

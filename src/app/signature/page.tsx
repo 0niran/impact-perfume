@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export default async function SignaturePage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const products = await getSignatureProducts(region.medusaRegionId)
   const showcaseCount = products.length
 

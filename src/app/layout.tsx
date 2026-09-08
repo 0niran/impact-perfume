@@ -59,12 +59,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const cookieValue = cookies().get('impact_region')?.value;
+export default async function RootLayout(
+  {
+    children,
+  }: {
+    children: React.ReactNode;
+  }
+) {
+  const cookieValue = (await cookies()).get('impact_region')?.value;
   const initialRegionId: RegionId | undefined =
     cookieValue === 'NG' || cookieValue === 'CA' ? cookieValue : undefined;
 

@@ -15,8 +15,9 @@ function splitNotes(raw?: string): string[] {
   return raw.split(',').map((s) => s.trim()).filter(Boolean)
 }
 
-export async function generateMetadata({ params }: { params: { handle: string } }): Promise<Metadata> {
-  const region = getServerRegion()
+export async function generateMetadata(props: { params: Promise<{ handle: string }> }): Promise<Metadata> {
+  const params = await props.params;
+  const region = await getServerRegion()
   const product = await getMedusaProduct(params.handle, region.medusaRegionId)
   if (!product) return { title: 'Product' }
   return {
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: { params: { handle: string } 
   }
 }
 
-export default async function ProductPage({ params }: { params: { handle: string } }) {
-  const region = getServerRegion()
+export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
+  const params = await props.params;
+  const region = await getServerRegion()
   const product = await getMedusaProduct(params.handle, region.medusaRegionId)
   if (!product) notFound()
 

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export default async function SignatureDiscoverySetPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const [sigProducts, setProduct] = await Promise.all([
     getSignatureProducts(region.medusaRegionId),
     getMedusaProduct('signature-discovery-set', region.medusaRegionId),

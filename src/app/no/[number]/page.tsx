@@ -16,11 +16,12 @@ export async function generateStaticParams() {
   return Array.from({ length: 100 }, (_, i) => ({ number: String(i + 1) }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { number: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ number: string }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const num = parseInt(params.number, 10)
   const product = await getMedusaProduct(`no-${num}`)
   const enrichment = product ? toEnrichment(product) : null
@@ -43,16 +44,17 @@ export async function generateMetadata({
   }
 }
 
-export default async function PDPPage({
-  params,
-}: {
-  params: { number: string }
-}) {
+export default async function PDPPage(
+  props: {
+    params: Promise<{ number: string }>
+  }
+) {
+  const params = await props.params;
   const num = parseInt(params.number, 10)
 
   if (isNaN(num) || num < 1 || num > 100) notFound()
 
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const product = await getMedusaProduct(`no-${num}`, region.medusaRegionId)
 
   if (!product) notFound()

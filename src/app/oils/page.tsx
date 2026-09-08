@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 }
 
 export default async function OilsPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const products = await getProductsByCategory('oils', 100, region.medusaRegionId)
   const tiles = buildTiles(products, region.currency, 'oils').sort(
     (a, b) => a.number - b.number

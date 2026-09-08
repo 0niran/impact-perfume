@@ -7,11 +7,12 @@ export const metadata: Metadata = {
   title: 'Order Confirmed · Impact Perfumes',
 }
 
-export default async function OrderConfirmedPage({
-  searchParams,
-}: {
-  searchParams: { ref?: string }
-}) {
+export default async function OrderConfirmedPage(
+  props: {
+    searchParams: Promise<{ ref?: string }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const { ref } = searchParams
 
   return (

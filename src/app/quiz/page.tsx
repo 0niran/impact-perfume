@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 }
 
 export default async function QuizPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const enrichments = (await getAllEnrichments(region.medusaRegionId, region.currency)) as Enrichment[]
 
   return <QuizClient enrichments={enrichments} />

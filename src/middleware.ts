@@ -31,11 +31,10 @@ export function middleware(request: NextRequest) {
   const existingRegion = request.cookies.get('impact_region')?.value
   const existingGeo = request.cookies.get('impact_geo')?.value
 
-  const country = (
-    request.headers.get('x-vercel-ip-country') ??
-    request.geo?.country ??
-    ''
-  ).toUpperCase()
+  // Next 15 removed request.geo. It was only ever a fallback behind the header
+  // Vercel actually sets, so dropping it changes nothing in production, and
+  // local dev still has no geo at all — the region falls back to NG as before.
+  const country = (request.headers.get('x-vercel-ip-country') ?? '').toUpperCase()
   const detected: 'NG' | 'CA' | null = country ? (country === 'NG' ? 'NG' : 'CA') : null
 
   const cookieUpdates: { name: string; value: string }[] = []

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 }
 
 export default async function HomeDiffusersPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const products = await loadCategoryProducts('home-diffusers', region)
   return (
     <CollectionPage

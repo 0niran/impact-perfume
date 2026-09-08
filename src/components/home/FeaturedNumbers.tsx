@@ -10,7 +10,7 @@ import { FALLBACK_COLOR } from '@/lib/constants'
 const BOTTLE_FALLBACK = '/images/no_series.png'
 
 export default async function FeaturedNumbers() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const raw = await getAllNumberSeriesProducts(4, region.medusaRegionId)
 
   const products = raw

@@ -28,7 +28,7 @@ export default async function BespokePage() {
   // CA in CAD (Stripe). Prices/rates come from Medusa (draft config products)
   // so nothing is hardcoded; if Medusa is unreachable, or this region has no
   // prices yet, the configurator shows the quote path.
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const config = await getBespokeConfig(region.currencyCode)
 
   return (
