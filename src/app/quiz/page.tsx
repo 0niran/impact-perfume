@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import { getAllEnrichments } from '@/sanity/queries/shop'
 import { getServerRegion } from '@/lib/serverRegion'
 import QuizClient from '@/components/quiz/QuizClient'
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'Five questions, ninety seconds. We match you to the Impact fragrance composed for you.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Find Your Fragrance · Impact Perfumes',
     description: 'Five questions, ninety seconds. We match you to the fragrance for you.',
   },

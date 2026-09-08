@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { SITE_CONFIG, getRegionPresence } from '@/lib/config'
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   description:
     'The story behind Impact Perfumes, a luxury fragrance house crafting scents that leave a mark.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'House Story | Impact Perfumes',
     description: 'Composed for character.',
   },

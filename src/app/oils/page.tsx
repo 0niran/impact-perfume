@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import { Container } from '@/components/layout'
 import { getProductsByCategory, buildTiles } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   description:
     '50 alcohol-free perfume oils. Concentrated. 12ml roll-on.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Perfume Oils · Impact Perfumes',
     description: '50 concentrated perfume oils.',
   },

@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import type { Metadata } from 'next'
 import HeroSection from '@/components/home/HeroSection'
 import HousePositioningStrip from '@/components/home/HousePositioningStrip'
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   description:
     'A luxury house of fragrance. EDPs, Signature Scents, concentrated oils, and home scents, built for those who make an impression.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Impact Perfumes | Composed for character.',
     description:
       'A luxury house of fragrance. EDPs, Signature Scents, concentrated oils, and home scents, built for those who make an impression.',

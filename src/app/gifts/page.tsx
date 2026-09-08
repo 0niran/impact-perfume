@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import CollectionPage from '@/components/shop/CollectionPage'
 import { loadCategoryProducts } from '@/lib/loadCategory'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Gift Sets',
   description: 'Curated fragrance gift boxes in signature packaging, ready to give.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Gift Sets · Impact Perfumes',
     description: 'Curated fragrance gift boxes, ready to give.',
   },

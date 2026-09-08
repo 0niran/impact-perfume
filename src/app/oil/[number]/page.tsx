@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import type { Metadata } from 'next'
 import { getMedusaProduct, getPrice, toEnrichment, getProductImage, variantInStock } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -33,6 +34,7 @@ export async function generateMetadata({
       `Oil No. ${num} from Impact Perfumes. A ${enrichment.descriptor.toLowerCase()} concentrated fragrance oil, alcohol-free, in a 12ml roll-on.`,
     alternates: { canonical: `/oil/${num}` },
     openGraph: {
+      images: DEFAULT_OG_IMAGES,
       title: `Impact Oil No. ${num} | ${enrichment.descriptor}`,
       description: enrichment.tagline ?? `Oil No. ${num} · Impact Perfumes`,
     },
