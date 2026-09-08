@@ -68,8 +68,8 @@ export default function CategoryProductTile({
         />
 
         {image ? (
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <div className="relative h-[88%] w-[80%]">
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="relative h-full w-full">
               <Image
                 src={image}
                 alt={product.title}

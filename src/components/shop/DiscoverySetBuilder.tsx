@@ -118,8 +118,8 @@ export default function DiscoverySetBuilder({
                   style={{ background: `radial-gradient(ellipse at center, ${item.color}2b 0%, transparent 70%)` }}
                   aria-hidden="true"
                 />
-                <div className="absolute inset-0 flex items-center justify-center p-5">
-                  <div className="relative h-[86%] w-[78%]">
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                  <div className="relative h-full w-full">
                     <Image
                       src={item.imageUrl || fallbackImage}
                       alt={`Impact No. ${item.number}`}
