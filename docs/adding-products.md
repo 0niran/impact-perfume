@@ -16,7 +16,32 @@ and nothing goes live half-configured.
    handle like `no-12` / `oil-no-12`. Without it the product is dropped from the
    grid silently. It still works on a direct link, but never appears in the grid.
 
-## Add a new product
+## The easy way: the guided script
+
+```
+npm run new-product
+```
+
+It asks for everything in plain language, one question at a time, and handles
+the parts that are easy to get wrong: it writes currency-level prices only (the
+admin shows four boxes for a two-price decision), creates the product as a
+**draft**, stocks it, checks that both markets can actually see a price and
+stock, and only then offers to publish.
+
+It also asks for the product-page details — character word, fragrance notes,
+signature colour, strength bars — and writes them to the right metadata keys, so
+you never have to type a key name. Anything you leave blank is simply left off
+the page, and the summary before it writes tells you what a shopper will not
+see.
+
+`npm run new-product -- --help` lists every question, and every question can be
+answered up front as a flag if you would rather do it in one line.
+
+Use Medusa Admin directly when you are editing an existing product, or when you
+need something the script does not cover (multiple variants, for instance). The
+checklist below is the manual equivalent.
+
+## Add a new product by hand
 
 In Medusa Admin, create the product, then confirm every box below before you
 tell anyone it is live:
@@ -37,13 +62,41 @@ tell anyone it is live:
       product as out of stock and blocks checkout.
 - [ ] **Image.** Upload a product image or thumbnail. Without one the storefront
       falls back to a generic placeholder.
+- [ ] **Product page details.** Everything the page shows beyond title and price
+      lives in **Metadata**, under the exact keys in the table below.
+
+### Product page metadata (fragrance notes and the rest)
+
+Add these in the product's **Metadata** panel. Every one is optional; leave a key
+out and that part of the page is simply not rendered.
+
+| Key | What it is | Example |
+| --- | --- | --- |
+| `descriptor` | The character word under the product name. The most visible one. | `Citrus` |
+| `scent_family` | Grouping shown on the page | `Citrus` |
+| `tagline` | One short sentence | `Sicilian sunlight on cool wood.` |
+| `top_notes` | First impression | `Bergamot, Grapefruit, Sicilian Lemon` |
+| `heart_notes` | The character | `Sandalwood` |
+| `base_notes` | What lingers | `Musk, Ambergris, Cedar` |
+| `signature_color` | Hex, painted behind the bottle and on the share card | `#E4B250` |
+| `signature_color_name` | Name for that colour | `Amber` |
+| `longevity` | Strength bar, `1`-`5` | `4` |
+| `sillage` | Strength bar, `1`-`5` | `3` |
+| `number` | Grid placement, see above | `11` |
+
+**Notes are one comma-separated line per tier**, not a list — the storefront
+splits on the comma. Spacing does not matter.
+
+If all three note fields are empty the notes pyramid is hidden rather than
+rendered blank, so a product without notes still looks finished.
 
 ## Update stock for an existing product
 
 - Edit the stock quantity at the location that matches the market:
   **Impact Perfume HQ** (Lagos) for NG, **Canada** for CA.
-- The change reflects on the site within about **60 seconds** (the storefront
-  refreshes each page on a 60 second cycle). No deploy is needed.
+- The change reflects on the site within about **2 minutes** (the storefront
+  caches the catalogue for 120 seconds). No deploy is needed. To see it at once,
+  run `npm run refresh-storefront`.
 
 ## Verify it went live
 
@@ -58,8 +111,8 @@ tell anyone it is live:
    problems (fix before selling); `!` lines are advisory (out of stock, no image).
    It exits non-zero when there is a hard problem, so it can gate a deploy later.
 
-2. Open the live page and hard-refresh. If it is a grid page, allow up to 60
-   seconds for the cache to turn over.
+2. Open the live page and hard-refresh. Allow up to 2 minutes for the cache to
+   turn over, or run `npm run refresh-storefront` to flush it immediately.
 
 ## What each field controls (reference)
 
@@ -72,8 +125,13 @@ tell anyone it is live:
 | `metadata.number` | Placement on Number / Oils grids | Dropped from the grid |
 | Stock level (per location) | Sellability per market | Out of stock, checkout blocked |
 | Image | Product photo | Generic placeholder |
+| `descriptor` | Character word under the name | Line is blank |
+| `top_notes` / `heart_notes` / `base_notes` | The notes pyramid | Pyramid is hidden |
+| `signature_color` | Colour behind the bottle, and the share card | Falls back to house gold |
+| `longevity` / `sillage` | Strength bars | Bar is hidden |
 
 ## Related
 
+- `scripts/new-product.ts` — the guided creation script (`npm run new-product`).
 - `scripts/audit-catalogue.ts` — the audit this doc refers to.
 - `docs/multi-region-setup.md` — how NG and CA markets are wired.
