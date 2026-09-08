@@ -32,7 +32,7 @@ function WallSkeleton() {
 }
 
 export default async function ShopPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const enrichments = await getAllEnrichments(region.medusaRegionId, region.currency)
 
   return (

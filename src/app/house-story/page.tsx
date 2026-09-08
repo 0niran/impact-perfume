@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HouseStoryPage() {
+export default async function HouseStoryPage() {
   // Same reasoning as the footer: show the market the visitor is shopping.
-  const presence = getRegionPresence(getServerRegion().id)
+  const presence = getRegionPresence((await getServerRegion()).id)
 
   return (
     <main className="bg-ink text-bone">

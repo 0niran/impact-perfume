@@ -86,8 +86,8 @@ function PaymentIcons({ regionId }: { regionId: RegionId }) {
   )
 }
 
-export default function SiteFooter() {
-  const region = getServerRegion()
+export default async function SiteFooter() {
+  const region = await getServerRegion()
   const presence = getRegionPresence(region.id)
   const contactLinks = buildContactLinks(region.id)
   const allMobileColumns = [...linkColumns, { heading: 'Contact', links: contactLinks }]

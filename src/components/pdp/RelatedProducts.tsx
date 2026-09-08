@@ -29,7 +29,7 @@ interface RelatedItem {
 }
 
 export default async function RelatedProducts({ currentNumber }: RelatedProductsProps) {
-  const region = getServerRegion()
+  const region = await getServerRegion()
 
   // Look up the current product to find its scent family.
   const current = await getMedusaProduct(`no-${currentNumber}`, region.medusaRegionId)

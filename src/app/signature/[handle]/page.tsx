@@ -20,11 +20,12 @@ function splitNotes(raw?: string): string[] {
   return raw.split(',').map((s) => s.trim()).filter(Boolean)
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { handle: string }
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ handle: string }>
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const product = await getMedusaProduct(params.handle)
   if (!product) return { title: 'Signature | Impact Perfumes' }
   return {
@@ -35,12 +36,13 @@ export async function generateMetadata({
   }
 }
 
-export default async function SignaturePDPPage({
-  params,
-}: {
-  params: { handle: string }
-}) {
-  const region = getServerRegion()
+export default async function SignaturePDPPage(
+  props: {
+    params: Promise<{ handle: string }>
+  }
+) {
+  const params = await props.params;
+  const region = await getServerRegion()
   const product = await getMedusaProduct(params.handle, region.medusaRegionId)
   if (!product) notFound()
 

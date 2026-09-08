@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 }
 
 export default async function NumberDiscoverySetPage() {
-  const region = getServerRegion()
+  const region = await getServerRegion()
   const [products, setProduct] = await Promise.all([
     getAllNumberSeriesProducts(100, region.medusaRegionId),
     getMedusaProduct('number-discovery-set', region.medusaRegionId),
