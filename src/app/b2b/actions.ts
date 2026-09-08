@@ -1,14 +1,21 @@
 'use server'
 
-import { createClient } from '@sanity/client'
+import { SITE_CONFIG } from '@/lib/config'
+import { buildOwnerAlertEmail, sendEmail } from '@/lib/email'
 
-const writeClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
-  apiVersion: '2024-10-01',
-  token: process.env.SANITY_API_WRITE_TOKEN,
-  useCdn: false,
-})
+/**
+ * B2B and corporate-gifting enquiries.
+ *
+ * These used to be written to a Sanity document and nowhere else — no email,
+ * no notification. Two consequences: nobody learned an enquiry had arrived
+ * unless they went looking in the CMS, and if Sanity was unreachable the
+ * submission simply failed and a high-value lead was lost.
+ *
+ * The enquiry now goes to the business inbox, and that send is the thing that
+ * must succeed. If it fails we say so, so the customer can reach us another
+ * way rather than believing a request was received that nobody will ever see.
+ * This mirrors how bespoke submissions already work.
+ */
 
 export interface InquiryFormData {
   type: string
@@ -25,21 +32,40 @@ export interface SubmitResult {
 }
 
 export async function submitInquiry(data: InquiryFormData): Promise<SubmitResult> {
+  // All values are escaped by the email builder before they reach the HTML.
+  const team = buildOwnerAlertEmail({
+    subjectPrefix: 'New enquiry',
+    heading: `${data.type} enquiry from ${data.name}`,
+    intro: 'Submitted through the B2B form on the storefront. Reply directly to the customer.',
+    items: [
+      {
+        title: data.name,
+        lines: [
+          data.email,
+          data.phone ? `Phone: ${data.phone}` : '',
+          data.company ? `Company: ${data.company}` : '',
+          `Type: ${data.type}`,
+        ].filter(Boolean),
+      },
+      { title: 'Message', lines: data.message.split('\n').filter(Boolean) },
+    ],
+  })
+
   try {
-    await writeClient.create({
-      _type: 'inquiry',
-      type: data.type,
-      name: data.name,
-      email: data.email,
-      company: data.company ?? '',
-      phone: data.phone ?? '',
-      message: data.message,
-      submittedAt: new Date().toISOString(),
-      status: 'new',
+    await sendEmail({
+      to: SITE_CONFIG.contact.email,
+      subject: team.subject,
+      html: team.html,
+      // So a reply from the inbox goes straight back to the customer.
+      replyTo: data.email,
     })
-    return { ok: true }
   } catch (err) {
-    console.error('Inquiry submission failed:', err)
-    return { ok: false, error: 'Submission failed. Please try again.' }
+    console.error('[b2b] enquiry notification failed', err)
+    return {
+      ok: false,
+      error: `We could not send your enquiry. Please email ${SITE_CONFIG.contact.email} directly so we do not miss it.`,
+    }
   }
+
+  return { ok: true }
 }

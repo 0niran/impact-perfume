@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@sanity/client'
+import { sanityWrite } from '@/sanity/client'
 import { getBespokeConfig } from '@/lib/bespokeConfig'
 import { computeBespokeEstimate } from '@/lib/bespokePricing'
 import {
@@ -12,13 +12,6 @@ import {
 import { SITE_CONFIG } from '@/lib/config'
 import { REGIONS, type RegionId } from '@/lib/region'
 
-const writeClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
-  apiVersion: '2024-10-01',
-  token: process.env.SANITY_API_WRITE_TOKEN,
-  useCdn: false,
-})
 
 export interface BespokeFormData {
   inspiration: string
@@ -78,7 +71,13 @@ export async function submitBespoke(data: BespokeFormData): Promise<BespokeSubmi
   const depositMinor = estimate && !estimate.needsQuote ? estimate.depositMinor : undefined
 
   try {
-    const doc = await writeClient.create({
+    // The reference the customer and the team both quote. It came from the
+    // Sanity document id; with Sanity going away it is generated here instead,
+    // so the email — which is the record that matters — still carries one.
+    const reference = `bespoke-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+
+    // Best-effort second copy. The team email below is the actual record.
+    const doc = await sanityWrite?.create({
       _type: 'inquiry',
       type: 'bespoke',
       name: data.name,
@@ -111,7 +110,7 @@ export async function submitBespoke(data: BespokeFormData): Promise<BespokeSubmi
     // else happened, so a customer could design a bottle — and pay a deposit —
     // with the only trace being a Studio document nobody had reason to open.
     const emailData: BespokeEmailData = {
-      inquiryId: doc._id,
+      inquiryId: doc?._id ?? reference,
       customerName: data.name,
       customerEmail: data.email,
       customerPhone: data.phone,
@@ -163,7 +162,7 @@ export async function submitBespoke(data: BespokeFormData): Promise<BespokeSubmi
       console.error('[bespoke] customer acknowledgement failed', err)
     }
 
-    return { ok: true, inquiryId: doc._id, depositMinor, currency: region.currency }
+    return { ok: true, inquiryId: doc?._id ?? reference, depositMinor, currency: region.currency }
   } catch (err) {
     console.error('Bespoke submission failed:', err)
     return { ok: false, error: 'Submission failed. Please try again.' }

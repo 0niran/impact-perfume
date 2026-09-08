@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import { redis } from '@/lib/redis'
 
 /**
  * Edge-friendly rate limiter backed by Upstash Redis (audit H-3, L-4).
@@ -29,15 +29,8 @@ interface LimitResult {
   retryAfter: number
 }
 
-// Upstash provisioned via the Vercel Marketplace injects env vars under the
-// legacy KV_REST_API_* naming (kept from when Vercel had its own KV product).
-// A direct Upstash install uses the UPSTASH_REDIS_REST_* names. Accept either.
-const url =
-  process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL
-const token =
-  process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN
-
-const redis = url && token ? new Redis({ url, token }) : null
+// Client and env-name handling live in lib/redis, shared with the payment
+// idempotency lock so the two cannot disagree about how Upstash is configured.
 
 // One Ratelimit instance per (route × config) so each route has its own
 // rolling-window bucket. The cache keys the limiter by tag.

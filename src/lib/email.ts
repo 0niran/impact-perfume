@@ -244,6 +244,12 @@ function itemRows(items: OrderItem[], currency: string): string {
  * Base template
  * ------------------------------------------------------------------------- */
 
+/**
+ * `title` reaches <title> and is built from customer-supplied text in at least
+ * one builder (the owner alert quotes the enquirer's name), so it is escaped
+ * here. Bodies escape their own fields; this was the one interpolation that
+ * did not, which meant a name containing markup ended up in the head verbatim.
+ */
 function baseTemplate(title: string, body: string, preheader?: string, currency?: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -252,7 +258,7 @@ function baseTemplate(title: string, body: string, preheader?: string, currency?
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="color-scheme" content="light"/>
 <meta name="supported-color-schemes" content="light"/>
-<title>${title}</title>
+<title>${esc(title)}</title>
 </head>
 <body style="margin:0;padding:0;background:${PALETTE.outerBg};font-family:Arial,sans-serif;">
   ${
@@ -900,10 +906,14 @@ export async function sendEmail({
   to,
   subject,
   html,
+  replyTo,
 }: {
   to: string | string[]
   subject: string
   html: string
+  /** Set on enquiry notifications so replying from the inbox reaches the
+   *  customer instead of the no-reply sending address. */
+  replyTo?: string
 }): Promise<void> {
   const apiKey = serverEnv.resendApiKey
   if (!apiKey) return // Silently skip if not configured
@@ -919,6 +929,9 @@ export async function sendEmail({
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
+      // Header injection is not possible here — the value is JSON-encoded, not
+      // concatenated into a header — but a newline would still be nonsense.
+      ...(replyTo ? { reply_to: replyTo.replace(/[\r\n]/g, '') } : {}),
     }),
   })
 }

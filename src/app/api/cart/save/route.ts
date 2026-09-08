@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@sanity/client'
+import { sanityWrite } from '@/sanity/client'
 import { rateLimit } from '@/lib/rateLimit'
 import { cartSaveBodySchema, formatZodError } from '@/lib/validation'
 
-const writeClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
-  apiVersion: '2024-10-01',
-  token: process.env.SANITY_API_WRITE_TOKEN,
-  useCdn: false,
-})
 
 export async function POST(req: NextRequest) {
   const limit = await rateLimit(req, 'cart-save', { limit: 5, window: '1 m' })
@@ -47,10 +40,15 @@ export async function POST(req: NextRequest) {
     thumbnail: l.thumbnail,
   }))
 
+  // Saving a cart only exists to power the reminder email. With no store for
+  // it, report success and skip: the customer's checkout must not fail because
+  // a marketing convenience is unavailable.
+  if (!sanityWrite) return NextResponse.json({ ok: true, saved: false })
+
   try {
     // Upsert by email: replace any existing pending cart for this address so
     // the customer only ever receives one reminder per active cart.
-    const existing = await writeClient.fetch<{ _id: string }[]>(
+    const existing = await sanityWrite.fetch<{ _id: string }[]>(
       `*[_type == "pendingCart" && email == $email && status == "pending"]{ _id }`,
       { email: body.email }
     )
@@ -71,12 +69,12 @@ export async function POST(req: NextRequest) {
 
     if (existing.length > 0) {
       // Replace the contents of the existing doc rather than creating a duplicate.
-      await writeClient
+      await sanityWrite
         .patch(existing[0]._id)
         .set({ ...doc, _id: existing[0]._id })
         .commit()
     } else {
-      await writeClient.create(doc)
+      await sanityWrite.create(doc)
     }
 
     return NextResponse.json({ ok: true })
