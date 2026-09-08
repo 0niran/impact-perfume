@@ -26,6 +26,8 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${url}/b2b`, priority: 0.7, changeFrequency: 'monthly' },
   { url: `${url}/bespoke`, priority: 0.7, changeFrequency: 'monthly' },
   { url: `${url}/house-story`, priority: 0.6, changeFrequency: 'monthly' },
+  { url: `${url}/privacy`, priority: 0.3, changeFrequency: 'yearly' },
+  { url: `${url}/terms`, priority: 0.3, changeFrequency: 'yearly' },
 ]
 
 /**

@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@sanity/client'
+import { sanityWrite } from '@/sanity/client'
 import { buildAbandonedCartEmail, sendEmail } from '@/lib/email'
 import { serverEnv } from '@/lib/env'
 import { bearerMatches } from '@/lib/bearerAuth'
 import { rateLimit } from '@/lib/rateLimit'
 
-const writeClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
-  apiVersion: '2024-10-01',
-  token: process.env.SANITY_API_WRITE_TOKEN,
-  useCdn: false,
-})
 
 interface PendingCartDoc {
   _id: string
@@ -65,12 +58,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, message: 'Cron not configured.' }, { status: 500 })
   }
 
+  // No store, no pending carts to chase.
+  if (!sanityWrite) return NextResponse.json({ ok: true, sent: 0, reason: 'no store configured' })
+
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   // Carts older than 1 hour, still pending, no reminder yet → send one and mark.
   // Audit L-2: only send to customers who explicitly consented at save time.
-  const due = await writeClient.fetch<PendingCartDoc[]>(
+  const due = await sanityWrite.fetch<PendingCartDoc[]>(
     `*[
       _type == "pendingCart"
       && status == "pending"
@@ -98,7 +94,7 @@ export async function GET(req: NextRequest) {
         })),
       })
       await sendEmail({ to: cart.email, subject, html })
-      await writeClient
+      await sanityWrite
         .patch(cart._id)
         .set({ remindersSent: 1, lastEmailedAt: new Date().toISOString() })
         .commit()
@@ -110,7 +106,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Expire carts older than 7 days that never converted.
-  const expired = await writeClient.fetch<{ _id: string }[]>(
+  const expired = await sanityWrite.fetch<{ _id: string }[]>(
     `*[
       _type == "pendingCart"
       && status == "pending"
@@ -119,7 +115,7 @@ export async function GET(req: NextRequest) {
     { sevenDaysAgo }
   )
   for (const e of expired) {
-    await writeClient.patch(e._id).set({ status: 'expired' }).commit()
+    await sanityWrite.patch(e._id).set({ status: 'expired' }).commit()
   }
 
   return NextResponse.json({ ok: true, sent, failed, expired: expired.length })

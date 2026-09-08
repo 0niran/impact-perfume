@@ -1,11 +1,4 @@
-import { createClient } from '@sanity/client'
-
-const sanity = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
-  apiVersion: '2024-10-01',
-  useCdn: true,
-})
+import { sanityRead } from '@/sanity/client'
 
 export interface ProductReview {
   _id: string
@@ -32,6 +25,9 @@ export async function getProductReviews(productHandle: string): Promise<ReviewSu
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
     return { count: 0, averageRating: 0, reviews: [] }
   }
+  // No Sanity, no reviews — the PDP renders nothing rather than erroring.
+  if (!sanityRead) return { count: 0, averageRating: 0, reviews: [] }
+
   try {
     // GROQ: match productSku to the handle or any SKU that starts with the
     // uppercase handle (covers Medusa-generated SKUs like NO-5-100ML).
@@ -42,7 +38,7 @@ export async function getProductReviews(productHandle: string): Promise<ReviewSu
     ] | order(submittedAt desc) {
       _id, rating, title, body, customerName, verified, submittedAt
     }`
-    const reviews = await sanity.fetch<ProductReview[]>(query, {
+    const reviews = await sanityRead.fetch<ProductReview[]>(query, {
       handle: productHandle,
       handlePrefix: productHandle.toLowerCase(),
     })

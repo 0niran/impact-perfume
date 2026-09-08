@@ -1,94 +1,113 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock the Sanity client BEFORE importing the module under test so the
-// helper gets our spies attached.
-const mockCreate = vi.fn()
-const mockPatchSet = vi.fn().mockReturnThis()
-const mockPatchCommit = vi.fn().mockResolvedValue({})
-const mockPatch = vi.fn(() => ({ set: mockPatchSet, commit: mockPatchCommit }))
+/**
+ * The payment idempotency lock. Two callers can arrive for one payment — the
+ * redirect-verify path and the provider webhook — and only one may fulfil.
+ *
+ * These assert the money-path contract, not the storage. The lock moved from a
+ * Sanity document (whose duplicate-id 409 stood in for "already claimed") to a
+ * Redis SET NX, which is atomic and purpose-built; the behaviour below is what
+ * must not change.
+ */
+const mockSet = vi.fn()
+const mockGet = vi.fn()
+const mockDel = vi.fn()
+let configured = true
 
-vi.mock('@sanity/client', () => ({
-  createClient: vi.fn(() => ({
-    create: mockCreate,
-    patch: mockPatch,
-  })),
+vi.mock('@/lib/redis', () => ({
+  get redis() {
+    return configured ? { set: mockSet, get: mockGet, del: mockDel } : null
+  },
+  get isRedisConfigured() {
+    return configured
+  },
 }))
 
-// Force the env so the module instantiates a (mocked) client.
+import { claimPayment, releasePayment, recordMedusaOrderId } from '../processedPayment'
+
 beforeEach(() => {
-  vi.stubEnv('NEXT_PUBLIC_SANITY_PROJECT_ID', 'test')
-  vi.stubEnv('SANITY_API_WRITE_TOKEN', 'test-token')
-  mockCreate.mockReset()
-  mockPatchSet.mockClear()
-  mockPatchCommit.mockClear()
-  mockPatch.mockClear()
+  vi.clearAllMocks()
+  configured = true
 })
 
-async function loadModule() {
-  // Dynamic import so each test gets a fresh module against the latest mocks
-  vi.resetModules()
-  return await import('../processedPayment')
-}
-
 describe('claimPayment', () => {
-  it('returns true when the lock is successfully created (first caller)', async () => {
-    mockCreate.mockResolvedValueOnce({ _id: 'processed-payment-ref-1' })
-    const { claimPayment } = await loadModule()
-    const won = await claimPayment('ref-1', 'paystack', 'verify')
-    expect(won).toBe(true)
-    expect(mockCreate).toHaveBeenCalledTimes(1)
+  it('returns true for the first caller', async () => {
+    mockSet.mockResolvedValue('OK')
+    expect(await claimPayment('ref-1', 'paystack', 'verify')).toBe(true)
   })
 
-  it('returns false when Sanity throws a 409 conflict (already processed)', async () => {
-    const conflictErr = Object.assign(new Error('Conflict'), { statusCode: 409 })
-    mockCreate.mockRejectedValueOnce(conflictErr)
-    const { claimPayment } = await loadModule()
-    const won = await claimPayment('ref-1', 'paystack', 'webhook')
-    expect(won).toBe(false)
+  it('returns false when the key already exists', async () => {
+    // Upstash returns null when NX finds the key present.
+    mockSet.mockResolvedValue(null)
+    expect(await claimPayment('ref-1', 'paystack', 'webhook')).toBe(false)
   })
 
-  it('fails open (returns true) on non-conflict errors so payments are not lost', async () => {
-    mockCreate.mockRejectedValueOnce(new Error('Network down'))
-    const { claimPayment } = await loadModule()
-    const won = await claimPayment('ref-1', 'stripe', 'verify')
-    // Prefer a duplicate Medusa order over a missed order
-    expect(won).toBe(true)
+  it('claims atomically with NX and an expiry', async () => {
+    // NX is the entire guard: without it there is a race between reading and
+    // writing, which is exactly what this lock exists to close.
+    mockSet.mockResolvedValue('OK')
+    await claimPayment('ref-1', 'stripe', 'verify')
+    const [, , opts] = mockSet.mock.calls[0]
+    expect(opts).toMatchObject({ nx: true })
+    expect(opts.ex).toBeGreaterThan(0)
   })
 
-  it('sanitizes special characters in the reference for the document id', async () => {
-    mockCreate.mockResolvedValueOnce({})
-    const { claimPayment } = await loadModule()
-    await claimPayment('ref/1+special.chars', 'paystack', 'verify')
-    const call = mockCreate.mock.calls[0][0]
-    expect(call._id).toMatch(/^processed-payment-/)
-    // Allowed chars only: a-zA-Z0-9_-
-    expect(call._id).toMatch(/^[a-zA-Z0-9_-]+$/)
+  it('fails open when Redis errors, so a paid order is never lost', async () => {
+    mockSet.mockRejectedValue(new Error('connection reset'))
+    expect(await claimPayment('ref-1', 'stripe', 'webhook')).toBe(true)
   })
 
-  it('stores the provider, source, and timestamp on the lock document', async () => {
-    mockCreate.mockResolvedValueOnce({})
-    const { claimPayment } = await loadModule()
+  it('fails open when Redis is not configured', async () => {
+    configured = false
+    expect(await claimPayment('ref-1', 'stripe', 'webhook')).toBe(true)
+  })
+
+  it('namespaces the key and strips unsafe characters from the reference', async () => {
+    mockSet.mockResolvedValue('OK')
+    await claimPayment('ref/with spaces:and*stars', 'paystack', 'verify')
+    const [key] = mockSet.mock.calls[0]
+    expect(key).toMatch(/^processed-payment:/)
+    expect(key.replace(/^processed-payment:/, '')).toMatch(/^[a-zA-Z0-9_-]+$/)
+  })
+
+  it('records provider, source, reference and timestamp', async () => {
+    mockSet.mockResolvedValue('OK')
     await claimPayment('ref-2', 'stripe', 'webhook')
-    const doc = mockCreate.mock.calls[0][0]
-    expect(doc.provider).toBe('stripe')
-    expect(doc.source).toBe('webhook')
-    expect(doc.reference).toBe('ref-2')
-    expect(doc.processedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+    const [, value] = mockSet.mock.calls[0]
+    expect(value).toMatchObject({ reference: 'ref-2', provider: 'stripe', source: 'webhook' })
+    expect(value.processedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+  })
+})
+
+describe('releasePayment', () => {
+  it('deletes the key so a retry can re-attempt fulfilment', async () => {
+    await releasePayment('ref-1')
+    expect(mockDel).toHaveBeenCalledWith('processed-payment:ref-1')
+  })
+
+  it('never throws — a failed release must not fail the request', async () => {
+    mockDel.mockRejectedValue(new Error('nope'))
+    await expect(releasePayment('ref-1')).resolves.toBeUndefined()
   })
 })
 
 describe('recordMedusaOrderId', () => {
-  it('patches the lock doc with the Medusa order id', async () => {
-    const { recordMedusaOrderId } = await loadModule()
-    await recordMedusaOrderId('ref-1', 'order_abc')
-    expect(mockPatch).toHaveBeenCalledWith('processed-payment-ref-1')
-    expect(mockPatchSet).toHaveBeenCalledWith({ medusaOrderId: 'order_abc' })
-    expect(mockPatchCommit).toHaveBeenCalled()
+  it('annotates the existing lock and keeps an expiry', async () => {
+    mockGet.mockResolvedValue({ reference: 'ref-1', provider: 'stripe', source: 'verify' })
+    await recordMedusaOrderId('ref-1', 'order_123')
+    const [, value, opts] = mockSet.mock.calls[0]
+    expect(value).toMatchObject({ reference: 'ref-1', medusaOrderId: 'order_123' })
+    expect(opts.ex).toBeGreaterThan(0)
   })
 
-  it('swallows errors silently — best-effort annotation', async () => {
-    mockPatchCommit.mockRejectedValueOnce(new Error('boom'))
-    const { recordMedusaOrderId } = await loadModule()
-    await expect(recordMedusaOrderId('ref-1', 'order_abc')).resolves.toBeUndefined()
+  it('does nothing when the lock has already expired', async () => {
+    mockGet.mockResolvedValue(null)
+    await recordMedusaOrderId('ref-1', 'order_123')
+    expect(mockSet).not.toHaveBeenCalled()
+  })
+
+  it('never throws — tracing metadata must not fail a payment', async () => {
+    mockGet.mockRejectedValue(new Error('nope'))
+    await expect(recordMedusaOrderId('ref-1', 'order_1')).resolves.toBeUndefined()
   })
 })
