@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Signature Discovery Set · Impact Perfumes',
     description: 'A curated box of Impact Signature Scents in sample vials.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

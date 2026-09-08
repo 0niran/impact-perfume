@@ -59,7 +59,14 @@ describe('robots.txt', () => {
     const result = robots()
     const rules = Array.isArray(result.rules) ? result.rules : [result.rules]
     expect(rules[0]).toMatchObject({ userAgent: '*', allow: '/' })
-    expect(rules[0].disallow).toEqual(['/studio/', '/checkout', '/api/'])
+    // /order-confirmed is a per-customer terminal page carrying an order
+    // reference in its query string; it has no business in an index.
+    expect(rules[0].disallow).toEqual([
+      '/studio/',
+      '/checkout',
+      '/api/',
+      '/order-confirmed',
+    ])
     expect(result.sitemap).toBe('https://impactperfumes.com/sitemap.xml')
   })
 })

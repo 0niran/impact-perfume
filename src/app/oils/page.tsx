@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Perfume Oils · Impact Perfumes',
     description: '50 concentrated perfume oils.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

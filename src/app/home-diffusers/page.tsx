@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Home Diffusers · Impact Perfumes',
     description: 'Long-lasting reed diffusers in Impact signature fragrances.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

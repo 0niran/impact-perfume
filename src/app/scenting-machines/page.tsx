@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Scenting Machines · Impact Perfumes',
     description: 'Professional cold-air scenting machines for large spaces.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

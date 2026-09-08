@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Gift Sets · Impact Perfumes',
     description: 'Curated fragrance gift boxes, ready to give.',
-    images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
   },
 }
 

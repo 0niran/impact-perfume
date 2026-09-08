@@ -1,11 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { getMedusaProduct, getPrice, toEnrichment, getProductImage, variantInStock } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { shippingCopyFor } from '@/lib/shippingCopy'
-import { SITE_URL } from '@/lib/constants'
-import { jsonLdScript } from '@/lib/jsonLd'
+import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
 import ReviewsBlock from '@/components/pdp/ReviewsBlock'
@@ -33,10 +31,10 @@ export async function generateMetadata({
     description:
       enrichment.tagline ??
       `Oil No. ${num} from Impact Perfumes. A ${enrichment.descriptor.toLowerCase()} concentrated fragrance oil, alcohol-free, in a 12ml roll-on.`,
+    alternates: { canonical: `/oil/${num}` },
     openGraph: {
       title: `Impact Oil No. ${num} | ${enrichment.descriptor}`,
       description: enrichment.tagline ?? `Oil No. ${num} · Impact Perfumes`,
-      images: [{ url: '/og-default.jpg', width: 1200, height: 630 }],
     },
   }
 }
@@ -60,33 +58,34 @@ export default async function OilPDPPage({
   const price = getPrice(product, region.currency)
   const imageUrl = getProductImage(product)
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+  const jsonLd = buildProductJsonLd({
     name: `Impact Oil No. ${enrichment.number}`,
     description:
       enrichment.tagline ??
       `A ${enrichment.descriptor} concentrated fragrance oil from Impact Perfumes.`,
-    url: `${SITE_URL}/oil/${enrichment.number}`,
-    brand: { '@type': 'Brand', name: 'Impact Perfumes & Oils' },
+    path: `/oil/${enrichment.number}`,
     category: 'Fragrance Oil',
-    ...(price.amount > 0 && {
-      offers: {
-        '@type': 'Offer',
-        price: (price.amount / 100).toFixed(2),
-        priceCurrency: price.currency,
-        availability: 'https://schema.org/InStock',
-        url: `${SITE_URL}/oil/${enrichment.number}`,
-      },
-    }),
-  }
+    imageUrl,
+    sku: variant?.sku,
+    priceMinor: price.amount,
+    currency: price.currency,
+    inStock: variantInStock(variant),
+  })
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Perfume Oils', path: '/oils' },
+    { name: `Oil No. ${enrichment.number}`, path: `/oil/${enrichment.number}` },
+  ])
 
   return (
     <>
-      <Script
-        id={`json-ld-oil-${enrichment.number}`}
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
       />
       <div className="lg:grid lg:grid-cols-2">
         <ColorPanel
