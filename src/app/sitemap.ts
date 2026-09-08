@@ -29,14 +29,20 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
 ]
 
 /**
- * Re-read the catalogue hourly rather than on every crawl.
+ * Rendered per request, not prerendered at build.
  *
- * If Medusa is unreachable when this regenerates, the catalogue reads below
- * degrade to empty and the file falls back to the static pages alone. That is
- * the safe failure — a short sitemap costs far less than one advertising URLs
- * that 404 — and the next revalidation repairs it without a deploy.
+ * With the default behaviour Next bakes the result into
+ * .next/server/app/sitemap.xml.body during `next build`. If the Medusa read is
+ * slow or fails in that moment — a cold Railway container during a deploy is
+ * enough — the empty result is frozen into the deployment and served to every
+ * crawler until the revalidation window elapses. That was observed: the same
+ * code produced 124, then 66, then 16 URLs across three consecutive builds.
+ *
+ * Per-request generation makes a transient failure last one request instead of
+ * an hour, and the underlying catalogue reads are already behind a 120s data
+ * cache, so this costs a crawl no real work.
  */
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 /**
  * Sitemap built from the live catalogue.

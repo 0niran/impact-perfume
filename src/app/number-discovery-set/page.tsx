@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import Image from 'next/image'
 import { Container } from '@/components/layout'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
   title: 'Number Discovery Set',
   description: 'Build your own discovery set: choose 12 fragrances from the Number Series collection as 2ml vials in our signature box.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Number Discovery Set · Impact Perfumes',
     description: 'Pick 12 from the Number Series and fill your own discovery box.',
   },

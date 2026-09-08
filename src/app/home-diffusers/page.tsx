@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import CollectionPage from '@/components/shop/CollectionPage'
 import { loadCategoryProducts } from '@/lib/loadCategory'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Home Diffusers',
   description: 'Reed diffusers that slowly release fragrance into your space. Minimal design, maximum presence.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Home Diffusers · Impact Perfumes',
     description: 'Long-lasting reed diffusers in Impact signature fragrances.',
   },

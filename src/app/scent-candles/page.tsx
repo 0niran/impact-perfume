@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import CollectionPage from '@/components/shop/CollectionPage'
 import { loadCategoryProducts } from '@/lib/loadCategory'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Scent Candles',
   description: 'Hand-poured candles in our signature fragrances. Burn time up to 50 hours.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Scent Candles · Impact Perfumes',
     description: 'Hand-poured soy candles in Impact signature fragrances.',
   },

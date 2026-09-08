@@ -108,21 +108,45 @@ export const CATALOGUE_CACHE_TAG = 'medusa-catalogue'
  * The inner fetch is no-store because unstable_cache owns the caching layer.
  */
 const cachedStoreGet = unstable_cache(
-  async (url: string, publishableKey: string): Promise<Record<string, unknown> | null> => {
-    try {
-      const res = await fetch(url, {
-        headers: { 'x-publishable-api-key': publishableKey, 'Content-Type': 'application/json' },
-        cache: 'no-store',
-      })
-      if (!res.ok) return null
-      return (await res.json()) as Record<string, unknown>
-    } catch {
-      return null
-    }
+  async (url: string, publishableKey: string): Promise<Record<string, unknown>> => {
+    const res = await fetch(url, {
+      headers: { 'x-publishable-api-key': publishableKey, 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    })
+    // Throwing rather than returning null is load-bearing, see storeGet below.
+    if (!res.ok) throw new Error(`Medusa store GET ${res.status}: ${url}`)
+    return (await res.json()) as Record<string, unknown>
   },
   ['medusa-store-get'],
   { revalidate: CATALOGUE_TTL_SECONDS, tags: [CATALOGUE_CACHE_TAG] }
 )
+
+/**
+ * Catalogue read that never caches a failure.
+ *
+ * This used to swallow errors inside the cached function and return null. That
+ * null was a perfectly good value as far as unstable_cache was concerned, so a
+ * single slow or failed response was stored and replayed for the whole TTL: one
+ * blip turned into two minutes of empty category pages, 404ing product pages
+ * and — once the sitemap started reading the catalogue — a sitemap containing
+ * nothing but the static routes. It was reproducible here: consecutive builds
+ * produced 124, then 66, then 16 URLs from unchanged code, and clearing
+ * .next/cache restored the full result every time.
+ *
+ * Now the inner function throws on a bad response, which unstable_cache does
+ * not store, and the failure is converted to null out here where it stays
+ * uncached. Callers keep the same contract.
+ */
+async function storeGet(
+  url: string,
+  publishableKey: string
+): Promise<Record<string, unknown> | null> {
+  try {
+    return await cachedStoreGet(url, publishableKey)
+  } catch {
+    return null
+  }
+}
 
 export async function getMedusaProduct(
   handle: string,
@@ -131,7 +155,7 @@ export async function getMedusaProduct(
   if (!PUBLISHABLE_KEY) return null
   const params = new URLSearchParams({ handle, limit: '1' })
   const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
-  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  const json = await storeGet(url, keyForMedusaRegion(regionId))
   return ((json?.products as MedusaProduct[] | undefined)?.[0]) ?? null
 }
 
@@ -142,7 +166,7 @@ export async function getMedusaProducts(
   if (!PUBLISHABLE_KEY) return []
   const params = new URLSearchParams({ limit: String(limit) })
   const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
-  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  const json = await storeGet(url, keyForMedusaRegion(regionId))
   return (json?.products as MedusaProduct[]) ?? []
 }
 
@@ -153,7 +177,7 @@ export async function getMedusaProducts(
 async function getCategoryId(handle: string): Promise<string | null> {
   if (!PUBLISHABLE_KEY) return null
   const url = `${BACKEND_URL}/store/product-categories?handle=${handle}&limit=1`
-  const json = await cachedStoreGet(url, keyForMedusaRegion())
+  const json = await storeGet(url, keyForMedusaRegion())
   const cats = json?.product_categories as Array<{ id?: string }> | undefined
   return (cats?.[0]?.id as string) ?? null
 }
@@ -169,7 +193,7 @@ export async function getProductsByCategory(
   const params = new URLSearchParams({ limit: String(limit) })
   params.set('category_id[]', categoryId)
   const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
-  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  const json = await storeGet(url, keyForMedusaRegion(regionId))
   return (json?.products as MedusaProduct[]) ?? []
 }
 
@@ -187,7 +211,7 @@ export async function getAllNumberSeriesProducts(
   if (fromCategory.length > 0) return fromCategory
   const params = new URLSearchParams({ limit: String(limit) })
   const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
-  const json = await cachedStoreGet(url, keyForMedusaRegion(regionId))
+  const json = await storeGet(url, keyForMedusaRegion(regionId))
   const all = (json?.products as MedusaProduct[]) ?? []
   return all.filter((p) => p.handle?.startsWith('no-'))
 }

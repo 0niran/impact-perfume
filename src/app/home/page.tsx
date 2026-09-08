@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
   description:
     'Scent your home and car with Impact. Home diffusers, scent candles, scenting machines, and car diffusers designed to last.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Home & Car · Impact Perfumes',
     description: 'Home diffusers, scent candles, scenting machines, and car diffusers from Impact Perfumes.',
   },

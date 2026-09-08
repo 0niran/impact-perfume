@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import Image from 'next/image'
 import { Container } from '@/components/layout'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   title: 'Signature Discovery Set',
   description: 'A signature box of our Signature Scents in sample vials. Named, not numbered.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Signature Discovery Set · Impact Perfumes',
     description: 'A curated box of Impact Signature Scents in sample vials.',
   },

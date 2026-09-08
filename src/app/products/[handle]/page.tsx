@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Container } from '@/components/layout'
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: { params: { handle: string } 
   return {
     title: product.title,
     description: (product as { description?: string }).description ?? undefined,
-    openGraph: { title: `${product.title} · Impact Perfumes` },
+    openGraph: { images: DEFAULT_OG_IMAGES, title: `${product.title} · Impact Perfumes` },
   }
 }
 

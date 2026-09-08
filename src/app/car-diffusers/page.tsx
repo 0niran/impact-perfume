@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import CollectionPage from '@/components/shop/CollectionPage'
 import { loadCategoryProducts } from '@/lib/loadCategory'
 import { getServerRegion } from '@/lib/serverRegion'
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Car Diffusers',
   description: 'Vent-mounted clip-on diffusers. Up to 60 days per refill.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Car Diffusers · Impact Perfumes',
     description: 'Vent-mounted car diffusers in Impact signature fragrances.',
   },

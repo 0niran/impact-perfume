@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import dynamic from 'next/dynamic'
 import { Container } from '@/components/layout'
 import { getBespokeConfig } from '@/lib/bespokeConfig'
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   description:
     'Design your own Impact fragrance. Choose the bottle, the scent, the inscription. Made for you.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Bespoke · Impact Perfumes',
     description: 'Design your own Impact fragrance bottle. Bespoke composition, signature presentation.',
   },

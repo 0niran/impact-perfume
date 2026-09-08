@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   description:
     'Named, not numbered. Our Signature Scents are composed for those who know exactly who they are.',
   openGraph: {
+    images: DEFAULT_OG_IMAGES,
     title: 'Signature Scents · Impact Perfumes',
     description: 'Named, not numbered. Composed for character.',
   },
