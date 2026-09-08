@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
-import { getMedusaProduct, getPrice, getProductImage } from '@/lib/medusa'
+import { getMedusaProduct, getPrice, getProductImage, variantInStock } from '@/lib/medusa'
 import { getServerRegion } from '@/lib/serverRegion'
 import { shippingCopyFor } from '@/lib/shippingCopy'
 import { formatPrice } from '@/lib/format'
@@ -12,6 +12,8 @@ import StrengthBars from '@/components/pdp/StrengthBars'
 import ReviewsBlock from '@/components/pdp/ReviewsBlock'
 import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
+import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
+import { DEFAULT_OG_IMAGES } from '@/lib/seo'
 
 export const revalidate = 60
 
@@ -33,6 +35,12 @@ export async function generateMetadata(
     description:
       (product.metadata?.tagline as string) ??
       `${product.title}, a luxury Eau de Parfum from the Impact Signature Scents.`,
+    alternates: { canonical: `/signature/${params.handle}` },
+    openGraph: {
+      images: DEFAULT_OG_IMAGES,
+      title: `${product.title} · Impact Perfumes`,
+      description: (product.metadata?.tagline as string) ?? undefined,
+    },
   }
 }
 
@@ -51,6 +59,10 @@ export default async function SignaturePDPPage(
   const variantId = variant?.id ?? product.handle ?? product.id
   const priceInfo = getPrice(product, region.currency)
   const imageUrl = getProductImage(product)
+  const inStock = variantInStock(variant)
+  // The variant's own label, rather than the hardcoded "100ml EDP" that every
+  // signature product used to carry into the cart and the confirmation email.
+  const variantLabel = (variant as { title?: string } | undefined)?.title ?? '100ml EDP'
 
   const topNotes = splitNotes(m.top_notes)
   const heartNotes = splitNotes(m.heart_notes)
@@ -61,8 +73,37 @@ export default async function SignaturePDPPage(
   const descriptor = m.descriptor ?? product.subtitle ?? ''
   const tagline = m.tagline
 
+  const jsonLd = buildProductJsonLd({
+    name: product.title,
+    description:
+      tagline ?? `${product.title}, a luxury Eau de Parfum from the Impact Signature Scents.`,
+    path: `/signature/${product.handle}`,
+    category: 'Fragrance',
+    imageUrl,
+    sku: variant?.sku,
+    priceMinor: priceInfo.amount,
+    currency: priceInfo.currency,
+    inStock,
+  })
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Signature Scents', path: '/signature' },
+    { name: product.title, path: `/signature/${product.handle}` },
+  ])
+
   return (
     <main>
+      {/* Plain script tags, not next/script: that defaults to afterInteractive
+          and injects from the client, leaving the markup out of the server
+          response where a crawler needs it. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
+      />
       {/* Breadcrumb */}
       <div className="border-b border-stone/20 bg-ink">
         <Container className="py-4">
@@ -149,10 +190,12 @@ export default async function SignaturePDPPage(
                 <p className="font-display text-h1 leading-none text-accent">
                   {priceInfo.amount > 0 ? formatPrice(priceInfo.amount, priceInfo.currency) : 'Price on request'}
                 </p>
-                <p className="mt-1.5 text-small text-stone">100 ml · Eau de Parfum</p>
+                <p className="mt-1.5 text-small text-stone">{variantLabel}</p>
               </div>
               {priceInfo.amount > 0 && (
                 <SignatureAddToCart
+                  inStock={inStock}
+                  variantLabel={variantLabel}
                   productId={product.id}
                   variantId={variantId}
                   productName={product.title}

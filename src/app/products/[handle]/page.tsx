@@ -7,6 +7,11 @@ import { getServerRegion } from '@/lib/serverRegion'
 import { getMedusaProduct, getPrice, getProductImage, variantInStock } from '@/lib/medusa'
 import { formatPrice } from '@/lib/format'
 import AddToCartButton from '@/components/shop/AddToCartButton'
+import NotesPyramid from '@/components/pdp/NotesPyramid'
+import ReviewsBlock from '@/components/pdp/ReviewsBlock'
+import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
+import { shippingCopyFor } from '@/lib/shippingCopy'
+import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
 
 export const revalidate = 60
 
@@ -23,6 +28,7 @@ export async function generateMetadata(props: { params: Promise<{ handle: string
   return {
     title: product.title,
     description: (product as { description?: string }).description ?? undefined,
+    alternates: { canonical: `/products/${params.handle}` },
     openGraph: { images: DEFAULT_OG_IMAGES, title: `${product.title} · Impact Perfumes` },
   }
 }
@@ -42,25 +48,51 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
   const color = m.signature_color ?? '#E4B250'
   const canBuy = Boolean(variant?.id && price.amount > 0 && variantInStock(variant))
 
-  const pyramid = [
-    { label: 'Top', notes: splitNotes(m.top_notes) },
-    { label: 'Heart', notes: splitNotes(m.heart_notes) },
-    { label: 'Base', notes: splitNotes(m.base_notes) },
-  ].filter((p) => p.notes.length > 0)
+  const topNotes = splitNotes(m.top_notes)
+  const heartNotes = splitNotes(m.heart_notes)
+  const baseNotes = splitNotes(m.base_notes)
+
+  // This route is the PDP for scent candles, home diffusers, car diffusers and
+  // scenting machines — four categories reachable from search and the category
+  // pages — so it needs the same structured data as the other product pages.
+  const jsonLd = buildProductJsonLd({
+    name: product.title,
+    description: description || `${product.title} from Impact Perfumes & Oils.`,
+    path: `/products/${product.handle}`,
+    category: 'Home Fragrance',
+    imageUrl: image,
+    sku: variant?.sku,
+    priceMinor: price.amount,
+    currency: price.currency,
+    inStock: variantInStock(variant),
+  })
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home & Gifts', path: '/home' },
+    { name: product.title, path: `/products/${product.handle}` },
+  ])
 
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
+      />
     <section className="bg-ink py-12 md:py-20">
       <Container>
         <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
           {/* Image */}
-          <div className="relative aspect-square overflow-hidden border border-stone/15 bg-ink">
+          <div className="relative aspect-[4/5] overflow-hidden border border-stone/15 bg-ink">
             <span
               className="pointer-events-none absolute inset-0 opacity-50"
               style={{ background: `radial-gradient(ellipse at center, ${color}2b 0%, transparent 70%)` }}
               aria-hidden="true"
             />
             {image ? (
-              <Image src={image} alt={product.title} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain p-8" priority />
+              <Image src={image} alt={product.title} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain p-4" priority />
             ) : (
               <span className="absolute inset-0 flex items-center justify-center font-display text-[5rem] text-stone/30">
                 {product.title.charAt(0)}
@@ -94,31 +126,44 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
                 />
               </div>
             ) : (
-              <p className="mt-7 text-body text-stone">Currently unavailable.</p>
+              <p className="mt-7 text-body text-error">Out of stock</p>
             )}
 
-            {/* Note pyramid */}
-            {pyramid.length > 0 && (
-              <div className="mt-10 border-t border-stone/15 pt-8">
-                <p className="text-label uppercase tracking-[0.1em] text-accent">Scent notes</p>
-                <dl className="mt-5 flex flex-col gap-5">
-                  {pyramid.map((tier) => (
-                    <div key={tier.label} className="grid grid-cols-[64px_1fr] gap-4">
-                      <dt className="text-label uppercase tracking-[0.08em] text-stone">{tier.label}</dt>
-                      <dd className="flex flex-wrap gap-2">
-                        {tier.notes.map((n) => (
-                          <span key={n} className="border border-stone/20 px-3 py-1 text-small text-bone/80">{n}</span>
-                        ))}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+            {/* The shared pyramid, so notes read identically here and on the
+                Number, Oil and Signature pages. This used to be its own markup. */}
+            <div className="mt-10 border-t border-stone/15 pt-8">
+              <NotesPyramid topNotes={topNotes} heartNotes={heartNotes} baseNotes={baseNotes} />
+            </div>
+
+            {/* Delivery terms, region-aware. Absent here while every other PDP
+                showed them, so these categories told a customer nothing about
+                shipping or returns. */}
+            <details className="group mt-6 border-t border-stone/20">
+              <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-body font-medium text-bone">
+                Shipping &amp; Returns
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true">
+                  <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <div className="pb-5 text-body text-stone">
+                <p>{shippingCopyFor(region)}</p>
               </div>
-            )}
+            </details>
           </div>
         </div>
       </Container>
+
+      <RecentlyViewedTracker
+        handle={product.handle}
+        href={`/products/${product.handle}`}
+        title={product.title}
+        imageUrl={image ?? undefined}
+        signatureColor={color}
+      />
+      <ReviewsBlock productHandle={product.handle} productName={product.title} />
+      <RecentlyViewedRail excludeHandle={product.handle} />
     </section>
+    </>
   )
 }
 
