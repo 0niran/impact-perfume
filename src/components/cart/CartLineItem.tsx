@@ -17,8 +17,13 @@ export default function CartLineItem({ line }: CartLineItemProps) {
           back to the Number Series bottle, so any line without its own image —
           the discovery sets, for one — showed a picture of a different product.
           A neutral mark says "no photo" instead of misrepresenting the item. */}
+      {/* 4:5, matching the shop tiles. It was 68x96 (0.71) with a further 4px
+          of padding, so a square product photo — most of the catalogue — was
+          boxed in on both axes and rendered noticeably smaller than the frame
+          it sat in. Same ratio everywhere means one image reads at a
+          consistent size in the grid, on the PDP and here. */}
       <div
-        className="relative h-24 w-[68px] shrink-0 overflow-hidden bg-ink"
+        className="relative h-24 w-[76.8px] shrink-0 overflow-hidden bg-ink"
         aria-hidden="true"
       >
         {line.thumbnail ? (
@@ -26,8 +31,8 @@ export default function CartLineItem({ line }: CartLineItemProps) {
             src={line.thumbnail}
             alt={line.name}
             fill
-            sizes="68px"
-            className="object-contain p-1"
+            sizes="77px"
+            className="object-contain"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center border border-stone/20">
