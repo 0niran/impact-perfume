@@ -62,10 +62,17 @@ export const dynamic = 'force-dynamic'
  * the honest move is to omit the field rather than fabricate it.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [numbers, oils, signature] = await Promise.all([
+  const [numbers, oils, signature, homeAndGifts] = await Promise.all([
     getAllNumberSeriesProducts(200).catch(() => []),
     getProductsByCategory('oils', 200).catch(() => []),
     getSignatureProducts().catch(() => []),
+    // Scent candles, home + car diffusers and scenting machines all render at
+    // /products/[handle] and were absent from the sitemap entirely.
+    Promise.all(
+      ['scent-candles', 'home-diffusers', 'car-diffusers', 'scenting-machines'].map((c) =>
+        getProductsByCategory(c, 100).catch(() => [])
+      )
+    ).then((groups) => groups.flat()),
   ])
 
   const numberPages: MetadataRoute.Sitemap = numbers
@@ -94,10 +101,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
     }))
 
+  const homePages: MetadataRoute.Sitemap = homeAndGifts
+    .filter((p) => Boolean(p.handle))
+    .map((p) => ({
+      url: `${url}/products/${p.handle}`,
+      priority: 0.6,
+      changeFrequency: 'monthly' as const,
+    }))
+
   // De-duplicate defensively: a product that sits in more than one category
   // would otherwise appear twice, which is a validation warning.
   const seen = new Set<string>()
-  return [...STATIC_PAGES, ...numberPages, ...oilPages, ...signaturePages].filter((entry) => {
+  return [...STATIC_PAGES, ...numberPages, ...oilPages, ...signaturePages, ...homePages].filter((entry) => {
     if (seen.has(entry.url)) return false
     seen.add(entry.url)
     return true
