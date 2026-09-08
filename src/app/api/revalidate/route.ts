@@ -9,8 +9,19 @@ import { rateLimit } from '@/lib/rateLimit'
  * a deploy (price tweaks, image swaps, new products) and you don't want to
  * wait up to an hour for the cached PDP to refresh.
  *
- * Auth: same CRON_SECRET we already set for the cron route. Pass it via
- *   Authorization: Bearer ${CRON_SECRET}
+ * Auth: Authorization: Bearer <token>, where <token> is EITHER
+ *   CRON_SECRET            — ops use, eg. `npm run refresh-storefront`
+ *   MEDUSA_WEBHOOK_SECRET  — the Medusa subscriber on Railway
+ *
+ * Accepting the Medusa secret here is what keeps CRON_SECRET off the Medusa
+ * box. The deployed subscriber calls this route (not /api/webhooks/medusa), so
+ * the only way to authenticate it used to be handing Railway CRON_SECRET — and
+ * that same token also opens /api/cron/abandoned-carts, which emails the
+ * customer list, and /api/cron/reconcile-orders, which reads Stripe payment
+ * intents. A cache-flush caller has no business holding either.
+ *
+ * This grants the Medusa secret nothing new: it already flushes the same tags
+ * through /api/webhooks/medusa. The widened surface is cache invalidation only.
  *
  * Usage:
  *   GET /api/revalidate?path=/no/1
@@ -31,14 +42,23 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  // Fails CLOSED when CRON_SECRET is unset — refusing to flush is better
-  // than letting anyone trigger cache regeneration when env vars are
-  // misconfigured (audit H-2).
-  const secret = serverEnv.cronSecret
-  if (!secret) {
+  // Fails CLOSED when neither secret is set — refusing to flush is better than
+  // letting anyone trigger cache regeneration when env vars are misconfigured
+  // (audit H-2).
+  const accepted = [serverEnv.cronSecret, serverEnv.medusaWebhookSecret].filter(
+    (s): s is string => Boolean(s)
+  )
+  if (accepted.length === 0) {
     return NextResponse.json({ ok: false, message: 'Revalidation not configured.' }, { status: 503 })
   }
-  if (!bearerMatches(req.headers.get('authorization'), secret)) {
+  const authorization = req.headers.get('authorization')
+  // Every candidate is checked even after a match, so the time taken does not
+  // reveal which secret was presented.
+  const authorised = accepted.reduce(
+    (ok, candidate) => bearerMatches(authorization, candidate) || ok,
+    false
+  )
+  if (!authorised) {
     return NextResponse.json({ ok: false, message: 'Unauthorised.' }, { status: 401 })
   }
 

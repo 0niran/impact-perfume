@@ -17,20 +17,41 @@ Two halves:
 
 ## 1. Set the shared secret
 
-Pick any random string (e.g. `openssl rand -hex 32`).
+`MEDUSA_WEBHOOK_SECRET` is **required**, not optional. There was once a
+fallback to `CRON_SECRET`; it was removed deliberately, because that token also
+opens `/api/cron/abandoned-carts` (which emails the customer list) and
+`/api/cron/reconcile-orders` (which reads Stripe payment intents). Both
+endpoints now fail closed if their own secret is missing.
+
+Pick a random string (`openssl rand -hex 32`).
 
 **On Vercel** → Project Settings → Environment Variables:
 ```
 MEDUSA_WEBHOOK_SECRET=<that string>
 ```
-(Optional — if you don't set it, the storefront falls back to
-`CRON_SECRET`.)
 
 **On Railway** → your Medusa project → Variables:
 ```
-STOREFRONT_WEBHOOK_URL=https://impactperfumes.com/api/webhooks/medusa
-STOREFRONT_WEBHOOK_SECRET=<same string>
+STOREFRONT_URL=https://impact-perfume.vercel.app
+STOREFRONT_REVALIDATE_TOKEN=<the same MEDUSA_WEBHOOK_SECRET string>
 ```
+
+Those two names are what the deployed subscriber actually reads
+(`src/subscribers/storefront-revalidate.ts` in the Medusa repo). It sends:
+
+```
+GET {STOREFRONT_URL}/api/revalidate?tag=medusa-catalogue
+Authorization: Bearer {STOREFRONT_REVALIDATE_TOKEN}
+```
+
+`STOREFRONT_URL` has no trailing slash and no path — the subscriber appends
+`/api/revalidate` itself. Swap it for `https://impactperfumes.com` at the
+domain cutover.
+
+**Do not put `CRON_SECRET` on Railway.** `/api/revalidate` accepts either
+`CRON_SECRET` (ops use, `npm run refresh-storefront`) or
+`MEDUSA_WEBHOOK_SECRET` (the subscriber), so the Medusa box only ever needs the
+narrower one.
 
 ## 2. Add the subscriber to your Medusa repo
 
