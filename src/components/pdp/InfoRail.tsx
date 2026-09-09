@@ -4,8 +4,20 @@ import StrengthBars from './StrengthBars'
 import PDPAccordion from './PDPAccordion'
 import AddToCart from './AddToCart'
 
+/** Previous/next within a collection. Numbered lines compute these from the
+ *  number; named ones (Signature, Home & Gifts) pass what they have, or omit. */
+export interface PdpSibling {
+  label: string
+  href: string
+}
+
 interface InfoRailProps {
-  number: number
+  /** The <h1>. "Impact No. 11", "Enigma", "Oud Reed Diffuser". */
+  title: string
+  /** Small line above the title. Numbered lines use "No. 11 · Citrus". */
+  eyebrow?: string
+  /** Current page in the breadcrumb. */
+  breadcrumbLabel: string
   descriptor: string
   signatureColor?: string
   scentFamily?: string
@@ -23,11 +35,9 @@ interface InfoRailProps {
   /** Configurable per product line (Numbers vs Oils etc.) */
   collectionLabel?: string
   collectionHref?: string
-  titlePrefix?: string
   variantLabel?: string
-  prevHref?: (n: number) => string
-  nextHref?: (n: number) => string
-  maxNumber?: number
+  prev?: PdpSibling
+  next?: PdpSibling
   /** Region-aware copy from shippingCopyFor(region); required so a market
    *  never inherits another market's delivery terms. */
   shippingCopy: string
@@ -37,7 +47,9 @@ interface InfoRailProps {
 }
 
 export default function InfoRail({
-  number,
+  title,
+  eyebrow,
+  breadcrumbLabel,
   descriptor,
   signatureColor,
   scentFamily,
@@ -54,11 +66,9 @@ export default function InfoRail({
   imageUrl,
   collectionLabel = 'Number Series',
   collectionHref = '/no-series',
-  titlePrefix = 'Impact No.',
   variantLabel,
-  prevHref = (n) => `/no/${n}`,
-  nextHref = (n) => `/no/${n}`,
-  maxNumber = 50,
+  prev,
+  next,
   shippingCopy,
   handle,
   href,
@@ -78,7 +88,7 @@ export default function InfoRail({
             </li>
             <li aria-hidden="true">·</li>
             <li aria-current="page" className="text-bone">
-              No. {number}
+              {breadcrumbLabel}
             </li>
           </ol>
         </nav>
@@ -92,11 +102,11 @@ export default function InfoRail({
 
         {/* Title block */}
         <div>
-          <p className="text-label uppercase tracking-[0.1em] text-stone">
-            No. {number} · {descriptor}
-          </p>
+          {eyebrow && (
+            <p className="text-label uppercase tracking-[0.1em] text-stone">{eyebrow}</p>
+          )}
           <h1 className="mt-2 font-display text-[32px] leading-[1.1] md:text-display-l text-bone">
-            {titlePrefix} {number}
+            {title}
           </h1>
           {tagline && (
             <p className="mt-3 font-display text-h3 italic text-stone">
@@ -112,7 +122,7 @@ export default function InfoRail({
         <AddToCart
           productId={productId}
           variantId={variantId}
-          productName={`${titlePrefix} ${number}`}
+          productName={title}
           priceMinor={priceMinor}
           currency={currency}
           signatureColor={signatureColor}
@@ -141,31 +151,34 @@ export default function InfoRail({
         {/* Accordion */}
         <PDPAccordion descriptor={descriptor} tagline={tagline} shippingCopy={shippingCopy} />
 
-        {/* Navigate between numbers, compact inline links */}
-        <div className="flex items-center justify-between border-t border-stone/20 pt-6">
-          {number > 1 ? (
-            <Link
-              href={prevHref(number - 1)}
-              className="group flex flex-col gap-0.5 hover:opacity-70 transition-opacity duration-200"
-            >
-              <span className="text-label text-stone">← Previous</span>
-              <span className="font-display text-h3 leading-none text-bone">No. {number - 1}</span>
-            </Link>
-          ) : (
-            <div />
-          )}
-          {number < maxNumber ? (
-            <Link
-              href={nextHref(number + 1)}
-              className="group flex flex-col gap-0.5 text-right hover:opacity-70 transition-opacity duration-200"
-            >
-              <span className="text-label text-stone">Next →</span>
-              <span className="font-display text-h3 leading-none text-bone">No. {number + 1}</span>
-            </Link>
-          ) : (
-            <div />
-          )}
-        </div>
+        {/* Previous / next within the collection. Numbered lines derive these
+            from the number; named ones pass what they have, or nothing. */}
+        {(prev || next) && (
+          <div className="flex items-center justify-between border-t border-stone/20 pt-6">
+            {prev ? (
+              <Link
+                href={prev.href}
+                className="group flex flex-col gap-0.5 hover:opacity-70 transition-opacity duration-200"
+              >
+                <span className="text-label text-stone">← Previous</span>
+                <span className="font-display text-h3 leading-none text-bone">{prev.label}</span>
+              </Link>
+            ) : (
+              <div />
+            )}
+            {next ? (
+              <Link
+                href={next.href}
+                className="group flex flex-col gap-0.5 text-right hover:opacity-70 transition-opacity duration-200"
+              >
+                <span className="text-label text-stone">Next →</span>
+                <span className="font-display text-h3 leading-none text-bone">{next.label}</span>
+              </Link>
+            ) : (
+              <div />
+            )}
+          </div>
+        )}
 
       </div>
     </div>

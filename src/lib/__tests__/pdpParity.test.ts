@@ -58,9 +58,20 @@ describe.each(PDPS)('%s', (rel) => {
     expect(src).toContain('shippingCopyFor')
   })
 
-  it('renders notes through the shared pyramid', () => {
-    // Every page had notes; two of them drew their own markup for it.
-    expect(src).toMatch(/NotesPyramid|InfoRail/)
+  it('is built from the shared shell rather than its own layout', () => {
+    // Every product family used to get its own page. That is how the Signature
+    // page ended up with no stock check and no structured data: a fix applied
+    // to one implementation never reached the others.
+    expect(src).toContain('ColorPanel')
+    expect(src).toContain('InfoRail')
+  })
+
+  it('does not hand-roll a buy box or a notes pyramid', () => {
+    // Both come from InfoRail now. Three separate add-to-cart components with
+    // three different stock behaviours is what produced the defects above.
+    expect(src).not.toContain('SignatureAddToCart')
+    expect(src).not.toContain('AddToCartButton')
+    expect(src).not.toContain('<NotesPyramid')
   })
 
   it('does not reference the removed reviews block', () => {

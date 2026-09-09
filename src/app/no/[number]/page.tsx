@@ -97,15 +97,17 @@ export default async function PDPPage(
       />
       <div className="lg:grid lg:grid-cols-2">
         <ColorPanel
-          number={enrichment.number}
+          label={`No. ${enrichment.number}`}
           descriptor={enrichment.descriptor}
           signatureColor={enrichment.signatureColor}
-          signatureColorName={enrichment.signatureColorName}
           imageUrl={imageUrl}
+          alt={`Impact No. ${enrichment.number}`}
         />
 
         <InfoRail
-          number={enrichment.number}
+          title={`Impact No. ${enrichment.number}`}
+          eyebrow={`No. ${enrichment.number} · ${enrichment.descriptor}`}
+          breadcrumbLabel={`No. ${enrichment.number}`}
           descriptor={enrichment.descriptor}
           signatureColor={enrichment.signatureColor}
           scentFamily={enrichment.scentFamily}
@@ -123,6 +125,16 @@ export default async function PDPPage(
           shippingCopy={shippingCopyFor(region)}
           handle={`no-${enrichment.number}`}
           href={`/no/${enrichment.number}`}
+          prev={
+            enrichment.number > 1
+              ? { label: `No. ${enrichment.number - 1}`, href: `/no/${enrichment.number - 1}` }
+              : undefined
+          }
+          next={
+            enrichment.number < 50
+              ? { label: `No. ${enrichment.number + 1}`, href: `/no/${enrichment.number + 1}` }
+              : undefined
+          }
           inStock={variantInStock(variant)}
         />
       </div>

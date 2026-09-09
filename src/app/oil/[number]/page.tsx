@@ -92,17 +92,18 @@ export default async function OilPDPPage(
       />
       <div className="lg:grid lg:grid-cols-2">
         <ColorPanel
-          number={enrichment.number}
+          label={`Oil No. ${enrichment.number}`}
           descriptor={enrichment.descriptor}
           signatureColor={enrichment.signatureColor}
-          signatureColorName={enrichment.signatureColorName}
           imageUrl={imageUrl}
+          alt={`Impact Oil No. ${enrichment.number}`}
           fallbackImage="/images/Oil_perfume.png"
-          titlePrefix="Oil No."
         />
 
         <InfoRail
-          number={enrichment.number}
+          title={`Impact Oil No. ${enrichment.number}`}
+          eyebrow={`Oil No. ${enrichment.number} · ${enrichment.descriptor}`}
+          breadcrumbLabel={`Oil No. ${enrichment.number}`}
           descriptor={enrichment.descriptor}
           signatureColor={enrichment.signatureColor}
           scentFamily={enrichment.scentFamily}
@@ -120,13 +121,19 @@ export default async function OilPDPPage(
           shippingCopy={shippingCopyFor(region)}
           collectionLabel="Perfume Oils"
           collectionHref="/oils"
-          titlePrefix="Impact Oil No."
           variantLabel="12ml · Concentrated Oil"
-          prevHref={(n) => `/oil/${n}`}
-          nextHref={(n) => `/oil/${n}`}
-          maxNumber={50}
           handle={`oil-no-${enrichment.number}`}
           href={`/oil/${enrichment.number}`}
+          prev={
+            enrichment.number > 1
+              ? { label: `Oil No. ${enrichment.number - 1}`, href: `/oil/${enrichment.number - 1}` }
+              : undefined
+          }
+          next={
+            enrichment.number < 50
+              ? { label: `Oil No. ${enrichment.number + 1}`, href: `/oil/${enrichment.number + 1}` }
+              : undefined
+          }
           inStock={variantInStock(variant)}
         />
       </div>

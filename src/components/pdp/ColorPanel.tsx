@@ -6,25 +6,27 @@ import { useState } from 'react'
 const DEFAULT_FALLBACK = '/images/no_series.png'
 
 interface ColorPanelProps {
-  number: number
+  /** Small label under the bottle. "No. 11", "Signature Scents", "Home & Gifts". */
+  label: string
+  /** The line beneath it. The product's character, or its name. */
   descriptor: string
+  /** Used for the glow only, never for text — several signature colours are
+   *  dark blues and greens that vanish on this ground. */
   signatureColor: string
-  /** Retained for backwards compatibility with callers; no longer rendered. */
-  signatureColorName?: string
   imageUrl?: string | null
+  /** Alt text. Falls back to the label when not given. */
+  alt?: string
   /** Override the default Number Series bottle fallback (e.g. for Oils) */
   fallbackImage?: string
-  /** Title prefix shown beneath the bottle */
-  titlePrefix?: string
 }
 
 export default function ColorPanel({
-  number,
+  label,
   descriptor,
   signatureColor,
   imageUrl,
+  alt,
   fallbackImage = DEFAULT_FALLBACK,
-  titlePrefix = 'No.',
 }: ColorPanelProps) {
   const [src, setSrc] = useState(imageUrl ?? fallbackImage)
 
@@ -40,12 +42,12 @@ export default function ColorPanel({
       />
 
       {/* Bottle image */}
-      <div className="relative z-10 h-[280px] w-[280px] md:h-[360px] md:w-[360px] lg:h-[560px] lg:w-[560px]">
+      <div className="relative z-10 aspect-[4/5] w-[280px] md:w-[360px] lg:w-[460px]">
         <Image
           src={src}
-          alt={`Impact ${titlePrefix} ${number}`}
+          alt={alt ?? label}
           fill
-          sizes="(min-width: 1024px) 560px, (min-width: 768px) 360px, 280px"
+          sizes="(min-width: 1024px) 460px, (min-width: 768px) 360px, 280px"
           className="object-contain drop-shadow-2xl"
           priority
           onError={() => setSrc(fallbackImage)}
@@ -64,9 +66,7 @@ export default function ColorPanel({
           bottom from lg up, where there is room. z-20 keeps the text above the
           bottle whatever the height. */}
       <div className="relative z-20 mt-6 flex flex-col items-center gap-1 px-6 text-center text-bone lg:absolute lg:bottom-8 lg:mt-0">
-        <p className="text-label uppercase tracking-[0.12em] text-stone">
-          {titlePrefix} {number}
-        </p>
+        <p className="text-label uppercase tracking-[0.12em] text-stone">{label}</p>
         <p className="font-display text-h3 text-bone">{descriptor}</p>
       </div>
     </div>
