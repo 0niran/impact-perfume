@@ -1,13 +1,10 @@
 import type { Metadata } from 'next'
 import { DEFAULT_OG_IMAGES } from '@/lib/seo'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Container } from '@/components/layout'
 import { getServerRegion } from '@/lib/serverRegion'
 import { getMedusaProduct, getPrice, getProductImage, variantInStock } from '@/lib/medusa'
-import { formatPrice } from '@/lib/format'
-import AddToCartButton from '@/components/shop/AddToCartButton'
-import NotesPyramid from '@/components/pdp/NotesPyramid'
+import ColorPanel from '@/components/pdp/ColorPanel'
+import InfoRail from '@/components/pdp/InfoRail'
 import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import { shippingCopyFor } from '@/lib/shippingCopy'
 import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
@@ -80,77 +77,38 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
       />
-    <section className="bg-ink py-12 md:py-20">
-      <Container>
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-          {/* Image */}
-          <div className="relative aspect-[4/5] overflow-hidden border border-stone/15 bg-ink">
-            <span
-              className="pointer-events-none absolute inset-0 opacity-50"
-              style={{ background: `radial-gradient(ellipse at center, ${color}2b 0%, transparent 70%)` }}
-              aria-hidden="true"
-            />
-            {image ? (
-              <Image src={image} alt={product.title} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain p-4" priority />
-            ) : (
-              <span className="absolute inset-0 flex items-center justify-center font-display text-[5rem] text-stone/30">
-                {product.title.charAt(0)}
-              </span>
-            )}
-          </div>
+    <main>
+      <div className="lg:grid lg:grid-cols-2">
+        <ColorPanel
+          label="Home & Gifts"
+          descriptor={product.title}
+          signatureColor={color}
+          imageUrl={image}
+          alt={product.title}
+        />
 
-          {/* Details */}
-          <div>
-            <h1 className="font-display text-display-s leading-none text-bone">{product.title}</h1>
-            {price.amount > 0 && (
-              <p className="mt-4 font-display text-h1 text-bone">{formatPrice(price.amount, region.currency)}</p>
-            )}
-            {description && (
-              <p className="mt-5 max-w-lg text-body text-stone">{description}</p>
-            )}
-
-            {canBuy && variant ? (
-              <div className="mt-7">
-                <AddToCartButton
-                  variantId={variant.id}
-                  productId={product.id}
-                  name={product.title}
-                  variantLabel={variantLabel}
-                  priceMinor={price.amount}
-                  currency={price.currency}
-                  handle={product.handle}
-                  href={`/products/${product.handle}`}
-                  thumbnail={image}
-                  color={color}
-                />
-              </div>
-            ) : (
-              <p className="mt-7 text-body text-error">Out of stock</p>
-            )}
-
-            {/* The shared pyramid, so notes read identically here and on the
-                Number, Oil and Signature pages. This used to be its own markup. */}
-            <div className="mt-10 border-t border-stone/15 pt-8">
-              <NotesPyramid topNotes={topNotes} heartNotes={heartNotes} baseNotes={baseNotes} />
-            </div>
-
-            {/* Delivery terms, region-aware. Absent here while every other PDP
-                showed them, so these categories told a customer nothing about
-                shipping or returns. */}
-            <details className="group mt-6 border-t border-stone/20">
-              <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-body font-medium text-bone">
-                Shipping &amp; Returns
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden="true">
-                  <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </summary>
-              <div className="pb-5 text-body text-stone">
-                <p>{shippingCopyFor(region)}</p>
-              </div>
-            </details>
-          </div>
-        </div>
-      </Container>
+        <InfoRail
+          title={product.title}
+          breadcrumbLabel={product.title}
+          descriptor={description}
+          signatureColor={color}
+          topNotes={topNotes}
+          heartNotes={heartNotes}
+          baseNotes={baseNotes}
+          productId={product.id}
+          variantId={variant?.id ?? product.handle}
+          priceMinor={price.amount}
+          currency={price.currency}
+          imageUrl={image ?? undefined}
+          variantLabel={variantLabel}
+          collectionLabel="Home & Gifts"
+          collectionHref="/home"
+          shippingCopy={shippingCopyFor(region)}
+          handle={product.handle}
+          href={`/products/${product.handle}`}
+          inStock={variantInStock(variant)}
+        />
+      </div>
 
       <RecentlyViewedTracker
         handle={product.handle}
@@ -160,7 +118,7 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
         signatureColor={color}
       />
       <RecentlyViewedRail excludeHandle={product.handle} />
-    </section>
+    </main>
     </>
   )
 }
