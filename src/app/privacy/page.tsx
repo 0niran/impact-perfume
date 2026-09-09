@@ -134,10 +134,6 @@ export default function PrivacyPage() {
                   Reminding you about a cart you left. Basis: your consent, which you gave
                   at checkout and can withdraw at any time.
                 </Row>
-                <Row term="Newsletter">
-                  Sending you news and offers, only if you signed up. Basis: your consent.
-                  Every email carries an unsubscribe link.
-                </Row>
                 <Row term="Keeping the site working">
                   Rate-limiting, fraud prevention, and showing the correct market. Basis:
                   our legitimate interest in a secure, functioning shop.

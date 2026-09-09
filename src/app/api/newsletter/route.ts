@@ -1,3 +1,12 @@
+/**
+ * Newsletter signup — NOT WIRED.
+ *
+ * Nothing on the storefront posts here, and no provider is configured, so the
+ * address is validated and then discarded. Kept as the shape a provider would
+ * plug into rather than deleted, but until one is: no addresses are stored, no
+ * newsletter is sent, and the privacy notice deliberately makes no claim about
+ * one.
+ */
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rateLimit'
 import { newsletterBodySchema, formatZodError } from '@/lib/validation'

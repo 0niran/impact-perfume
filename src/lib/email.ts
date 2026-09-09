@@ -31,6 +31,15 @@ function esc(value: string | undefined | null): string {
  *   slate  #5C4E38    mist   #1D1B16
  */
 
+/**
+ * Sending identity. This is not a contact address — replies to it are not read
+ * — and it must be an address on a domain verified in Resend, or every send is
+ * rejected with a 403. SITE_CONFIG.contact.email is where customers are told to
+ * write; enquiry notifications also set reply-to so a reply reaches the person
+ * who sent it.
+ */
+const FROM_ADDRESS = `${SITE_CONFIG.name} <orders@impactperfumes.com>`
+
 const PALETTE = {
   ink: '#0A0A08',
   bone: '#F2E6C8',
@@ -916,16 +925,22 @@ export async function sendEmail({
   replyTo?: string
 }): Promise<void> {
   const apiKey = serverEnv.resendApiKey
-  if (!apiKey) return // Silently skip if not configured
+  if (!apiKey) {
+    // Was a silent `return`. That made every caller believe the mail had gone
+    // out — including the ones that treat a successful send as the whole point,
+    // like the B2B enquiry, which tells the customer it failed only if this
+    // throws. Reporting success while sending nothing is the worse failure.
+    throw new Error('RESEND_API_KEY is not set, so no email was sent.')
+  }
 
-  await fetch('https://api.resend.com/emails', {
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `${SITE_CONFIG.name} <orders@impactperfumes.com>`,
+      from: FROM_ADDRESS,
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
@@ -934,4 +949,16 @@ export async function sendEmail({
       ...(replyTo ? { reply_to: replyTo.replace(/[\r\n]/g, '') } : {}),
     }),
   })
+
+  // The response was previously not read at all, so any rejection Resend
+  // returned — an unverified sending domain (403), an invalid address (422), a
+  // bad key (401), a rate limit (429) — resolved as success. Every "must send"
+  // guarantee in this codebase rested on this function throwing, and it only
+  // ever threw on a network error.
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(
+      `Resend rejected the message (${res.status})${detail ? `: ${detail.slice(0, 300)}` : ''}`
+    )
+  }
 }
