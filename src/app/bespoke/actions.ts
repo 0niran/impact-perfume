@@ -1,6 +1,5 @@
 'use server'
 
-import { sanityWrite } from '@/sanity/client'
 import { getBespokeConfig } from '@/lib/bespokeConfig'
 import { computeBespokeEstimate } from '@/lib/bespokePricing'
 import {
@@ -76,41 +75,12 @@ export async function submitBespoke(data: BespokeFormData): Promise<BespokeSubmi
     // so the email — which is the record that matters — still carries one.
     const reference = `bespoke-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
-    // Best-effort second copy. The team email below is the actual record.
-    const doc = await sanityWrite?.create({
-      _type: 'inquiry',
-      type: 'bespoke',
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      message: data.notes,
-      submittedAt: new Date().toISOString(),
-      status: 'new',
-      bespokeConfig: {
-        inspiration: data.inspiration,
-        bottleType: data.bottleTypeLabel || data.bottleTypeKey,
-        color: data.color,
-        colorName: data.colorName,
-        volume: Number(data.volumeKey) || data.volumeKey,
-        inscriptionMethod: hasInscription ? data.inscriptionLabel || data.inscriptionKey : '',
-        engravingLine1: data.engravingLine1,
-        engravingLine2: data.engravingLine2,
-        quantity: data.quantity,
-        timeline: data.timeline,
-        city: data.city,
-        // Sanity field name kept for Studio compatibility; holds MINOR units of
-        // `currency` (kobo for NGN, cents for CAD). `currency` disambiguates so
-        // the perfumer can tell CA$67 from ₦67.
-        estimatePriceKobo: estimatePriceMinor,
-        currency: region.currency,
-      },
-    })
 
     // Tell someone. Until now a bespoke request landed in Sanity and nothing
     // else happened, so a customer could design a bottle — and pay a deposit —
     // with the only trace being a Studio document nobody had reason to open.
     const emailData: BespokeEmailData = {
-      inquiryId: doc?._id ?? reference,
+      inquiryId: reference,
       customerName: data.name,
       customerEmail: data.email,
       customerPhone: data.phone,
@@ -162,7 +132,7 @@ export async function submitBespoke(data: BespokeFormData): Promise<BespokeSubmi
       console.error('[bespoke] customer acknowledgement failed', err)
     }
 
-    return { ok: true, inquiryId: doc?._id ?? reference, depositMinor, currency: region.currency }
+    return { ok: true, inquiryId: reference, depositMinor, currency: region.currency }
   } catch (err) {
     console.error('Bespoke submission failed:', err)
     return { ok: false, error: 'Submission failed. Please try again.' }

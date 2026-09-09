@@ -1,29 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sanityWrite } from '@/sanity/client'
+import { listDueCarts, markReminded, pruneIndex } from '@/lib/pendingCart'
 import { buildAbandonedCartEmail, sendEmail } from '@/lib/email'
 import { serverEnv } from '@/lib/env'
 import { bearerMatches } from '@/lib/bearerAuth'
 import { rateLimit } from '@/lib/rateLimit'
 
-
-interface PendingCartDoc {
-  _id: string
-  email: string
-  region: 'NG' | 'CA'
-  currency: string
-  subtotalMinor: number
-  lines: {
-    variantId: string
-    handle?: string
-    name: string
-    variantLabel?: string
-    qty: number
-    unitPriceMinor: number
-    thumbnail?: string
-  }[]
-  createdAt: string
-  remindersSent: number
-}
 
 // Vercel cron sends `Authorization: Bearer ${CRON_SECRET}` when it fires this
 // route. Reject anything without a matching secret so the URL isn't open.
@@ -58,25 +39,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, message: 'Cron not configured.' }, { status: 500 })
   }
 
-  // No store, no pending carts to chase.
-  if (!sanityWrite) return NextResponse.json({ ok: true, sent: 0, reason: 'no store configured' })
+  const ONE_HOUR = 60 * 60 * 1000
 
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-
-  // Carts older than 1 hour, still pending, no reminder yet → send one and mark.
-  // Audit L-2: only send to customers who explicitly consented at save time.
-  const due = await sanityWrite.fetch<PendingCartDoc[]>(
-    `*[
-      _type == "pendingCart"
-      && status == "pending"
-      && consentToContact == true
-      && remindersSent == 0
-      && createdAt < $oneHourAgo
-      && createdAt > $sevenDaysAgo
-    ][0...50]`,
-    { oneHourAgo, sevenDaysAgo }
-  )
+  // Carts saved more than an hour ago and not yet reminded. "Not yet reminded"
+  // is simply "still in the index" — markReminded removes it, which is what
+  // stops a second email. Consent was required to store the cart at all.
+  const due = await listDueCarts(ONE_HOUR, 50)
 
   let sent = 0
   let failed = 0
@@ -94,29 +62,19 @@ export async function GET(req: NextRequest) {
         })),
       })
       await sendEmail({ to: cart.email, subject, html })
-      await sanityWrite
-        .patch(cart._id)
-        .set({ remindersSent: 1, lastEmailedAt: new Date().toISOString() })
-        .commit()
+      await markReminded(cart.email)
       sent++
     } catch (err) {
-      console.error('[cron.abandoned-carts] send failed for', cart._id, err)
+      console.error('[cron.abandoned-carts] send failed for', cart.email, err)
       failed++
+      // Left in the index deliberately: a transient mail failure should be
+      // retried on the next run rather than silently dropping the cart.
     }
   }
 
-  // Expire carts older than 7 days that never converted.
-  const expired = await sanityWrite.fetch<{ _id: string }[]>(
-    `*[
-      _type == "pendingCart"
-      && status == "pending"
-      && createdAt < $sevenDaysAgo
-    ]{ _id }`,
-    { sevenDaysAgo }
-  )
-  for (const e of expired) {
-    await sanityWrite.patch(e._id).set({ status: 'expired' }).commit()
-  }
+  // The carts themselves expire on their own TTL; this only clears index
+  // entries pointing at keys that have already gone.
+  const pruned = await pruneIndex()
 
-  return NextResponse.json({ ok: true, sent, failed, expired: expired.length })
+  return NextResponse.json({ ok: true, sent, failed, pruned })
 }

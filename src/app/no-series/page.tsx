@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { getAllEnrichments } from '@/sanity/queries/shop'
+import { getAllEnrichments } from '@/lib/catalogue'
 import { getServerRegion } from '@/lib/serverRegion'
 import CollectionHero from '@/components/shop/CollectionHero'
 import ShopClient from '@/components/shop/ShopClient'

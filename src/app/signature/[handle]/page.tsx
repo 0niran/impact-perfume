@@ -9,7 +9,6 @@ import { shippingCopyFor } from '@/lib/shippingCopy'
 import { formatPrice } from '@/lib/format'
 import NotesPyramid from '@/components/pdp/NotesPyramid'
 import StrengthBars from '@/components/pdp/StrengthBars'
-import ReviewsBlock from '@/components/pdp/ReviewsBlock'
 import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import SignatureAddToCart from '@/components/signature/SignatureAddToCart'
 import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
@@ -276,7 +275,6 @@ export default async function SignaturePDPPage(
         imageUrl={imageUrl ?? undefined}
         signatureColor={signatureColor}
       />
-      <ReviewsBlock productHandle={product.handle} productName={product.title} />
       <RecentlyViewedRail excludeHandle={product.handle} />
     </main>
   )

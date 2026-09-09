@@ -7,7 +7,6 @@ import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/j
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
 import RelatedProducts from '@/components/pdp/RelatedProducts'
-import ReviewsBlock from '@/components/pdp/ReviewsBlock'
 import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 
 export const revalidate = 3600
@@ -136,7 +135,6 @@ export default async function PDPPage(
         imageUrl={imageUrl ?? undefined}
         signatureColor={enrichment.signatureColor}
       />
-      <ReviewsBlock productHandle={`no-${enrichment.number}`} productName={`Impact No. ${enrichment.number}`} />
       <RelatedProducts currentNumber={enrichment.number} />
       <RecentlyViewedRail excludeHandle={`no-${enrichment.number}`} />
     </>

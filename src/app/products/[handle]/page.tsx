@@ -8,7 +8,6 @@ import { getMedusaProduct, getPrice, getProductImage, variantInStock } from '@/l
 import { formatPrice } from '@/lib/format'
 import AddToCartButton from '@/components/shop/AddToCartButton'
 import NotesPyramid from '@/components/pdp/NotesPyramid'
-import ReviewsBlock from '@/components/pdp/ReviewsBlock'
 import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 import { shippingCopyFor } from '@/lib/shippingCopy'
 import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
@@ -160,7 +159,6 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
         imageUrl={image ?? undefined}
         signatureColor={color}
       />
-      <ReviewsBlock productHandle={product.handle} productName={product.title} />
       <RecentlyViewedRail excludeHandle={product.handle} />
     </section>
     </>

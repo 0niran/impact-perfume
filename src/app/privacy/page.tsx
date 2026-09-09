@@ -98,9 +98,6 @@ export default function PrivacyPage() {
                   If you contact us through the B2B or bespoke forms: your name, email,
                   phone, company where given, and what you wrote.
                 </Row>
-                <Row term="Reviews">
-                  Your name, email and what you wrote, if you leave a review.
-                </Row>
                 <Row term="Saved carts">
                   If you enter your email at checkout but do not finish, we keep the cart
                   and that email so we can remind you — but only if you ticked the box
@@ -175,9 +172,8 @@ export default function PrivacyPage() {
                 <Row term="Google Maps Platform">
                   Address text as you type it, to verify and autocomplete it.
                 </Row>
-                <Row term="Vercel, Railway, Sanity, Upstash">
-                  Hosting, the order system, content and enquiry records, and rate
-                  limiting.
+                <Row term="Vercel, Railway, Upstash">
+                  Hosting, the order system, and the saved-cart and rate-limit store.
                 </Row>
               </dl>
               <p>
