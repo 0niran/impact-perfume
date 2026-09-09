@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sanityWrite } from '@/sanity/client'
+import { savePendingCart } from '@/lib/pendingCart'
 import { rateLimit } from '@/lib/rateLimit'
 import { cartSaveBodySchema, formatZodError } from '@/lib/validation'
 
@@ -11,10 +11,6 @@ export async function POST(req: NextRequest) {
       { ok: false, message: 'Too many requests. Please slow down.' },
       { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
     )
-  }
-
-  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.SANITY_API_WRITE_TOKEN) {
-    return NextResponse.json({ ok: false, message: 'Cart save not configured.' }, { status: 500 })
   }
 
   let rawBody: unknown
@@ -40,46 +36,20 @@ export async function POST(req: NextRequest) {
     thumbnail: l.thumbnail,
   }))
 
-  // Saving a cart only exists to power the reminder email. With no store for
-  // it, report success and skip: the customer's checkout must not fail because
-  // a marketing convenience is unavailable.
-  if (!sanityWrite) return NextResponse.json({ ok: true, saved: false })
-
+  // Saving a cart exists only to power the reminder email, so a failure here
+  // must never surface to the customer mid-checkout. Report success either way
+  // and say whether it actually stored, for the caller's logs.
   try {
-    // Upsert by email: replace any existing pending cart for this address so
-    // the customer only ever receives one reminder per active cart.
-    const existing = await sanityWrite.fetch<{ _id: string }[]>(
-      `*[_type == "pendingCart" && email == $email && status == "pending"]{ _id }`,
-      { email: body.email }
-    )
-
-    const doc = {
-      _type: 'pendingCart',
+    const saved = await savePendingCart({
       email: body.email,
       region: body.region,
       currency: body.currency,
       subtotalMinor: body.subtotalMinor,
       lines: normalisedLines,
-      createdAt: new Date().toISOString(),
-      remindersSent: 0,
-      status: 'pending',
-      consentToContact: true,
-      consentedAt: new Date().toISOString(),
-    }
-
-    if (existing.length > 0) {
-      // Replace the contents of the existing doc rather than creating a duplicate.
-      await sanityWrite
-        .patch(existing[0]._id)
-        .set({ ...doc, _id: existing[0]._id })
-        .commit()
-    } else {
-      await sanityWrite.create(doc)
-    }
-
-    return NextResponse.json({ ok: true })
+    })
+    return NextResponse.json({ ok: true, saved })
   } catch (err) {
     console.error('[cart.save] failed:', err)
-    return NextResponse.json({ ok: false, message: 'Could not save cart.' }, { status: 500 })
+    return NextResponse.json({ ok: true, saved: false })
   }
 }

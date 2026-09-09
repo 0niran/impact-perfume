@@ -6,7 +6,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 import { adminAuthHeader } from './lib/medusaAdmin'
 
 import fs from 'fs'
-import { createClient } from '@sanity/client'
 
 // Types
 interface Product {
@@ -50,14 +49,6 @@ const SANITY_API_TOKEN = process.env.SANITY_API_WRITE_TOKEN || ''
 // Medusa v2 stores prices in MAJOR units. ₦50,000 → 50000.
 const PLACEHOLDER_PRICE_NGN = 50000
 
-// Initialize Sanity client
-const sanityClient = createClient({
-  projectId: SANITY_PROJECT_ID,
-  dataset: SANITY_DATASET,
-  token: SANITY_API_TOKEN,
-  useCdn: false,
-  apiVersion: '2023-05-03'
-})
 
 // Utility functions
 async function makeRequest(url: string, options: RequestInit = {}) {
@@ -76,75 +67,6 @@ async function makeRequest(url: string, options: RequestInit = {}) {
   }
 
   return response.json()
-}
-
-async function createFragranceNote(noteName: string): Promise<string> {
-  console.log(`Creating fragrance note: ${noteName}`)
-
-  // Check if note already exists
-  const existingNotes = await sanityClient.fetch(
-    `*[_type == "fragranceNote" && name == $name][0]`,
-    { name: noteName }
-  )
-
-  if (existingNotes) {
-    console.log(`Note "${noteName}" already exists`)
-    return existingNotes._id
-  }
-
-  // Create new note
-  const noteDoc = {
-    _type: 'fragranceNote',
-    name: noteName,
-    family: inferNoteFamily(noteName)
-  }
-
-  const result = await sanityClient.create(noteDoc)
-  console.log(`Created note: ${noteName} (${result._id})`)
-  return result._id
-}
-
-function inferNoteFamily(noteName: string): string {
-  const name = noteName.toLowerCase()
-
-  if (name.includes('citrus') || name.includes('lemon') || name.includes('orange') ||
-      name.includes('bergamot') || name.includes('grapefruit') || name.includes('mandarin') ||
-      name.includes('yuzu')) return 'citrus'
-
-  if (name.includes('rose') || name.includes('jasmine') || name.includes('neroli') ||
-      name.includes('lily') || name.includes('tuberose') || name.includes('gardenia') ||
-      name.includes('orchid') || name.includes('violet') || name.includes('iris') ||
-      name.includes('mimosa') || name.includes('carnation')) return 'floral'
-
-  if (name.includes('apple') || name.includes('pear') || name.includes('peach') ||
-      name.includes('plum') || name.includes('berry') || name.includes('cherry') ||
-      name.includes('pineapple') || name.includes('mango') || name.includes('coconut') ||
-      name.includes('passion') || name.includes('cassis')) return 'fruity'
-
-  if (name.includes('wood') || name.includes('cedar') || name.includes('sandalwood') ||
-      name.includes('oak') || name.includes('vetiver') || name.includes('patchouli') ||
-      name.includes('mahogany') || name.includes('teak') || name.includes('guaiac')) return 'woody'
-
-  if (name.includes('pepper') || name.includes('cinnamon') || name.includes('nutmeg') ||
-      name.includes('clove') || name.includes('cardamom') || name.includes('ginger') ||
-      name.includes('saffron') || name.includes('cumin') || name.includes('spice')) return 'spicy'
-
-  if (name.includes('vanilla') || name.includes('sugar') || name.includes('honey') ||
-      name.includes('praline') || name.includes('tonka') || name.includes('caramel') ||
-      name.includes('chocolate') || name.includes('coffee')) return 'sweet'
-
-  if (name.includes('musk') || name.includes('amber') || name.includes('ambergris')) return 'musk'
-
-  if (name.includes('incense') || name.includes('benzoin') || name.includes('labdanum') ||
-      name.includes('olibanum') || name.includes('myrrh')) return 'resin'
-
-  if (name.includes('mint') || name.includes('lavender') || name.includes('basil') ||
-      name.includes('thyme') || name.includes('rosemary')) return 'aromatic'
-
-  if (name.includes('green') || name.includes('leaf') || name.includes('grass') ||
-      name.includes('moss')) return 'green'
-
-  return 'aromatic' // Default fallback
 }
 
 async function createMedusaProduct(product: Product): Promise<string> {
@@ -192,58 +114,6 @@ async function createMedusaProduct(product: Product): Promise<string> {
 
   console.log(`Created product: ${product.title} (${result.product.id})`)
   return result.product.id
-}
-
-async function createProductEnrichment(product: Product): Promise<void> {
-  console.log(`Creating Sanity enrichment for: ${product.title}`)
-
-  // Get or create fragrance notes
-  const allNotes = [...product.topNotes, ...product.heartNotes, ...product.baseNotes]
-  const uniqueNotes = [...new Set(allNotes)]
-
-  const notePromises = uniqueNotes.map(note => createFragranceNote(note))
-  const noteIds = await Promise.all(notePromises)
-
-  // Create lookup for note IDs
-  const noteIdMap: Record<string, string> = {}
-  uniqueNotes.forEach((note, index) => {
-    noteIdMap[note] = noteIds[index]
-  })
-
-  // Create enrichment document
-  const enrichmentDoc = {
-    _type: 'productEnrichment',
-    productHandle: product.handle,
-    number: product.number,
-    descriptor: product.descriptor,
-    scentFamily: product.scentFamily,
-    signatureColor: product.signatureColor,
-    signatureColorName: product.signatureColorName,
-    tagline: product.tagline,
-    category: 'number-series',
-    volume: product.volume,
-    concentration: product.concentration,
-    topNotes: product.topNotes.map(note => ({
-      _type: 'reference',
-      _ref: noteIdMap[note]
-    })),
-    heartNotes: product.heartNotes.map(note => ({
-      _type: 'reference',
-      _ref: noteIdMap[note]
-    })),
-    baseNotes: product.baseNotes.map(note => ({
-      _type: 'reference',
-      _ref: noteIdMap[note]
-    })),
-    // Default values for quiz/performance (can be updated later)
-    longevity: 4,
-    sillage: 4,
-    mood: ['Magnetic'],
-    occasion: ['Evening']
-  }
-
-  const result = await sanityClient.create(enrichmentDoc)
-  console.log(`Created enrichment: ${product.title} (${result._id})`)
 }
 
 async function productExistsByHandle(handle: string): Promise<boolean> {
@@ -298,25 +168,6 @@ async function createDiscoverySet(): Promise<void> {
   })
 
   // Create Sanity enrichment for Discovery Set
-  const enrichmentDoc = {
-    _type: 'productEnrichment',
-    productHandle: 'discovery-set',
-    descriptor: 'Sample Set',
-    scentFamily: 'Mixed',
-    signatureColor: '#6B4423',
-    signatureColorName: 'Accent',
-    tagline: 'Discover your signature scent',
-    category: 'discovery-set',
-    volume: '10 x 5ml',
-    concentration: 'Eau de Parfum',
-    longevity: 4,
-    sillage: 3,
-    mood: ['Joyful', 'Free'],
-    occasion: ['Day', 'Travel'],
-    story: 'Perfect for the curious nose, our Discovery Set offers a journey through the entire Number Series. Each 5ml vial provides multiple wears, allowing you to experience the full development of each fragrance and find your perfect match.'
-  }
-
-  await sanityClient.create(enrichmentDoc)
   console.log(`Created Discovery Set: ${result.product.id}`)
 }
 
@@ -397,7 +248,6 @@ async function main() {
     for (const product of productData.products) {
       try {
         await createMedusaProduct(product)
-        await createProductEnrichment(product)
 
         // Small delay to avoid overwhelming the APIs
         await new Promise(resolve => setTimeout(resolve, 100))

@@ -63,8 +63,11 @@ describe.each(PDPS)('%s', (rel) => {
     expect(src).toMatch(/NotesPyramid|InfoRail/)
   })
 
-  it('offers reviews', () => {
-    expect(src).toContain('ReviewsBlock')
+  it('does not reference the removed reviews block', () => {
+    // Reviews were a Sanity feature with no submission path — only the seed
+    // script could create them, and none were ever approved. Removed with the
+    // rest of Sanity rather than keeping a CMS alive for a dormant feature.
+    expect(src).not.toContain('ReviewsBlock')
   })
 })
 

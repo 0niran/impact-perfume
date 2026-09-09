@@ -7,7 +7,6 @@ import { shippingCopyFor } from '@/lib/shippingCopy'
 import { jsonLdScript, buildProductJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonLd'
 import ColorPanel from '@/components/pdp/ColorPanel'
 import InfoRail from '@/components/pdp/InfoRail'
-import ReviewsBlock from '@/components/pdp/ReviewsBlock'
 import { RecentlyViewedTracker, RecentlyViewedRail } from '@/components/pdp/RecentlyViewed'
 
 export const revalidate = 3600
@@ -152,7 +151,6 @@ export default async function OilPDPPage(
         imageUrl={imageUrl ?? undefined}
         signatureColor={enrichment.signatureColor}
       />
-      <ReviewsBlock productHandle={`oil-no-${enrichment.number}`} productName={`Impact Oil No. ${enrichment.number}`} />
       <RecentlyViewedRail excludeHandle={`oil-no-${enrichment.number}`} />
     </>
   )
