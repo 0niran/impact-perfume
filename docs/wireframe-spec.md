@@ -65,7 +65,7 @@ Border radius 0 globally (max 2 on inputs only). Stroke 1px, color Stone.
 
 ### Component instances referenced throughout
 
-`<Header>` `<Footer>` `<Container>` `<Section>` `<Button>` `<ProductCard>` `<NoteBadge>` `<PriceDisplay>` `<NewsletterForm>` etc. — defined in the component checklist.
+`<Header>` `<Footer>` `<Container>` `<Section>` `<Button>` `<ProductCard>` `<NoteBadge>` `<PriceDisplay>` etc. — defined in the component checklist.
 
 ---
 
@@ -95,8 +95,6 @@ Border radius 0 globally (max 2 on inputs only). Stroke 1px, color Stone.
 │ [journal preview — 3 post cards, 560h]                       │
 ├──────────────────────────────────────────────────────────────┤
 │ [press strip — logos, 120h]                                  │
-├──────────────────────────────────────────────────────────────┤
-│ [newsletter — 320h]                                          │
 ├──────────────────────────────────────────────────────────────┤
 │ [footer — 480h]                                              │
 └──────────────────────────────────────────────────────────────┘
@@ -176,16 +174,6 @@ Border radius 0 globally (max 2 on inputs only). Stroke 1px, color Stone.
 
 - Container. Height 120.
 - Up to 6 logos, centered, evenly spaced. Logos rendered Stone color (60% opacity), no original brand colors. Hover restores opacity.
-
-#### 1.10 Newsletter
-
-- Container. Padding 96 vertical. Background Mist.
-- Centered 640 max content:
-  - Eyebrow "Scent Letters".
-  - H2 "Notes from the house".
-  - Body-L one-line promise.
-  - `<NewsletterForm>`: inline email input + `<Button>` "Subscribe", 56 tall row, max 480.
-- After submit: form replaces with confirmation copy in Body, 200ms fade.
 
 #### 1.11 Footer
 

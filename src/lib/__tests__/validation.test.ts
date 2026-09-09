@@ -9,7 +9,6 @@ import {
   verifyPaymentBodySchema,
   stripeCreateIntentBodySchema,
   cartSaveBodySchema,
-  newsletterBodySchema,
 } from '../validation'
 
 describe('emailSchema', () => {
@@ -323,12 +322,3 @@ describe('cartSaveBodySchema', () => {
   })
 })
 
-describe('newsletterBodySchema', () => {
-  it('accepts a valid email', () => {
-    expect(newsletterBodySchema.safeParse({ email: 'a@b.co' }).success).toBe(true)
-  })
-
-  it('rejects invalid emails', () => {
-    expect(newsletterBodySchema.safeParse({ email: 'nope' }).success).toBe(false)
-  })
-})
