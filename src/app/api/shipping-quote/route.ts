@@ -29,7 +29,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   // Unauthenticated and it sends mail, so it is a spam vector. Same shape of
-  // limit as the newsletter endpoint.
+  // limit as the other public form endpoints.
   const limit = await rateLimit(req, 'shipping-quote', { limit: 5, window: '10 m' })
   if (!limit.ok) {
     return NextResponse.json(

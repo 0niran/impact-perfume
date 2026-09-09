@@ -41,7 +41,7 @@ per-finding sections below for what shipped.
 | M-5 | Medium | Medusa admin credentials in env vars are full-access — single key compromise = full backend takeover | Accepted risk |
 | L-1 | Low | `next.config.mjs` image `remotePatterns` allows wildcard `**.railway.app` | **FIXED** |
 | L-2 | Low | `/api/cart/save` saves email + PII without consent flag | **FIXED** |
-| L-3 | Low | `/api/newsletter` collects emails to nowhere (TODO comment) | **FIXED** (surfaced as deferred) |
+| L-3 | Low | `/api/newsletter` collects emails to nowhere (TODO comment) | **RESOLVED** — the endpoint was removed entirely in Sept 2026; no newsletter is offered |
 | L-4 | Low | `/api/search` has no rate limit; enables enumeration | **FIXED** (under H-3) |
 | L-5 | Low | `processedPayment` lock fails-open on Sanity errors (intentional but document) | Accepted risk |
 | I-1 | Info | Sanity write token is broad (Editor scope) | Accepted risk |

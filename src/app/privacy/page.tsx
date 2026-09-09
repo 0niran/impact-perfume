@@ -221,7 +221,6 @@ export default function PrivacyPage() {
                 <Row term="Saved carts">
                   Deleted once the reminder has been sent or the cart is completed.
                 </Row>
-                <Row term="Newsletter">Until you unsubscribe.</Row>
                 <Row term="IP addresses">
                   Minutes. They exist only to count requests against a rate limit.
                 </Row>

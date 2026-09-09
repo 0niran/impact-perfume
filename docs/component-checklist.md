@@ -43,7 +43,6 @@ src/
 │     ├─ checkout/verify-flutterwave/route.ts
 │     ├─ orders/create/route.ts
 │     ├─ inquiries/submit/route.ts
-│     ├─ newsletter/subscribe/route.ts
 │     └─ revalidate/route.ts
 ├─ components/
 │  ├─ primitives/
@@ -157,7 +156,6 @@ src/
 - [ ] `DiscoveryBlock` (2 tiles)
 - [ ] `JournalPreview` (composes JournalCard ×3)
 - [ ] `PressStrip`
-- [ ] `NewsletterBlock`
 
 ### Shop
 - [ ] `CollectionHero`
@@ -247,14 +245,13 @@ src/
 
 All forms use **React Hook Form** + **Zod** schemas. Schemas live in `/lib/schemas/`.
 
-- [ ] `NewsletterForm` **client**
 - [ ] `ContactForm` **client**
 - [ ] `B2BInquiryForm` **client**
 - [ ] `NotifyMeForm` **client**
 - [ ] `ReviewForm` **client**
 - [ ] `CheckoutContactForm` **client**
 - [ ] `CheckoutShippingForm` **client**
-- [ ] Zod schemas: `newsletterSchema`, `contactSchema`, `inquirySchema`, `notifySchema`, `reviewSchema`, `checkoutSchema`.
+- [ ] Zod schemas: `contactSchema`, `inquirySchema`, `notifySchema`, `reviewSchema`, `checkoutSchema`.
 
 ---
 
@@ -339,7 +336,6 @@ GROQ string constants. One per query.
 - [ ] `POST /api/checkout/verify-flutterwave` — same flow for Flutterwave.
 - [ ] `POST /api/orders/create` — internal helper called by verify routes.
 - [ ] `POST /api/inquiries/submit` — write to Sanity + POST to HubSpot.
-- [ ] `POST /api/newsletter/subscribe` — POST to MailerLite.
 - [ ] `POST /api/revalidate` — Sanity webhook receiver, calls `revalidatePath`/`revalidateTag`.
 - [ ] `POST /api/reviews/submit` — moderation queue (status: pending).
 - [ ] `GET  /api/sitemap` — generates `/sitemap.xml` from Sanity content.
@@ -405,7 +401,7 @@ All routes:
 
 - [ ] GA4 via `@next/third-parties`.
 - [ ] Google Search Console verified.
-- [ ] Events: `view_item`, `add_to_cart`, `begin_checkout`, `purchase`, `newsletter_signup`, `inquiry_submit`, `quiz_complete`.
+- [ ] Events: `view_item`, `add_to_cart`, `begin_checkout`, `purchase`, `inquiry_submit`, `quiz_complete`.
 - [ ] Meta Pixel optional.
 - [ ] Plausible or Umami optional self-host on Netlify.
 
@@ -427,7 +423,6 @@ All routes:
   - Browse home → Shop → PDP.
   - Add to cart → cart drawer → checkout → confirmation (Paystack test mode).
   - Submit B2B inquiry.
-  - Subscribe to newsletter.
 - [ ] **Vitest** unit tests:
   - `formatNaira`, cart store reducers, total calculations, schema validators.
 - [ ] **Lighthouse CI** in Netlify build pipeline.

@@ -233,10 +233,6 @@ export const cartSaveBodySchema = z.object({
     .max(50),
 })
 
-export const newsletterBodySchema = z.object({
-  email: emailSchema,
-})
-
 /**
  * Helper: turn a Zod failure into a user-facing message and the first field
  * that failed, so the route can return a useful 400.
