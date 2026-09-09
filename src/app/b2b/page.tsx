@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SITE_CONFIG } from '@/lib/config'
 import { Container } from '@/components/layout'
 import B2BForm from '@/components/b2b/B2BForm'
 
@@ -81,10 +82,10 @@ export default function B2BPage() {
                 <div>
                   <p className="text-label uppercase tracking-[0.08em] text-stone">Email</p>
                   <a
-                    href="mailto:hello@impactperfumes.com"
+                    href={`mailto:${SITE_CONFIG.contact.email}`}
                     className="mt-1 block text-body hover:text-accent transition-colors"
                   >
-                    hello@impactperfumes.com
+                    {SITE_CONFIG.contact.email}
                   </a>
                 </div>
               </div>
