@@ -57,7 +57,7 @@ export interface GigConfig {
  * login is missing, so callers can degrade gracefully — an un-configured GIG
  * account must never break checkout or an order that was already paid.
  */
-export function getGigConfig(): GigConfig | null {
+function getGigConfig(): GigConfig | null {
   const email = process.env.GIG_EMAIL
   const password = process.env.GIG_PASSWORD
   if (!email || !password) return null

@@ -20,9 +20,6 @@ vi.mock('@/lib/redis', () => ({
   get redis() {
     return configured ? { set, get, del, zadd, zrem, zrange, zremrangebyscore } : null
   },
-  get isRedisConfigured() {
-    return configured
-  },
 }))
 
 import {

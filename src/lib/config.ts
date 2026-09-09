@@ -102,7 +102,7 @@ export const SITE_URL = SITE_CONFIG.url
  * The domain the store will ultimately be served from, once DNS is cut over
  * from the legacy WordPress host to Vercel.
  */
-export const CANONICAL_HOST = 'impactperfumes.com'
+const CANONICAL_HOST = 'impactperfumes.com'
 
 /**
  * Whether this deployment is the real, public storefront.
@@ -190,11 +190,6 @@ export const CA_PICKUP_LOCATIONS: PickupLocation<'Canada'>[] = [
       'We will email you as soon as your order is ready, and arrange a collection time that suits you.',
   },
 ]
-
-export const PICKUP_LOCATIONS_BY_REGION = {
-  NG: NG_PICKUP_LOCATIONS,
-  CA: CA_PICKUP_LOCATIONS,
-} as const
 
 /** Any market's collection point, for display and order records. */
 export function getPickupLocation(id: string | undefined | null): PickupLocation | undefined {

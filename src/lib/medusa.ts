@@ -159,17 +159,6 @@ export async function getMedusaProduct(
   return ((json?.products as MedusaProduct[] | undefined)?.[0]) ?? null
 }
 
-export async function getMedusaProducts(
-  limit = 6,
-  regionId?: string
-): Promise<MedusaProduct[]> {
-  if (!PUBLISHABLE_KEY) return []
-  const params = new URLSearchParams({ limit: String(limit) })
-  const url = `${BACKEND_URL}/store/products?${withRegion(params, regionId)}`
-  const json = await storeGet(url, keyForMedusaRegion(regionId))
-  return (json?.products as MedusaProduct[]) ?? []
-}
-
 /**
  * Resolve a Medusa category ID from its handle (eg. "signature", "oils").
  * Returns null when the category doesn't exist yet in Medusa Admin.
