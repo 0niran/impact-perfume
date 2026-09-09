@@ -10,7 +10,7 @@ export const SITE_CONFIG = {
   locale: 'en_NG',
 
   contact: {
-    email: 'sales@impactperfumes.com',
+    email: 'hello@impactperfumes.com',
     phone: '+2349015900134',
     phoneDisplay: '+234 (0) 901 590 0134',
     address: {
