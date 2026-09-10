@@ -54,7 +54,7 @@ function fromB64url(s: string): Buffer {
  * Stable hash of the address the fee was priced for. Normalised so trivial
  * whitespace/case differences between quote and verify don't break the bind.
  */
-export function addressKey(addr: ShippingAddress): string {
+function addressKey(addr: ShippingAddress): string {
   const norm = [addr.address1, addr.address2 ?? '', addr.city, addr.state, addr.country]
     .map((s) => (s ?? '').trim().toLowerCase().replace(/\s+/g, ' '))
     .join('|')

@@ -96,13 +96,3 @@ export function validateEnv(): EnvValidation {
   return { ok: missing.length === 0, missing }
 }
 
-/**
- * Throws with the aggregated list when any required server variable is missing.
- * Use where the app genuinely cannot proceed without them.
- */
-export function assertEnv(): void {
-  const { ok, missing } = validateEnv()
-  if (!ok) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
-  }
-}

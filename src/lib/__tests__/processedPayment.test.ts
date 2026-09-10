@@ -18,9 +18,6 @@ vi.mock('@/lib/redis', () => ({
   get redis() {
     return configured ? { set: mockSet, get: mockGet, del: mockDel } : null
   },
-  get isRedisConfigured() {
-    return configured
-  },
 }))
 
 import { claimPayment, releasePayment, recordMedusaOrderId } from '../processedPayment'

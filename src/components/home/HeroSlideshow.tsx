@@ -119,4 +119,3 @@ export default function HeroSlideshow({ className = '' }: HeroSlideshowProps) {
   )
 }
 
-export { SLIDES }

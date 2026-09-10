@@ -1,10 +1,7 @@
 // Re-exported so absolute URLs have exactly one definition (lib/config.ts).
 // A second copy of the origin is how a domain cutover half-lands.
-export { SITE_URL } from '@/lib/config'
 
 export const FALLBACK_COLOR = '#1A1612'
-export const FALLBACK_SWATCH_COLOR = '#C9C2B5'
-
 export const NIGERIAN_STATES = [
   'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue',
   'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu',
