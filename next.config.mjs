@@ -9,6 +9,14 @@ const mediaPattern = mediaHost
   ? [{ protocol: "https", hostname: mediaHost }]
   : []
 
+// The exact Railway host Medusa serves product images from. Named once and used
+// by both next/image and the CSP below, so the two lists cannot drift apart.
+const MEDUSA_IMAGE_HOST = "impact-perfumes-medusa-production.up.railway.app"
+const imgOrigins = [
+  `https://${MEDUSA_IMAGE_HOST}`,
+  ...(mediaHost ? [`https://${mediaHost}`] : []),
+].join(" ")
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -16,10 +24,8 @@ const nextConfig = {
   poweredByHeader: false,
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "cdn.sanity.io" },
-      { protocol: "https", hostname: "images.unsplash.com" },
       // Medusa product images — pinned to the exact Railway host
-      { protocol: "https", hostname: "impact-perfumes-medusa-production.up.railway.app" },
+      { protocol: "https", hostname: MEDUSA_IMAGE_HOST },
       // Medusa product images — local dev server
       { protocol: "http", hostname: "localhost", port: "9000" },
       { protocol: "http", hostname: "127.0.0.1", port: "9000" },
@@ -44,7 +50,11 @@ const nextConfig = {
 
     const csp = [
       "default-src 'self'",
-      "img-src 'self' https: data: blob:",
+      // Was `https:`, which trusted every origin on the internet. Product images
+      // come from the Medusa backend and, once configured, object storage — so
+      // the list names exactly those. With scripts still allowed to run inline,
+      // an open img-src is the channel a stolen value leaves by.
+      `img-src 'self' data: blob: ${imgOrigins}`,
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.paystack.co https://js.stripe.com https://*.vercel-scripts.com",
       // paystack.com: js.paystack.co injects a stylesheet from the apex domain
       // when the pay modal opens. That asset currently 403s at Paystack's end,
@@ -57,10 +67,11 @@ const nextConfig = {
       "frame-src https://*.paystack.com https://*.paystack.co https://js.stripe.com https://*.stripe.com https://*.stripe.network",
       // *.stripe.network: Stripe.js posts fraud/telemetry signals there, and it
       // was missing — under enforcement that degrades Stripe's risk checks.
-      // wss://*.sanity.io: the embedded Sanity Studio (/studio) opens a
-      // realtime socket; without it the CMS breaks once enforced.
-      "connect-src 'self' https://api.paystack.co https://api.stripe.com https://*.stripe.com https://*.stripe.network https://*.up.railway.app https://cdn.sanity.io https://*.apicdn.sanity.io https://*.api.sanity.io https://*.sanity.io wss://*.sanity.io https://api.resend.com",
-      // The Sanity Studio bundle spawns web workers from blob: URLs.
+      //
+      // Four *.sanity.io origins and a WebSocket were removed when Sanity was
+      // retired. An allowlist entry nothing uses is an exfiltration destination
+      // granted for free, so the list tracks the dependencies that exist.
+      "connect-src 'self' https://api.paystack.co https://api.stripe.com https://*.stripe.com https://*.stripe.network https://*.up.railway.app https://api.resend.com",
       "worker-src 'self' blob:",
       "form-action 'self'",
       "frame-ancestors 'none'",

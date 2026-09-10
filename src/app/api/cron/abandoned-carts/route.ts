@@ -65,7 +65,11 @@ export async function GET(req: NextRequest) {
       await markReminded(cart.email)
       sent++
     } catch (err) {
-      console.error('[cron.abandoned-carts] send failed for', cart.email, err)
+      // The address is deliberately not logged. Function logs are retained and
+      // widely readable, so logging a customer's email makes every log reader a
+      // recipient of it. The failure count is enough to see that sending is
+      // broken; the address adds nothing an operator can act on.
+      console.error('[cron.abandoned-carts] send failed', err)
       failed++
       // Left in the index deliberately: a transient mail failure should be
       // retried on the next run rather than silently dropping the cart.
