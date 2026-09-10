@@ -7,6 +7,7 @@ import { buildOwnerAlertEmail, buildRefundEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { recordTaxTransaction } from '@/lib/tax'
 import { serverEnv } from '@/lib/env'
+import { rateLimit } from '@/lib/rateLimit'
 
 /**
  * Stripe webhook receiver. Verifies the request signature using
@@ -25,6 +26,19 @@ import { serverEnv } from '@/lib/env'
  */
 
 export async function POST(req: NextRequest) {
+  // Throttled BEFORE the signature check, matching /api/webhooks/medusa. The
+  // HMAC runs on every request that reaches it, so an unauthenticated flood
+  // otherwise buys unbounded work on the most valuable endpoint we expose.
+  // Set well above Stripe's real retry volume so genuine deliveries, including
+  // bursts after an outage, are never dropped.
+  const limit = await rateLimit(req, 'stripe-webhook', { limit: 120, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   const stripeKey = serverEnv.stripeSecretKey
   const signingSecret = serverEnv.stripeWebhookSecret
   if (!stripeKey || !signingSecret) {

@@ -7,6 +7,7 @@ import { buildOwnerAlertEmail, buildRefundEmail, sendEmail } from '@/lib/email'
 import { SITE_CONFIG } from '@/lib/config'
 import { verifyDeliveryQuote } from '@/lib/deliveryQuote'
 import { serverEnv } from '@/lib/env'
+import { rateLimit } from '@/lib/rateLimit'
 
 /**
  * Paystack server-to-server webhook. Signed with HMAC-SHA512 of the raw body
@@ -63,6 +64,19 @@ interface PaystackEvent {
 }
 
 export async function POST(req: NextRequest) {
+  // Throttled BEFORE the signature check, matching /api/webhooks/medusa. The
+  // HMAC-SHA512 runs on every request that reaches it, so an unauthenticated
+  // flood otherwise buys unbounded work on the endpoint that fulfils orders.
+  // Set well above Paystack's real retry volume so genuine deliveries are never
+  // dropped.
+  const limit = await rateLimit(req, 'paystack-webhook', { limit: 120, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, message: 'Too many requests.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+    )
+  }
+
   const secret = serverEnv.paystackSecretKey
   if (!secret) {
     console.error('[paystack-webhook] missing PAYSTACK_SECRET_KEY')

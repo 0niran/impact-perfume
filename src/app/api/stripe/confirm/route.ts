@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '@/lib/config'
 import { unpackStripeLines } from '@/lib/stripeMetadata'
 import { recordTaxTransaction } from '@/lib/tax'
 import { serverEnv } from '@/lib/env'
+import { rateLimit } from '@/lib/rateLimit'
 
 /**
  * Stripe return_url lands here after the customer confirms a payment.
@@ -15,8 +16,22 @@ import { serverEnv } from '@/lib/env'
  * the customer is sent back to /checkout with an error.
  */
 export async function GET(req: NextRequest) {
-  const stripeKey = serverEnv.stripeSecretKey
   const base = SITE_CONFIG.url
+
+  // Every call here performs a live paymentIntents.retrieve against our Stripe
+  // account. Unauthenticated and unlimited, that is a way to burn our Stripe
+  // rate limit from outside — and a throttled Stripe account fails real
+  // checkouts. The intent id itself is unguessable and verified server-side, so
+  // this guards the quota rather than the payment.
+  //
+  // Generous, because a customer legitimately lands here once per payment and
+  // may refresh: this should never obstruct a real return from Stripe.
+  const limit = await rateLimit(req, 'stripe-confirm', { limit: 30, window: '1 m' })
+  if (!limit.ok) {
+    return NextResponse.redirect(`${base}/checkout?error=too_many_requests`)
+  }
+
+  const stripeKey = serverEnv.stripeSecretKey
   if (!stripeKey) return NextResponse.redirect(`${base}/checkout?error=stripe_unconfigured`)
 
   const intentId = req.nextUrl.searchParams.get('payment_intent')
