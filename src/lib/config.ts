@@ -73,6 +73,22 @@ export const REGION_PRESENCE = {
 export type RegionPresence = (typeof REGION_PRESENCE)[keyof typeof REGION_PRESENCE]
 
 /**
+ * The registered companies behind each market.
+ *
+ * These are what a customer contracts with and what controls their data, so
+ * they appear on the Terms and Privacy pages. The trading name in SITE_CONFIG
+ * is what the storefront, footer and emails show; this is the legal name and
+ * must match the registration certificate exactly.
+ *
+ * Defined once so the two legal documents cannot disagree about who the
+ * seller is.
+ */
+export const LEGAL_ENTITIES = {
+  NG: { name: 'Impact Arabian Perfumes and Oil Ltd' },
+  CA: { name: 'Impact Arabian Perfumes and Oils' },
+} as const
+
+/**
  * Presence for a market, falling back to Nigeria (the head office) for anything
  * unrecognised. Callers should never index REGION_PRESENCE directly: the region
  * can arrive from a cookie, so it is not guaranteed to be a valid key.

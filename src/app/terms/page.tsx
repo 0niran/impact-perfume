@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DEFAULT_OG_IMAGES } from '@/lib/seo'
-import { SITE_CONFIG, REGION_PRESENCE, CA_PICKUP_LOCATIONS } from '@/lib/config'
+import { SITE_CONFIG, REGION_PRESENCE, CA_PICKUP_LOCATIONS, LEGAL_ENTITIES } from '@/lib/config'
 import { REGIONS } from '@/lib/region'
 import { formatPrice } from '@/lib/format'
 import { LegalPage, Row } from '@/components/legal/LegalPage'
@@ -21,12 +21,12 @@ import { LegalPage, Row } from '@/components/legal/LegalPage'
  * of Ontario consumer protection, and pretending otherwise would be worse than
  * saying so.
  *
- * PLACEHOLDERS: [NG ENTITY] / [CA ENTITY] pending the registered details.
+ * Entity names come from LEGAL_ENTITIES in lib/config.
  * NOT LEGAL ADVICE: this is a careful draft, and should be read by a lawyer
  * before launch.
  */
 
-const UPDATED = '2026-09-08'
+const UPDATED = '2026-09-11'
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions',
@@ -63,11 +63,11 @@ export default function TermsPage() {
               <p>Which company you contract with depends on where your order goes:</p>
               <dl className="mt-2">
                 <Row term="Nigeria">
-                  <strong className="text-bone">[NG ENTITY]</strong> (RC [NUMBER]),{' '}
+                  <strong className="text-bone">{LEGAL_ENTITIES.NG.name}</strong>,{' '}
                   {REGION_PRESENCE.NG.addressLines.join(', ')}
                 </Row>
                 <Row term="Canada">
-                  <strong className="text-bone">[CA ENTITY]</strong> ([NUMBER]),{' '}
+                  <strong className="text-bone">{LEGAL_ENTITIES.CA.name}</strong>,{' '}
                   {REGION_PRESENCE.CA.addressLines.join(', ')}
                 </Row>
               </dl>
