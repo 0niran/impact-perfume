@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
-import { LEGAL_ENTITIES, registrationLine } from '@/lib/config'
+import { LEGAL_ENTITIES } from '@/lib/config'
 
 /**
  * The registered names are what a customer contracts with and what controls
@@ -16,20 +16,6 @@ describe('LEGAL_ENTITIES', () => {
   it('names the Canadian company as registered', () => {
     expect(LEGAL_ENTITIES.CA.name).toBe('Impact Arabian Perfumes and Oils')
   })
-
-  it('carries the Canadian business identification number', () => {
-    expect(registrationLine(LEGAL_ENTITIES.CA)).toBe('Business Identification No. 1001430614')
-  })
-
-  it('shows a visible placeholder while the Nigerian RC number is outstanding', () => {
-    // Nigerian companies must show their RC number on official communications,
-    // so a missing one is rendered, not silently dropped.
-    if (LEGAL_ENTITIES.NG.registrationNumber === null) {
-      expect(registrationLine(LEGAL_ENTITIES.NG)).toBe('RC [NUMBER PENDING]')
-    } else {
-      expect(registrationLine(LEGAL_ENTITIES.NG)).toMatch(/^RC \d+$/)
-    }
-  })
 })
 
 describe.each(['src/app/terms/page.tsx', 'src/app/privacy/page.tsx'])('%s', (rel) => {
@@ -41,7 +27,7 @@ describe.each(['src/app/terms/page.tsx', 'src/app/privacy/page.tsx'])('%s', (rel
     expect(src).toContain('LEGAL_ENTITIES.CA.name')
   })
 
-  it('has no leftover entity placeholders', () => {
-    expect(src).not.toMatch(/\[(NG|CA) ENTITY\]/)
+  it('has no leftover entity or registration-number placeholders', () => {
+    expect(src).not.toMatch(/\[(NG|CA) ENTITY\]|NUMBER PENDING|\[NUMBER\]/)
   })
 })

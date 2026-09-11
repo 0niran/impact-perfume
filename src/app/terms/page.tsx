@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DEFAULT_OG_IMAGES } from '@/lib/seo'
-import { SITE_CONFIG, REGION_PRESENCE, CA_PICKUP_LOCATIONS, LEGAL_ENTITIES, registrationLine } from '@/lib/config'
+import { SITE_CONFIG, REGION_PRESENCE, CA_PICKUP_LOCATIONS, LEGAL_ENTITIES } from '@/lib/config'
 import { REGIONS } from '@/lib/region'
 import { formatPrice } from '@/lib/format'
 import { LegalPage, Row } from '@/components/legal/LegalPage'
@@ -21,8 +21,7 @@ import { LegalPage, Row } from '@/components/legal/LegalPage'
  * of Ontario consumer protection, and pretending otherwise would be worse than
  * saying so.
  *
- * Entity names come from LEGAL_ENTITIES in lib/config. The Nigerian RC number
- * is still outstanding and renders as a visible placeholder until supplied.
+ * Entity names come from LEGAL_ENTITIES in lib/config.
  * NOT LEGAL ADVICE: this is a careful draft, and should be read by a lawyer
  * before launch.
  */
@@ -64,11 +63,11 @@ export default function TermsPage() {
               <p>Which company you contract with depends on where your order goes:</p>
               <dl className="mt-2">
                 <Row term="Nigeria">
-                  <strong className="text-bone">{LEGAL_ENTITIES.NG.name}</strong> ({registrationLine(LEGAL_ENTITIES.NG)}),{' '}
+                  <strong className="text-bone">{LEGAL_ENTITIES.NG.name}</strong>,{' '}
                   {REGION_PRESENCE.NG.addressLines.join(', ')}
                 </Row>
                 <Row term="Canada">
-                  <strong className="text-bone">{LEGAL_ENTITIES.CA.name}</strong> ({registrationLine(LEGAL_ENTITIES.CA)}),{' '}
+                  <strong className="text-bone">{LEGAL_ENTITIES.CA.name}</strong>,{' '}
                   {REGION_PRESENCE.CA.addressLines.join(', ')}
                 </Row>
               </dl>
