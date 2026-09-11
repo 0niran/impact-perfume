@@ -21,10 +21,15 @@ export function LegalPage({
   intro: ReactNode
   sections: { id: string; heading: string; body: ReactNode }[]
 }) {
+  // `updated` is a date-only ISO string, which `new Date` reads as UTC midnight.
+  // Formatting it in the server's own timezone rolls it back a day anywhere west
+  // of UTC — '2026-09-11' rendered as 10 September on a Toronto machine. Pinning
+  // the format to UTC makes the published date independent of where it renders.
   const updatedLabel = new Date(updated).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    timeZone: 'UTC',
   })
 
   return (

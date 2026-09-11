@@ -73,6 +73,37 @@ export const REGION_PRESENCE = {
 export type RegionPresence = (typeof REGION_PRESENCE)[keyof typeof REGION_PRESENCE]
 
 /**
+ * The registered companies behind each market.
+ *
+ * These are what a customer contracts with and what controls their data, so
+ * they appear on the Terms and Privacy pages. The trading name in SITE_CONFIG
+ * is what the storefront, footer and emails show; this is the legal name and
+ * must match the registration certificate exactly.
+ *
+ * Defined once so the two legal documents cannot disagree about who the
+ * seller is. A null number renders as a visible placeholder rather than being
+ * dropped: Nigerian companies must show their RC number on official
+ * communications, so a missing one should be obvious, not silent.
+ */
+export const LEGAL_ENTITIES = {
+  NG: {
+    name: 'Impact Arabian Perfumes and Oil Ltd',
+    registrationLabel: 'RC',
+    registrationNumber: null as string | null,
+  },
+  CA: {
+    name: 'Impact Arabian Perfumes and Oils',
+    registrationLabel: 'Business Identification No.',
+    registrationNumber: '1001430614' as string | null,
+  },
+} as const
+
+/** "RC 123456", or a visible placeholder while the number is outstanding. */
+export function registrationLine(entity: (typeof LEGAL_ENTITIES)[keyof typeof LEGAL_ENTITIES]): string {
+  return `${entity.registrationLabel} ${entity.registrationNumber ?? '[NUMBER PENDING]'}`
+}
+
+/**
  * Presence for a market, falling back to Nigeria (the head office) for anything
  * unrecognised. Callers should never index REGION_PRESENCE directly: the region
  * can arrive from a cookie, so it is not guaranteed to be a valid key.

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DEFAULT_OG_IMAGES } from '@/lib/seo'
-import { SITE_CONFIG, REGION_PRESENCE } from '@/lib/config'
+import { SITE_CONFIG, REGION_PRESENCE, LEGAL_ENTITIES, registrationLine } from '@/lib/config'
 import { LegalPage, Row } from '@/components/legal/LegalPage'
 
 /**
@@ -16,11 +16,11 @@ import { LegalPage, Row } from '@/components/legal/LegalPage'
  * Jurisdictions: the Nigeria Data Protection Act 2023 (which replaced the NDPR
  * 2019) for Nigerian customers, and PIPEDA for Canadian ones.
  *
- * PLACEHOLDERS: the two registered entity names and numbers are marked
- * [NG ENTITY] / [CA ENTITY] pending the details.
+ * Entity names come from LEGAL_ENTITIES in lib/config. The Nigerian RC number
+ * is still outstanding and renders as a visible placeholder until supplied.
  */
 
-const UPDATED = '2026-09-08'
+const UPDATED = '2026-09-11'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -61,11 +61,11 @@ export default function PrivacyPage() {
               </p>
               <dl className="mt-2">
                 <Row term="Nigeria">
-                  <strong className="text-bone">[NG ENTITY]</strong> (RC [NUMBER]),{' '}
+                  <strong className="text-bone">{LEGAL_ENTITIES.NG.name}</strong> ({registrationLine(LEGAL_ENTITIES.NG)}),{' '}
                   {REGION_PRESENCE.NG.addressLines.join(', ')}
                 </Row>
                 <Row term="Canada">
-                  <strong className="text-bone">[CA ENTITY]</strong> ([NUMBER]),{' '}
+                  <strong className="text-bone">{LEGAL_ENTITIES.CA.name}</strong> ({registrationLine(LEGAL_ENTITIES.CA)}),{' '}
                   {REGION_PRESENCE.CA.addressLines.join(', ')}
                 </Row>
               </dl>
