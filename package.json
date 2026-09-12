@@ -25,7 +25,9 @@
     "refresh-storefront": "tsx scripts/refresh-storefront.ts",
     "new-product": "tsx scripts/new-product.ts",
     "migrate-prices": "tsx scripts/migrate-prices-to-major.ts",
-    "image": "tsx scripts/normalise-image.ts"
+    "image": "tsx scripts/normalise-image.ts",
+    "sync-inventory": "tsx scripts/sync-inventory.ts",
+    "archive-orders": "tsx scripts/archive-orders.ts"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.4.0",
