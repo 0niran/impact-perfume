@@ -7,8 +7,10 @@
  * products in place, so prices, variants, inventory, and every other field are
  * left untouched.
  *
- * Products with no source image (the numbered no-X / oil-no-X lines) are skipped
- * and reported, since a script cannot invent photography for them.
+ * A line photographed once (the numbered no-X and oil-no-X products share a
+ * single bottle shot each) resolves through FAMILY, so one file covers the
+ * whole line. Anything left with no source image at all is skipped and
+ * reported, since a script cannot invent photography.
  *
  * Dry run by default. Set APPLY=1 to write.
  *   npx tsx scripts/backfill-product-images.ts          # preview
@@ -46,6 +48,27 @@ const DISCOVERY: Record<string, { file: string; guessed: boolean }> = {
   'number-discovery-set': { file: 'No Series Discovery Set.jpeg', guessed: true },
   'discovery-set': { file: 'No Series Discovery Set.jpeg', guessed: true },
 }
+
+/**
+ * Shared line images.
+ *
+ * A line like the Number Series is photographed once: the bottle is identical
+ * across every number, only the juice differs, so a single shot legitimately
+ * represents all of them. That is why these products were left imageless — not
+ * because the photography is missing, but because nothing mapped one file onto
+ * a whole family.
+ *
+ * Tried last, so an individual product that has its own image always keeps it.
+ * uploadFile caches by filename, so each file is uploaded once and every
+ * product in the family points at the same R2 object.
+ */
+const FAMILY: { match: RegExp; file: string }[] = [
+  { match: /^no-\d+$/, file: 'no_series.png' },
+  { match: /^oil-no-\d+$/, file: 'Oil_perfume.png' },
+  { match: /^candle-/, file: 'candle.png' },
+  { match: /^car-diffuser-/, file: 'car.png' },
+  { match: /^home-diffuser-/, file: 'Difusser.png' },
+]
 
 function mimeFor(file: string): string {
   const ext = path.extname(file).toLowerCase()
@@ -92,9 +115,18 @@ async function setImage(id: string, url: string): Promise<void> {
   if (!res.ok) throw new Error(`update ${id} failed: HTTP ${res.status} ${await res.text()}`)
 }
 
-type Task = { handle: string; id: string; file: string; guessed: boolean; current: string | null }
+type Task = {
+  handle: string
+  id: string
+  file: string
+  guessed: boolean
+  shared: boolean
+  current: string | null
+}
 
-function resolveFile(p: any): { file: string; guessed: boolean } | null {
+type Resolved = { file: string; guessed: boolean; shared?: boolean }
+
+function resolveFile(p: any): Resolved | null {
   const handle: string = p.handle || ''
   if (SIGNATURE[handle]) return { file: SIGNATURE[handle], guessed: false }
   if (DISCOVERY[handle]) return DISCOVERY[handle]
@@ -102,6 +134,9 @@ function resolveFile(p: any): { file: string; guessed: boolean } | null {
   if (thumb.startsWith('/images/')) {
     return { file: decodeURIComponent(thumb.slice('/images/'.length)), guessed: false }
   }
+  // Last resort, so anything with its own image above keeps it.
+  const family = FAMILY.find((f) => f.match.test(handle))
+  if (family) return { file: family.file, guessed: false, shared: true }
   return null
 }
 
@@ -132,12 +167,28 @@ async function main() {
       missingFile.push(`${handle} -> ${resolved.file}`)
       continue
     }
-    tasks.push({ handle, id: p.id, file: resolved.file, guessed: resolved.guessed, current: p.thumbnail })
+    tasks.push({
+      handle,
+      id: p.id,
+      file: resolved.file,
+      guessed: resolved.guessed,
+      shared: resolved.shared === true,
+      current: p.thumbnail,
+    })
   }
 
   console.log('=== PLAN: products to backfill ===')
   for (const t of tasks) {
-    console.log(`  ${t.handle.padEnd(26)} <- ${t.file}${t.guessed ? '   [GUESSED - verify]' : ''}`)
+    const note = t.guessed ? '   [GUESSED - verify]' : t.shared ? '   [shared line image]' : ''
+    console.log(`  ${t.handle.padEnd(26)} <- ${t.file}${note}`)
+  }
+  const sharedCount = tasks.filter((t) => t.shared).length
+  if (sharedCount) {
+    const files = [...new Set(tasks.filter((t) => t.shared).map((t) => t.file))]
+    console.log(
+      `\n  ${sharedCount} of these take a shared line image (${files.join(', ')}) — ` +
+        `one upload each, reused across the line.`
+    )
   }
   console.log(`\n  ${tasks.length} to update, ${alreadyR2.length} already on R2, ` +
     `${noImage.length} have no source image, ${missingFile.length} missing file`)
