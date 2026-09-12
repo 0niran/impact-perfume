@@ -21,7 +21,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 loadEnv({ path: '.env.local' })
-import { adminAuthHeader } from './lib/medusaAdmin'
+import { adminAuthHeader, assertWriteAllowed } from './lib/medusaAdmin'
 loadEnv() // fall back to .env for anything not in .env.local
 
 const BASE =
@@ -143,6 +143,8 @@ function resolveFile(p: any): Resolved | null {
 async function main() {
   console.log(`Backend: ${BASE}`)
   console.log(`Mode:    ${APPLY ? 'APPLY (writing)' : 'DRY RUN (no writes)'}\n`)
+  // This script calls fetch directly, so the adminFetch backstop never sees it.
+  if (APPLY) assertWriteAllowed()
   const products = await fetchProducts()
   console.log(`Fetched ${products.length} products\n`)
 

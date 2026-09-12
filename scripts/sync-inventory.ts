@@ -19,7 +19,7 @@
  * Canadian prices are what the product sells for in Canada; reading them as an
  * exchange rate off the Nigerian price will look wrong and is not a fault.
  */
-import { adminFetch, MEDUSA_BACKEND_URL } from './lib/medusaAdmin'
+import { adminFetch, assertWriteAllowed, MEDUSA_BACKEND_URL } from './lib/medusaAdmin'
 import fs from 'fs'
 import path from 'path'
 
@@ -205,6 +205,8 @@ async function setStock(inventoryItemId: string, locationId: string, qty: number
 
 async function main() {
   console.log(`\nInventory sync  ·  ${MEDUSA_BACKEND_URL}${APPLY ? '' : '  (dry run)'}\n`)
+  // Fail before reading the catalogue rather than part-way through writing it.
+  if (APPLY) assertWriteAllowed()
 
   const rows = parseCsv(fs.readFileSync(CSV, 'utf8'))
   const products = await allProducts()

@@ -24,7 +24,7 @@
  * Completing moves no money. It does not capture, refund or notify: the backend
  * registers no order subscribers, so nothing is sent to the customer.
  */
-import { adminFetch, MEDUSA_BACKEND_URL } from './lib/medusaAdmin'
+import { adminFetch, assertWriteAllowed, MEDUSA_BACKEND_URL } from './lib/medusaAdmin'
 
 const APPLY = process.argv.includes('--apply')
 const COMPLETE_PENDING = process.argv.includes('--complete-pending')
@@ -63,6 +63,7 @@ const tally = (orders: Order[]) =>
 
 async function main() {
   console.log(`\nArchive orders  ·  ${MEDUSA_BACKEND_URL}${APPLY ? '' : '  (dry run)'}\n`)
+  if (APPLY) assertWriteAllowed()
 
   const orders = await allOrders()
   const open = orders.filter((o) => o.status !== 'archived')
