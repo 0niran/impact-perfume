@@ -10,10 +10,14 @@
  * and every other published product is moved to draft so the storefront offers
  * only what is really on the shelf.
  *
- * Deliberately NOT a price sync. The sheet's NGN prices already match what is
- * live — checked row by row before this was written — and prices reach two
- * currencies and two regions, which is a different job with different failure
- * modes. If prices ever need to change, that belongs in its own script.
+ * Prices come from the sheet too, in both currencies. An earlier version of
+ * this script skipped them on the claim that the sheet already matched what was
+ * live. That was wrong: only the Signature line and the home diffusers matched.
+ * The sheet is authoritative for price exactly as it is for stock.
+ *
+ * The two currencies are independent figures, not one converted into the other.
+ * Canadian prices are what the product sells for in Canada; reading them as an
+ * exchange rate off the Nigerian price will look wrong and is not a fault.
  */
 import { adminFetch, MEDUSA_BACKEND_URL } from './lib/medusaAdmin'
 import fs from 'fs'
@@ -58,9 +62,28 @@ const KEEP_PUBLISHED = new Set([
   'candle-no-18',
 ])
 
-interface Row { name: string; category: string; qty: number; ngn: number }
+/**
+ * Products whose sheet price is not trusted, so price alone is left alone.
+ *
+ * The Perfume Oils carry CAD 60 — the same figure as a 100ml Number Series
+ * perfume, which sells for four and a half times more in Nigeria. Every other
+ * row in the sheet implies somewhere between 500 and 1000 naira to the dollar;
+ * this one implies 167. It reads as a fill-down from the block above it rather
+ * than a decision, and the owner confirmed it is wrong.
+ *
+ * Stock and status still sync for these. Only the price is held, and only until
+ * the sheet carries a figure someone has actually chosen.
+ */
+const PRICE_HOLD: RegExp[] = [/^oil-no-\d+$/]
 
-/** Excel writes CRLF and quotes the price because it contains a comma. */
+const priceHeld = (handle: string) => PRICE_HOLD.some((r) => r.test(handle))
+
+interface Row { name: string; category: string; qty: number; ngn: number; cad: number }
+
+/** "NGN45,000.00" and "$60" both reduce to a number; Medusa stores major units. */
+const money = (cell: string | undefined) => Number(String(cell ?? '').replace(/[^\d.]/g, ''))
+
+/** Excel writes CRLF and quotes the NGN price because it contains a comma. */
 function parseCsv(text: string): Row[] {
   return text
     .replace(/\r/g, '')
@@ -77,12 +100,13 @@ function parseCsv(text: string): Row[] {
         else cur += ch
       }
       cells.push(cur)
-      const [name, category, qty, price] = cells
+      const [name, category, qty, ngn, cad] = cells
       return {
         name: (name ?? '').trim(),
         category: (category ?? '').trim(),
         qty: Number(qty),
-        ngn: Number(String(price ?? '').replace(/[^\d.]/g, '')),
+        ngn: money(ngn),
+        cad: money(cad),
       }
     })
     .filter((r) => r.name && Number.isFinite(r.qty))
@@ -91,25 +115,66 @@ function parseCsv(text: string): Row[] {
 const squash = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
 
+interface VariantPrice {
+  amount: number
+  currency_code: string
+  /** Region- or customer-scoped prices carry rules; plain currency prices do not. */
+  rules?: Record<string, unknown>
+}
+
 interface AdminProduct {
   id: string
   handle: string
   title: string
   status: string
-  variants?: { id: string; inventory_items?: { inventory_item_id: string }[] }[]
+  variants?: {
+    id: string
+    prices?: VariantPrice[]
+    inventory_items?: { inventory_item_id: string }[]
+  }[]
 }
 
 async function allProducts(): Promise<AdminProduct[]> {
   const out: AdminProduct[] = []
-  for (let offset = 0; ; offset += 100) {
+  for (let offset = 0; ; offset += 50) {
     const j = await adminFetch(
-      `/admin/products?limit=100&offset=${offset}&fields=id,handle,title,status,*variants.inventory_items`
+      `/admin/products?limit=50&offset=${offset}` +
+        `&fields=id,handle,title,status,*variants.inventory_items,*variants.prices`
     )
     const batch: AdminProduct[] = j.products ?? []
     out.push(...batch)
-    if (batch.length < 100) break
+    if (batch.length < 50) break
   }
   return out
+}
+
+const priceIn = (p: AdminProduct, currency: string): number | null => {
+  const found = (p.variants?.[0]?.prices ?? []).filter((x) => x.currency_code === currency)
+  return found.length === 1 ? found[0].amount : null
+}
+
+/**
+ * Replace a variant's prices with the sheet's two figures.
+ *
+ * Sending `prices` replaces the whole set, which is what makes this idempotent
+ * but also means a scoped price would be destroyed. Any variant carrying one is
+ * skipped and reported rather than flattened.
+ */
+async function setPrices(p: AdminProduct, ngn: number, cad: number): Promise<'ok' | 'scoped'> {
+  const variant = p.variants?.[0]
+  if (!variant) return 'scoped'
+  const scoped = (variant.prices ?? []).some((x) => x.rules && Object.keys(x.rules).length > 0)
+  if (scoped) return 'scoped'
+  await adminFetch(`/admin/products/${p.id}/variants/${variant.id}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      prices: [
+        { amount: ngn, currency_code: 'ngn' },
+        { amount: cad, currency_code: 'cad' },
+      ],
+    }),
+  })
+  return 'ok'
 }
 
 /** Stock locations, resolved by name so this keeps working if ids change. */
@@ -166,6 +231,14 @@ async function main() {
     for (const p of found) targets.set(p.id, { product: p, qty: row.qty, row })
   }
 
+  const missingCad = rows.filter((r) => !Number.isFinite(r.cad) || r.cad <= 0)
+  if (missingCad.length) {
+    console.log(`\n  ROWS WITH NO CANADIAN PRICE (${missingCad.length}) — refusing to write:`)
+    missingCad.forEach((r) => console.log(`    ${JSON.stringify(r.name)}`))
+    console.log('\n  A product live in Canada with no CAD price cannot be bought there.')
+    process.exit(1)
+  }
+
   if (unmatched.length) {
     console.log(`\n  UNRESOLVED ROWS (${unmatched.length}) — nothing will be written until these are mapped:`)
     unmatched.forEach((r) => console.log(`    ${JSON.stringify(r.name)}  [${r.category}]`))
@@ -187,6 +260,31 @@ async function main() {
   toDraft.slice(0, 15).forEach((p) => console.log(`    - ${p.handle}`))
   if (toDraft.length > 15) console.log(`    … and ${toDraft.length - 15} more`)
   console.log(`  kept published though absent from the sheet: ${[...KEEP_PUBLISHED].length}`)
+
+  // --- price changes -------------------------------------------------------
+  const allPriceDiffs = [...targets.values()]
+    .map((t) => ({
+      t,
+      ngnWas: priceIn(t.product, 'ngn'),
+      cadWas: priceIn(t.product, 'cad'),
+    }))
+    .filter((c) => c.ngnWas !== c.t.row.ngn || c.cadWas !== c.t.row.cad)
+
+  const held = allPriceDiffs.filter((c) => priceHeld(c.t.product.handle))
+  const priceChanges = allPriceDiffs.filter((c) => !priceHeld(c.t.product.handle))
+
+  console.log(`\n  price changes: ${priceChanges.length} of ${targets.size}`)
+  for (const c of priceChanges) {
+    const n = c.ngnWas === c.t.row.ngn ? '' : ` NGN ${c.ngnWas ?? '-'} -> ${c.t.row.ngn}`
+    const d = c.cadWas === c.t.row.cad ? '' : ` CAD ${c.cadWas ?? '-'} -> ${c.t.row.cad}`
+    console.log(`    ${c.t.product.handle.padEnd(28)}${n}${d}`)
+  }
+  if (held.length) {
+    console.log(`\n  price HELD (sheet figure not trusted, see PRICE_HOLD): ${held.length}`)
+    console.log(`    keeping NGN ${held[0].ngnWas ?? '-'} / CAD ${held[0].cadWas ?? '-'}, ` +
+      `sheet says NGN ${held[0].t.row.ngn} / CAD ${held[0].t.row.cad}`)
+    console.log(`    ${held.map((c) => c.t.product.handle).join(', ')}`)
+  }
 
   if (!APPLY) {
     console.log('\n  Dry run. Re-run with --apply to write.\n')
@@ -212,6 +310,19 @@ async function main() {
     stocked++
   }
   console.log(`  stock set on ${stocked} product(s) in both markets`)
+
+  let priced = 0
+  const scopedSkips: string[] = []
+  for (const c of priceChanges) {
+    const result = await setPrices(c.t.product, c.t.row.ngn, c.t.row.cad)
+    if (result === 'scoped') scopedSkips.push(c.t.product.handle)
+    else priced++
+  }
+  console.log(`  prices set on ${priced} product(s) in both currencies`)
+  if (scopedSkips.length) {
+    console.log(`  skipped, carries a scoped price that replacing would destroy: ${scopedSkips.length}`)
+    scopedSkips.forEach((h) => console.log(`    ${h}`))
+  }
 
   let drafted = 0
   for (const p of toDraft) {
